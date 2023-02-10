@@ -150,5 +150,36 @@ public final class Constants {
   {
     public static final int clawForwardChannel = 0;
     public static final int clawReverseChannel = 1;
+    public static final int wristForwardChannel = 2;
+    public static final int wristReverseChannel = 3;
+  }
+  public static final class CollectorConstants
+  {
+    public static final int collectMotorLeftCanId = 12;
+    public static final int collectMotorRightCanId = 13;
+    public static final int collectForwardChannel = 4;
+    public static final int collectReverseChannel = 5; 
+    public static final double collectSpeed = .5;
+  }
+  public static final class ArmConstants
+  {
+    public static final int armMotorLeftCanId = 14;
+    public static final int armMotorRightCanId = 15;
+
+    public static final double armP = 1;
+    public static final double armI = 0;
+    public static final double armD = 0;
+    public static final double armFF = 0;
+    public static final double armMinOutput = -1;
+    public static final double armMaxOutput = 1;
+
+    public static final double cubeHighAngle = 0.0;
+    public static final double cubeMidAngle = 0.0;
+    public static final double cubeLowAngle = 0.0;
+    public static final double cubeSpindexAngle = 0.0;
+    public static final double coneHighAngle = 0.0;
+    public static final double coneMidAngle = 0.0;
+    public static final double coneLowAngle = 0.0;
+    public static final double coneSpindexAngle = 0.0;
   }
 }

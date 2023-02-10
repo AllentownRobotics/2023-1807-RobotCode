@@ -16,7 +16,7 @@ public class Claw extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public Claw() {
     clawSolenoid = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, ClawConstants.clawForwardChannel, ClawConstants.clawReverseChannel);
-    wristSolenoid = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, ClawConstants.clawForwardChannel, ClawConstants.clawReverseChannel);
+    wristSolenoid = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, ClawConstants.wristForwardChannel, ClawConstants.wristReverseChannel);
 
   }
 
