@@ -108,7 +108,7 @@ public class RobotContainer {
         .onTrue(new InstantCommand(
             () -> fieldOriented = !fieldOriented));
     new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-        .whileTrue(new InstantCommand(
+        .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
             m_robotDrive));
 
