@@ -56,7 +56,14 @@ public class Arm extends SubsystemBase {
       SmartDashboard.putString("ArmEncoderReset", "Encoders Aligned :)");
 
     }
-    SmartDashboard.putBoolean("Mode", RobotContainer.cubeMode);
+    if(RobotContainer.cubeMode)
+    {
+      SmartDashboard.putString("Mode", "Cube Mode");
+    }
+    else
+    {
+      SmartDashboard.putString("Mode", "Cube Mode");
+    }
     // This method will be called once per scheduler run
   }
 
