@@ -55,6 +55,7 @@ public class RobotContainer {
   public static Collector m_Collector;
   public static Arm m_Arm;
   private boolean fieldOriented = false;
+  private boolean speedUp = false;
   public static boolean cubeMode = false;
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -85,7 +86,7 @@ public class RobotContainer {
                 translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
                 strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
                 MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
-                fieldOriented),
+                fieldOriented, speedUp),
             m_robotDrive));
   }
 
@@ -107,7 +108,10 @@ public class RobotContainer {
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
         .onTrue(new InstantCommand(
             () -> fieldOriented = !fieldOriented));
-    new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
+    new JoystickButton(m_driverController, XboxController.Button.kY.value)
+        .onTrue(new InstantCommand(
+            () -> speedUp = !speedUp));
+    new JoystickButton(m_driverController, XboxController.Button.kStart.value)
         .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
             m_robotDrive));
@@ -145,9 +149,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public Command getAutonomousCommand(Trajectory autoTrajectory) {
     // Create config for trajectory
-    TrajectoryConfig config = new TrajectoryConfig(
+    /*TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
         AutoConstants.kMaxAccelerationMetersPerSecondSquared)
         // Add kinematics to ensure max speed is actually obeyed
@@ -161,14 +165,14 @@ public class RobotContainer {
         List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
         // End 3 meters straight ahead of where we started, facing forward
         new Pose2d(3, 0, new Rotation2d(0)),
-        config);
+        config);*/
 
     var thetaController = new ProfiledPIDController(
         AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
     SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-        exampleTrajectory,
+        autoTrajectory,
         m_robotDrive::getPose, // Functional interface to feed supplier
         DriveConstants.kDriveKinematics,
 
@@ -180,9 +184,9 @@ public class RobotContainer {
         m_robotDrive);
 
     // Reset odometry to the starting pose of the trajectory.
-    m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
+    m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
+    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false,false));
   }
 }

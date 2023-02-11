@@ -105,11 +105,21 @@ public class DriveSubsystem extends SubsystemBase {
    * @param fieldRelative Whether the provided x and y speeds are relative to the
    *                      field.
    */
-  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean speedUp) {
     // Adjust input based on max speed
-    xSpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
-    ySpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
-    rot *= DriveConstants.kMaxAngularSpeed;
+    if(speedUp)
+    {
+      xSpeed *= (DriveConstants.kMaxSpeedMetersPerSecond*1.5);
+      ySpeed *= (DriveConstants.kMaxSpeedMetersPerSecond*1.5);
+      rot *= (DriveConstants.kMaxAngularSpeed*1.5);
+    }
+    else
+    {
+      xSpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
+      ySpeed *= DriveConstants.kMaxSpeedMetersPerSecond;
+      rot *= DriveConstants.kMaxAngularSpeed;
+    }
+    
 
     var swerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(
         fieldRelative
