@@ -86,7 +86,7 @@ public class RobotContainer {
                 translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
                 strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
                 MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
-                fieldOriented, speedUp),
+                fieldOriented),
             m_robotDrive));
   }
 
@@ -187,6 +187,6 @@ public class RobotContainer {
     m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false,false));
+    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
   }
 }
