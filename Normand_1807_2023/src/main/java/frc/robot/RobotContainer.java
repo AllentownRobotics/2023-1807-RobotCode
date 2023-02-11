@@ -55,7 +55,6 @@ public class RobotContainer {
   public static Collector m_Collector;
   public static Arm m_Arm;
   private boolean fieldOriented = false;
-  private boolean speedUp = false;
   public static boolean cubeMode = false;
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -108,9 +107,6 @@ public class RobotContainer {
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
         .onTrue(new InstantCommand(
             () -> fieldOriented = !fieldOriented));
-    new JoystickButton(m_driverController, XboxController.Button.kY.value)
-        .onTrue(new InstantCommand(
-            () -> speedUp = !speedUp));
     new JoystickButton(m_driverController, XboxController.Button.kStart.value)
         .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
