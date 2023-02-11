@@ -139,6 +139,7 @@ public class DriveSubsystem extends SubsystemBase {
     {
       SmartDashboard.putString("Orientation", "Robot Oriented");
     }
+    SmartDashboard.putBoolean("Speed Up?", speedUp);
   }
 
   /**
