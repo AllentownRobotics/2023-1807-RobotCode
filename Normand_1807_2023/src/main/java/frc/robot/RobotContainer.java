@@ -15,6 +15,9 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.CollectorConstants;
 import frc.robot.Constants.DriveConstants;
@@ -29,6 +32,11 @@ import frc.robot.commands.Arm.High;
 import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.commands.Arm.Spindex;
+import frc.robot.commands.Autos.*;
+import frc.robot.commands.Drive.DriveCmd;
+import frc.robot.commands.Drive.LockCmd;
+import frc.robot.commands.Drive.OrientationCmd;
+import frc.robot.commands.Drive.ZeroGyroCmd;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,7 +56,7 @@ import java.util.List;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
+  public final static DriveSubsystem m_robotDrive = new DriveSubsystem();
   public static Spindexer m_Spindexer;
   public static Claw m_Claw;
   public static Compress m_Compressor;
@@ -62,6 +70,8 @@ public class RobotContainer {
 
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
+
+  private SendableChooser<AutoInterface> chooser;
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -76,17 +86,17 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
 
+    //chooser
+    chooser = new SendableChooser<AutoInterface>();
+    chooser.setDefaultOption("Default Auto/Tia Auto", new ExampleAuto());
+    chooser.addOption("Test", new ExampleAutoOne());
+    chooser.addOption("Straigt Forward", new ExampleAutoTwo());
+    chooser.addOption("Test 2", new ExampleAutoThree());
+    Shuffleboard.getTab("Autos").add(chooser);
+
+
     // Configure default commands
-    m_robotDrive.setDefaultCommand(
-        // The left stick controls translation of the robot.
-        // Turning is controlled by the X axis of the right stick.
-        new RunCommand(
-            () -> m_robotDrive.drive(
-                translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
-                strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
-                MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
-                fieldOriented),
-            m_robotDrive));
+    m_robotDrive.setDefaultCommand(new DriveCmd(translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)), strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)), MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3)));
   }
 
   /**
@@ -101,16 +111,11 @@ public class RobotContainer {
   private void configureButtonBindings() {
     //drive buttons
     new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-        .whileTrue(new RunCommand(
-            () -> m_robotDrive.setX(),
-            m_robotDrive));
+        .whileTrue(new LockCmd());
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-        .onTrue(new InstantCommand(
-            () -> fieldOriented = !fieldOriented));
+        .onTrue(new OrientationCmd());
     new JoystickButton(m_driverController, XboxController.Button.kStart.value)
-        .onTrue(new InstantCommand(
-            () -> m_robotDrive.zeroHeading(),
-            m_robotDrive));
+        .onTrue(new ZeroGyroCmd());
 
     //spindexer buttons
     new JoystickButton(m_operatorController, XboxController.Button.kLeftBumper.value)
@@ -145,44 +150,9 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand(Trajectory autoTrajectory) {
-    // Create config for trajectory
-    /*TrajectoryConfig config = new TrajectoryConfig(
-        AutoConstants.kMaxSpeedMetersPerSecond,
-        AutoConstants.kMaxAccelerationMetersPerSecondSquared)
-        // Add kinematics to ensure max speed is actually obeyed
-        .setKinematics(DriveConstants.kDriveKinematics);
-
-    // An example trajectory to follow. All units in meters.
-    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-        // Start at the origin facing the +X direction
-        new Pose2d(0, 0, new Rotation2d(0)),
-        // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
-        // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, new Rotation2d(0)),
-        config);*/
-
-    var thetaController = new ProfiledPIDController(
-        AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-        autoTrajectory,
-        m_robotDrive::getPose, // Functional interface to feed supplier
-        DriveConstants.kDriveKinematics,
-
-        // Position controllers
-        new PIDController(AutoConstants.kPXController, 0, 0),
-        new PIDController(AutoConstants.kPYController, 0, 0),
-        thetaController,
-        m_robotDrive::setModuleStates,
-        m_robotDrive);
-
-    // Reset odometry to the starting pose of the trajectory.
-    m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
-
+  public Command getAutonomousCommand() {
+    Command autoCommand = chooser.getSelected().getAutoCommand();
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
+    return autoCommand.andThen(() -> m_robotDrive.drive(0, 0, 0));
   }
 }
