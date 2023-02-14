@@ -43,10 +43,14 @@ public class Arm extends SubsystemBase {
     leftArmPIDController.setFF(ArmConstants.armFF);
     leftArmPIDController.setOutputRange(ArmConstants.armMinOutput,
         ArmConstants.armMaxOutput);
+
+    rightArmMotor.setInverted(true);
+    rightArmMotor.follow(leftArmMotor);
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Arm Angle",leftEncoder.getPosition());
     if(rightEncoder.getPosition()!=leftEncoder.getPosition())
     {
       SmartDashboard.putString("ArmEncoderReset", "ENCODERS NOT ALIGNED");

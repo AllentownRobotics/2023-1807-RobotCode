@@ -28,8 +28,8 @@ public final class Constants {
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
-    public static final double kMaxSpeedMetersPerSecond = 2.5;
-    public static final double kMaxAngularSpeed = 2.5 * Math.PI; // radians per second
+    public static final double kMaxSpeedMetersPerSecond = 2;
+    public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26);
@@ -139,12 +139,12 @@ public final class Constants {
   }
   public static final class SpindexConstants
   {
-    public static final int spindexMotorCanId = 11;
+    public static final int spindexMotorCanId = 12;
     public static final double spindexSpeed = .5;
   }
   public static final class CompressorConstants
   {
-    public static final int compressorCanId = 10;
+    public static final int compressorCanId = 13;
   }
   public static final class ClawConstants
   {
@@ -155,16 +155,16 @@ public final class Constants {
   }
   public static final class CollectorConstants
   {
-    public static final int collectMotorLeftCanId = 12;
-    public static final int collectMotorRightCanId = 13;
+    public static final int collectMotorLeftCanId = 14;
+    public static final int collectMotorRightCanId = 15;
     public static final int collectForwardChannel = 4;
     public static final int collectReverseChannel = 5; 
     public static final double collectSpeed = .5;
   }
   public static final class ArmConstants
   {
-    public static final int armMotorLeftCanId = 14;
-    public static final int armMotorRightCanId = 15;
+    public static final int armMotorLeftCanId = 11;
+    public static final int armMotorRightCanId = 10;
 
     public static final double armP = 1;
     public static final double armI = 0;
@@ -173,8 +173,8 @@ public final class Constants {
     public static final double armMinOutput = -1;
     public static final double armMaxOutput = 1;
 
-    public static final double cubeHighAngle = 0.0;
-    public static final double cubeMidAngle = 0.0;
+    public static final double cubeHighAngle = 0.13;
+    public static final double cubeMidAngle = 0.13;
     public static final double cubeLowAngle = 0.0;
     public static final double cubeSpindexAngle = 0.0;
     public static final double coneHighAngle = 0.0;

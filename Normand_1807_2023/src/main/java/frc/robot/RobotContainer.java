@@ -33,10 +33,6 @@ import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.commands.Arm.Spindex;
 import frc.robot.commands.Autos.*;
-import frc.robot.commands.Drive.DriveCmd;
-import frc.robot.commands.Drive.LockCmd;
-import frc.robot.commands.Drive.OrientationCmd;
-import frc.robot.commands.Drive.ZeroGyroCmd;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -62,7 +58,6 @@ public class RobotContainer {
   public static Compress m_Compressor;
   public static Collector m_Collector;
   public static Arm m_Arm;
-  private boolean fieldOriented = false;
   public static boolean cubeMode = false;
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -70,6 +65,7 @@ public class RobotContainer {
 
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
+  boolean fieldOriented = false;
 
   private SendableChooser<AutoInterface> chooser;
   /**
@@ -96,7 +92,16 @@ public class RobotContainer {
 
 
     // Configure default commands
-    m_robotDrive.setDefaultCommand(new DriveCmd(translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)), strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)), MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3)));
+    m_robotDrive.setDefaultCommand(
+      // The left stick controls translation of the robot.
+      // Turning is controlled by the X axis of the right stick.
+      new RunCommand(
+          () -> m_robotDrive.drive(
+              translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
+              strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
+              MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
+              fieldOriented),
+          m_robotDrive));  
   }
 
   /**
@@ -111,11 +116,16 @@ public class RobotContainer {
   private void configureButtonBindings() {
     //drive buttons
     new JoystickButton(m_driverController, XboxController.Button.kRightBumper.value)
-        .whileTrue(new LockCmd());
+        .whileTrue(new RunCommand(
+            () -> m_robotDrive.setX(),
+            m_robotDrive));
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
-        .onTrue(new OrientationCmd());
+        .onTrue(new InstantCommand(
+            () -> fieldOriented = !fieldOriented));
     new JoystickButton(m_driverController, XboxController.Button.kStart.value)
-        .onTrue(new ZeroGyroCmd());
+        .onTrue(new InstantCommand(
+            () -> m_robotDrive.zeroHeading(),
+            m_robotDrive));
 
     //spindexer buttons
     new JoystickButton(m_operatorController, XboxController.Button.kLeftBumper.value)
@@ -153,6 +163,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     Command autoCommand = chooser.getSelected().getAutoCommand();
     // Run path following command, then stop at the end.
-    return autoCommand.andThen(() -> m_robotDrive.drive(0, 0, 0));
+    return autoCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
   }
 }
