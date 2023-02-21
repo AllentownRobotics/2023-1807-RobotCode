@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
@@ -26,12 +28,24 @@ public class Arm extends SubsystemBase {
 
   private SparkMaxPIDController leftArmPIDController;
 
+  double disiredangle;
+
   public Arm() {
     leftArmMotor = new CANSparkMax(ArmConstants.armMotorLeftCanId, MotorType.kBrushless);
     rightArmMotor = new CANSparkMax(ArmConstants.armMotorRightCanId, MotorType.kBrushless);
+    
+    leftArmMotor.restoreFactoryDefaults();
+    rightArmMotor.restoreFactoryDefaults();
+    
+    leftArmMotor.setIdleMode(IdleMode.kBrake);
+    rightArmMotor.setIdleMode(IdleMode.kBrake);
 
     leftEncoder = leftArmMotor.getAbsoluteEncoder(Type.kDutyCycle);
     rightEncoder = rightArmMotor.getAbsoluteEncoder(Type.kDutyCycle);
+
+    leftEncoder.setPositionConversionFactor(360);
+    leftEncoder.setVelocityConversionFactor(leftEncoder.getPositionConversionFactor()/60);
+    leftEncoder.setInverted(false);
 
     leftArmPIDController = leftArmMotor.getPIDController();
 
@@ -43,32 +57,32 @@ public class Arm extends SubsystemBase {
     leftArmPIDController.setFF(ArmConstants.armFF);
     leftArmPIDController.setOutputRange(ArmConstants.armMinOutput,
         ArmConstants.armMaxOutput);
+    leftArmPIDController.setPositionPIDWrappingEnabled(false);
 
-    rightArmMotor.setInverted(true);
-    rightArmMotor.follow(leftArmMotor);
+    leftArmMotor.setInverted(false);
+    rightArmMotor.follow(leftArmMotor, true);
+
+    leftArmMotor.setSmartCurrentLimit(40);
+    rightArmMotor.setSmartCurrentLimit(40);
+
+    leftArmMotor.burnFlash();
+    rightArmMotor.burnFlash();
+
+    disiredangle = 0.0;
   }
 
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Arm Angle",leftEncoder.getPosition());
-    if(rightEncoder.getPosition()!=leftEncoder.getPosition())
-    {
-      SmartDashboard.putString("ArmEncoderReset", "ENCODERS NOT ALIGNED");
-    }
-    else
-    {
-      SmartDashboard.putString("ArmEncoderReset", "Encoders Aligned :)");
-
-    }
-    if(RobotContainer.cubeMode)
-    {
-      SmartDashboard.putString("Mode", "Cube Mode");
-    }
-    else
-    {
-      SmartDashboard.putString("Mode", "Cube Mode");
-    }
+    SmartDashboard.putBoolean("ArmEncodersAligned", rightEncoder.getPosition()==leftEncoder.getPosition());
+    if(RobotContainer.cubeMode){
+      SmartDashboard.putString("Mode", "Cube Mode");}
+    else{
+      SmartDashboard.putString("Mode", "Cube Mode");}
     // This method will be called once per scheduler run
+
+    leftArmPIDController.setReference(disiredangle, ControlType.kPosition);
+    SmartDashboard.putNumber("desiredangle",disiredangle);
   }
 
   @Override
@@ -77,6 +91,6 @@ public class Arm extends SubsystemBase {
   }
   public void set(double angle)
   {
-    leftArmPIDController.setReference(angle, CANSparkMax.ControlType.kPosition);
+    disiredangle = angle;
   }
 }

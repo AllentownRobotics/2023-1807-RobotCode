@@ -163,22 +163,22 @@ public final class Constants {
   }
   public static final class ArmConstants
   {
-    public static final int armMotorLeftCanId = 11;
-    public static final int armMotorRightCanId = 10;
+    public static final int armMotorLeftCanId = 31;
+    public static final int armMotorRightCanId = 32;
 
-    public static final double armP = 1;
-    public static final double armI = 0;
-    public static final double armD = 0;
-    public static final double armFF = 0;
-    public static final double armMinOutput = -1;
-    public static final double armMaxOutput = 1;
+    public static final double armP = .01;
+    public static final double armI = 0.0;
+    public static final double armD = 0.0;
+    public static final double armFF = 0.0;
+    public static final double armMinOutput = -.2;
+    public static final double armMaxOutput = .2;
 
-    public static final double cubeHighAngle = 0.13;
-    public static final double cubeMidAngle = 0.13;
-    public static final double cubeLowAngle = 0.0;
+    public static final double cubeHighAngle = 180;
+    public static final double cubeMidAngle = 90;
+    public static final double cubeLowAngle = 25;
     public static final double cubeSpindexAngle = 0.0;
-    public static final double coneHighAngle = 0.0;
-    public static final double coneMidAngle = 0.0;
+    public static final double coneHighAngle = 180;
+    public static final double coneMidAngle = 90;
     public static final double coneLowAngle = 0.0;
     public static final double coneSpindexAngle = 0.0;
   }
