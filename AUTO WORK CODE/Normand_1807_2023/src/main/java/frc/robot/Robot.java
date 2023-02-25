@@ -7,6 +7,9 @@ package frc.robot;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,7 +28,8 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
-  Trajectory autoTrajectory = null;
+  private String pathString = "pathplanner/generatedJSON/straight.wpilib.json";
+  private Trajectory autoTrajectory = null;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -35,15 +39,7 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-
-    
-    try{
-      Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("pathplanner/generatedJSON/straight.wpilib.json");
-      autoTrajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-    }
-    catch (IOException ex){
-      DriverStation.reportWarning("Could not load ", ex.getStackTrace());
-    }
+    PathPlannerServer.startServer(5811);
   }
 
   /**

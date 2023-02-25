@@ -8,10 +8,13 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.CollectorConstants;
 import frc.robot.Constants.DriveConstants;
@@ -26,7 +29,8 @@ import frc.robot.commands.Arm.High;
 import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.commands.Arm.Spindex;
-import frc.robot.commands.Autos.*;
+import frc.robot.commands.Auto.ExampleAuto;
+import frc.robot.commands.Auto.ExampleAuto2;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,6 +39,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+
+import java.util.List;
 
 /*
  * This class is where the bulk of the robot should be declared.  Since Command-based is a
@@ -50,6 +56,8 @@ public class RobotContainer {
   public static Compress m_Compressor;
   public static Collector m_Collector;
   public static Arm m_Arm;
+  private boolean fieldOriented = false;
+  private boolean speedUp = false;
   public static boolean cubeMode = false;
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -57,9 +65,6 @@ public class RobotContainer {
 
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
-  boolean fieldOriented = false;
-
-  private SendableChooser<Command> chooser;
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -74,26 +79,17 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
 
-    //chooser
-    chooser = new SendableChooser<Command>();
-    chooser.setDefaultOption("Default Auto/Tia Auto", new ExampleAuto());
-    //chooser.addOption("Test", new ExampleAutoOne());
-    //chooser.addOption("Straigt Forward", new ExampleAutoTwo());
-    //chooser.addOption("Test 2", new ExampleAutoThree());
-    Shuffleboard.getTab("Autos").add(chooser);
-
-
     // Configure default commands
     m_robotDrive.setDefaultCommand(
-      // The left stick controls translation of the robot.
-      // Turning is controlled by the X axis of the right stick.
-      new RunCommand(
-          () -> m_robotDrive.drive(
-              translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
-              strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
-              MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
-              fieldOriented),
-          m_robotDrive));  
+        // The left stick controls translation of the robot.
+        // Turning is controlled by the X axis of the right stick.
+        new RunCommand(
+            () -> m_robotDrive.drive(
+                translate.calculate(MathUtil.applyDeadband(-m_driverController.getLeftY(), 0.3)),
+                strafe.calculate(MathUtil.applyDeadband(-m_driverController.getLeftX(), 0.3)),
+                MathUtil.applyDeadband(-m_driverController.getRightX(), 0.3),
+                fieldOriented),
+            m_robotDrive));
   }
 
   /**
@@ -114,6 +110,9 @@ public class RobotContainer {
     new JoystickButton(m_driverController, XboxController.Button.kLeftBumper.value)
         .onTrue(new InstantCommand(
             () -> fieldOriented = !fieldOriented));
+    new JoystickButton(m_driverController, XboxController.Button.kY.value)
+        .onTrue(new InstantCommand(
+            () -> speedUp = !speedUp));
     new JoystickButton(m_driverController, XboxController.Button.kStart.value)
         .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
@@ -153,7 +152,24 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand(Trajectory autoTrajectory) {
-    var thetaController = new ProfiledPIDController(
+    // Create config for trajectory
+    /*TrajectoryConfig config = new TrajectoryConfig(
+        AutoConstants.kMaxSpeedMetersPerSecond,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+        // Add kinematics to ensure max speed is actually obeyed
+        .setKinematics(DriveConstants.kDriveKinematics);
+
+    // An example trajectory to follow. All units in meters.
+    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        new Pose2d(0, 0, new Rotation2d(0)),
+        // Pass through these two interior waypoints, making an 's' curve path
+        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        // End 3 meters straight ahead of where we started, facing forward
+        new Pose2d(3, 0, new Rotation2d(0)),
+        config);*/
+
+    /*var thetaController = new ProfiledPIDController(
         AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -173,8 +189,7 @@ public class RobotContainer {
     m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
-    // Run path following command, then stop at the end.
-    //return chooser.getSelected();
+    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));*/
+    return new ExampleAuto2(m_robotDrive);
   }
 }

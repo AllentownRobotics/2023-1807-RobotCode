@@ -4,56 +4,24 @@
 
 package frc.robot.commands.Autos;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryUtil;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
-import frc.robot.Constants.AutoConstants;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.Arm.High;
+import frc.robot.commands.Arm.Mid;
 
 /** Add your docs here. */
-public class ExampleAuto implements AutoInterface {
-    private String pathString = "pathplanner/generatedJSON/funk.wpilib.json";
-    private Trajectory autoTrajectory = null;
+public class ExampleAuto extends SequentialCommandGroup {
     public ExampleAuto()
     {
-        try{
-            Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(pathString);
-            autoTrajectory = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-          }
-          catch (IOException ex){
-            DriverStation.reportWarning("Could not load " + pathString, ex.getStackTrace());
-          }
-    }
-    public Command getAutoCommand()
-    {
-        var thetaController = new ProfiledPIDController(
-        AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-        thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-        SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-        autoTrajectory,
-        RobotContainer.m_robotDrive::getPose, // Functional interface to feed supplier
-        DriveConstants.kDriveKinematics,
-
-        // Position controllers
-        new PIDController(AutoConstants.kPXController, 0, 0),
-        new PIDController(AutoConstants.kPYController, 0, 0),
-        thetaController,
-        RobotContainer.m_robotDrive::setModuleStates,
-        RobotContainer.m_robotDrive);
-
-        // Reset odometry to the starting pose of the trajectory.
-        RobotContainer.m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
-
-        return swerveControllerCommand;
+      addCommands(
+        /*new High(true),
+        new ParallelDeadlineGroup(
+          new FollowPath("straight", 2, 2),
+          new Mid(true)),
+        new ParallelDeadlineGroup(
+          new FollowPath("straight2"),
+          new High(true))*/
+        new FollowPath2("pathplanner/generatedJSON/straight.wpilib.json").getCommand().andThen(() -> RobotContainer.m_robotDrive.drive(0, 0, 0, false)));
     }
 }
