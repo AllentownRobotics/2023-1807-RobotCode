@@ -2,16 +2,25 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands;
+package frc.robot.commands.Arm.LowLevelCommands;
 
-import frc.robot.RobotContainer;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.subsystems.Arm;
 
-/** An example command that uses an example subsystem. */
-public class ClawCmd extends CommandBase {
-  public ClawCmd() {
+public class ManualSetPointControl extends CommandBase {
+  Arm arm;
+  CommandXboxController controller;
+
+  /** Creates a new ManualSetPointControl. */
+  public ManualSetPointControl(Arm arm, CommandXboxController controller) {
+    addRequirements(arm);
+
+    this.arm = arm;
+    this.controller = controller;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.m_Claw);
   }
 
   // Called when the command is initially scheduled.
@@ -21,7 +30,7 @@ public class ClawCmd extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.m_Claw.toggleClaw();
+    //arm.rotateBy(ArmConstants.ANGLE_MANUAL_INPUT_MODIFIER * MathUtil.applyDeadband(-controller.getLeftY(), 0.3));
   }
 
   // Called once the command ends or is interrupted.

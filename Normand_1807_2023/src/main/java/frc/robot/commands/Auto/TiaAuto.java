@@ -4,11 +4,12 @@
 
 package frc.robot.commands.Auto;
 
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.Arm.High;
-import frc.robot.commands.Arm.Low;
-import frc.robot.commands.Arm.Mid;
+import frc.robot.commands.Arm.ResetArm;
+import frc.robot.commands.Arm.LowLevelCommands.SetArmAngle;
+import frc.robot.commands.Claw.ToggleClaw;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DriveSubsystem;
 
@@ -17,12 +18,13 @@ public class TiaAuto extends SequentialCommandGroup {
     public TiaAuto(DriveSubsystem driveSubsystem, Arm armSubsystem)
     {
       addCommands(
-        new High(true, armSubsystem),
+        new SetArmAngle(armSubsystem, 180),
         new ResetOdometrytoTrajectory("tia", driveSubsystem),
         new ParallelDeadlineGroup(
           new FollowPath("tia", driveSubsystem).getCommand(),
-          new Low(true, armSubsystem)),
+          new ResetArm(armSubsystem)),
         new ResetOdometrytoTrajectory("tia2", driveSubsystem),
-        new FollowPath("tia2", driveSubsystem).getCommand());
+        new FollowPath("tia2", driveSubsystem).getCommand(),
+        new AutoLevel(driveSubsystem));
     }
 }

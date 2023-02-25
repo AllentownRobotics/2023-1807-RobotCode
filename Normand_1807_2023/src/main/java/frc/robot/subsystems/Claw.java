@@ -4,47 +4,59 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.CompressorConfigType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.*;
+import frc.robot.Constants.ClawConstants;
+import frc.robot.Constants.CompressorConstants;
 
 public class Claw extends SubsystemBase {
-  private DoubleSolenoid clawSolenoid;
-  private DoubleSolenoid wristSolenoid;
 
-  /** Creates a new ExampleSubsystem. */
+  DoubleSolenoid wristPiston = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, 
+    ClawConstants.wristForwardChannel, ClawConstants.wristReverseChannel);
+  DoubleSolenoid clawPiston = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, 
+    ClawConstants.clawForwardChannel, ClawConstants.clawReverseChannel);
+  
+  boolean wristOut = false;
+  boolean holding = false;
+
   public Claw() {
-    clawSolenoid = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, ClawConstants.clawForwardChannel, ClawConstants.clawReverseChannel);
-    wristSolenoid = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, ClawConstants.wristForwardChannel, ClawConstants.wristReverseChannel);
-
   }
 
-  /**
-   * An example method querying a boolean state of the subsystem (for example, a digital sensor).
-   *
-   * @return value of some boolean subsystem state, such as a digital sensor.
-   */
-  public boolean exampleCondition() {
-    // Query some boolean state, such as a digital sensor.
-    return false;
+  public boolean getHolding(){
+    return holding;
   }
 
+  public boolean getWristStraight(){
+    return wristOut;
+  }
+
+  public void setHolding(boolean hold){
+    holding = hold;
+  }
+
+  public void setWristOut(boolean wristStraight){
+    wristOut = wristStraight;
+  }
+
+  public void toggleHold(){
+    holding = !holding;
+  }
+
+  public void toggleWrist(){
+    wristOut = !wristOut;
+  }
+
+  // Handles setting piston position
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-  }
+    SmartDashboard.putBoolean("holding", holding);
+    SmartDashboard.putBoolean("wrist out", wristOut);
 
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-  }
-  public void toggleClaw()
-  {
-    clawSolenoid.toggle();
-  }
-  public void toggleWrist()
-  {
-    wristSolenoid.toggle();
+    wristPiston.set(wristOut ? Value.kReverse : Value.kForward);
+    clawPiston.set(holding ? Value.kForward : Value.kReverse);
   }
 }

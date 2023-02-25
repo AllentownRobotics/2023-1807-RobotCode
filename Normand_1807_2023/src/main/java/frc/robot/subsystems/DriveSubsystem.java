@@ -177,6 +177,17 @@ public class DriveSubsystem extends SubsystemBase {
     return m_gyro.getRotation2d().getDegrees();
   }
 
+  public double getRoll() {
+    return m_gyro.getRoll();
+  }
+
+  public void levelSet(double speed) {
+    m_frontLeft.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    m_frontRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    m_rearLeft.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    m_rearRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+  }
+  
   /**
    * Returns the turn rate of the robot.
    *

@@ -148,10 +148,10 @@ public final class Constants {
   }
   public static final class ClawConstants
   {
-    public static final int clawForwardChannel = 4;
-    public static final int clawReverseChannel = 1;
-    public static final int wristForwardChannel = 0;
-    public static final int wristReverseChannel = 3;
+    public static final int clawForwardChannel = 1;
+    public static final int clawReverseChannel = 4;
+    public static final int wristForwardChannel = 3;
+    public static final int wristReverseChannel = 0;
   }
   public static final class CollectorConstants
   {

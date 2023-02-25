@@ -17,15 +17,9 @@ import frc.robot.Constants.CollectorConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.Constants.SpindexConstants;
-import frc.robot.commands.ClawCmd;
 import frc.robot.commands.CollectCmd;
 import frc.robot.commands.CompressCmd;
 import frc.robot.commands.SpindexerCmd;
-import frc.robot.commands.WristCmd;
-import frc.robot.commands.Arm.High;
-import frc.robot.commands.Arm.Low;
-import frc.robot.commands.Arm.Mid;
-import frc.robot.commands.Arm.Spindex;
 import frc.robot.commands.Auto.*;
 import frc.robot.commands.Drive.TranslateToTag;
 import frc.robot.commands.Drive.TurnToTag;
@@ -71,7 +65,7 @@ public class RobotContainer {
     m_Claw = new Claw();
     m_Compressor = new Compress();
     m_Collector = new Collector();
-    m_Arm = new Arm();
+    m_Arm = new Arm(m_Claw);
     m_vision = new Vision();
 
     m_Compressor.setDefaultCommand(new CompressCmd());
@@ -131,10 +125,10 @@ public class RobotContainer {
     .whileTrue(new SpindexerCmd(-SpindexConstants.spindexSpeed));
 
     //claw buttons
-    new JoystickButton(m_operatorController, XboxController.Button.kA.value)
+    /*new JoystickButton(m_operatorController, XboxController.Button.kA.value)
     .onTrue(new ClawCmd());
     new JoystickButton(m_operatorController, XboxController.Button.kB.value)
-    .onTrue(new WristCmd());
+    .onTrue(new WristCmd());*/
 
     //collector buttons
     new JoystickButton(m_operatorController, XboxController.Button.kY.value)
@@ -143,13 +137,13 @@ public class RobotContainer {
     .whileTrue(new CollectCmd(-CollectorConstants.collectSpeed));
 
     //arm buttons
-    new POVButton(m_operatorController, 0).onTrue(new High(cubeMode, m_Arm));
+    /*new POVButton(m_operatorController, 0).onTrue(new High(cubeMode, m_Arm));
     new POVButton(m_operatorController, 90).onTrue(new Mid(cubeMode, m_Arm));
     new POVButton(m_operatorController, 270).onTrue(new Low(cubeMode, m_Arm));
     new POVButton(m_operatorController, 180).onTrue(new Spindex(cubeMode));
     new JoystickButton(m_operatorController, XboxController.Button.kStart.value)
         .onTrue(new InstantCommand(
-            () -> cubeMode = !cubeMode));
+            () -> cubeMode = !cubeMode));*/
   }
 
   /**

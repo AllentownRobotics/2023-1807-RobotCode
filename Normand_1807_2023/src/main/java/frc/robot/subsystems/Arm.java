@@ -14,88 +14,137 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
-import frc.robot.Constants.*;
-
+import frc.robot.Constants.ArmConstants;
+//import frc.robot.Constants.ClawConstants;
 
 public class Arm extends SubsystemBase {
-  /** Creates a new ExampleSubsystem. */
-  private CANSparkMax leftArmMotor;
-  private CANSparkMax rightArmMotor;
+  CANSparkMax leftMotor = new CANSparkMax(ArmConstants.armMotorLeftCanId, MotorType.kBrushless);
 
-  private AbsoluteEncoder leftEncoder;
-  private AbsoluteEncoder rightEncoder;
+  CANSparkMax rightMotor = new CANSparkMax(ArmConstants.armMotorRightCanId, MotorType.kBrushless);
 
-  private SparkMaxPIDController leftArmPIDController;
+  AbsoluteEncoder encoder;
 
-  double disiredangle;
+  SparkMaxPIDController pidController;
 
-  public Arm() {
-    leftArmMotor = new CANSparkMax(ArmConstants.armMotorLeftCanId, MotorType.kBrushless);
-    rightArmMotor = new CANSparkMax(ArmConstants.armMotorRightCanId, MotorType.kBrushless);
+  double desiredAngle;
+
+  boolean placeCone;
+
+  Claw claw;
+
+  public Arm(Claw claw) {
+    leftMotor.restoreFactoryDefaults();
+    rightMotor.restoreFactoryDefaults();
+
+    // Determine which encoder to use
+    encoder = leftMotor.getAbsoluteEncoder(Type.kDutyCycle); 
+    // If using right encoder set inversion false, if not set true
+    encoder.setInverted(false);
+    // Set conversion factor to output in degrees and degrees/sec
+    encoder.setPositionConversionFactor(360.0);
+    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor() / 60.0);
     
-    leftArmMotor.restoreFactoryDefaults();
-    rightArmMotor.restoreFactoryDefaults();
-    
-    leftArmMotor.setIdleMode(IdleMode.kBrake);
-    rightArmMotor.setIdleMode(IdleMode.kBrake);
+    pidController = leftMotor.getPIDController();
+    pidController.setFeedbackDevice(encoder);
 
-    leftEncoder = leftArmMotor.getAbsoluteEncoder(Type.kDutyCycle);
-    rightEncoder = rightArmMotor.getAbsoluteEncoder(Type.kDutyCycle);
+    // Set PID values from SysID
+    pidController.setP(ArmConstants.armP);
+    pidController.setI(ArmConstants.armI);
+    pidController.setD(ArmConstants.armD);
+    pidController.setFF(ArmConstants.armFF);
+    pidController.setOutputRange(-0.25,0.25);
+    pidController.setPositionPIDWrappingEnabled(false);
 
-    leftEncoder.setPositionConversionFactor(360);
-    leftEncoder.setVelocityConversionFactor(leftEncoder.getPositionConversionFactor()/60);
-    leftEncoder.setInverted(false);
+    leftMotor.setInverted(false);
 
-    leftArmPIDController = leftArmMotor.getPIDController();
+    // Have all motors follor master
+    rightMotor.follow(leftMotor, true);
 
-    leftArmPIDController.setFeedbackDevice(leftEncoder);
+    // Set all motors to brake
+    leftMotor.setIdleMode(IdleMode.kBrake);
+    rightMotor.setIdleMode(IdleMode.kBrake);
 
-    leftArmPIDController.setP(ArmConstants.armP);
-    leftArmPIDController.setI(ArmConstants.armI);
-    leftArmPIDController.setD(ArmConstants.armD);
-    leftArmPIDController.setFF(ArmConstants.armFF);
-    leftArmPIDController.setOutputRange(ArmConstants.armMinOutput,
-        ArmConstants.armMaxOutput);
-    leftArmPIDController.setPositionPIDWrappingEnabled(false);
+    leftMotor.setSmartCurrentLimit(40);
+    rightMotor.setSmartCurrentLimit(40);
 
-    leftArmMotor.setInverted(false);
-    rightArmMotor.follow(leftArmMotor, true);
+    leftMotor.burnFlash();
+    rightMotor.burnFlash();
 
-    leftArmMotor.setSmartCurrentLimit(40);
-    rightArmMotor.setSmartCurrentLimit(40);
+    this.claw = claw;
 
-    leftArmMotor.burnFlash();
-    rightArmMotor.burnFlash();
-
-    disiredangle = 0.0;
+    desiredAngle = 0.0;
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Angle",leftEncoder.getPosition());
-    SmartDashboard.putBoolean("ArmEncodersAligned", rightEncoder.getPosition()==leftEncoder.getPosition());
-    if(RobotContainer.cubeMode){
-      SmartDashboard.putString("Mode", "Cube Mode");}
-    else{
-      SmartDashboard.putString("Mode", "Cube Mode");}
-    // This method will be called once per scheduler run
+    pidController.setReference(desiredAngle, ControlType.kPosition);
 
-    leftArmPIDController.setReference(disiredangle, ControlType.kPosition);
-    SmartDashboard.putNumber("desiredangle",disiredangle);
+    SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
+    SmartDashboard.putNumber("Set Point", desiredAngle);
+
+    /*if (encoder.getPosition() < ClawConstants.ANGLE_WRIST_FLIPPOINT){
+      claw.setWristOut(false);
+    }*/
   }
 
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
+  public double getAngle(){
+    return encoder.getPosition();
   }
-  public void set(double angle)
+
+  public double getDesiredAngle(){
+    return desiredAngle;
+  }
+
+  public void setDesiredAngle(double angle) {
+    desiredAngle = angle;
+  }
+
+  public void rotateBy(double degrees){
+    desiredAngle += degrees;
+  }
+
+  public void toggleWrist(){
+    claw.toggleWrist();
+  }
+
+  public boolean getConePlace(){
+    return placeCone;
+  }
+
+  public void toggleConePlacing(){
+    placeCone = !placeCone;
+  }
+
+  public void setConePlacing(boolean conePlacing){
+    placeCone = conePlacing;
+  }
+
+  public boolean getNOTHolding(){
+    return !claw.holding;
+  }
+
+  public boolean atSetPoint(){
+    double error = Math.abs(encoder.getPosition() - desiredAngle); 
+    if (error <= 7){
+      return true;
+    }
+    return false;
+  }
+
+  public boolean atReset(){
+    if (encoder.getPosition() <= 11.5){
+      desiredAngle = 0.0;
+      //claw.setWristOut(false);
+      return true;
+    }
+    return false;
+  }
+
+  public void setHolding(boolean bool)
   {
-    disiredangle = angle;
+    claw.setHolding(bool);
   }
-
-  public double getDifference()
-  {
-    return Math.abs(leftEncoder.getPosition()-disiredangle);
+  public void runAtSpeed(double percentSpeed){
+    leftMotor.set(percentSpeed);
   }
 }
