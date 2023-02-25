@@ -175,11 +175,11 @@ public final class Constants {
 
     public static final double cubeHighAngle = 180;
     public static final double cubeMidAngle = 90;
-    public static final double cubeLowAngle = 25;
+    public static final double cubeLowAngle = 30;
     public static final double cubeSpindexAngle = 0.0;
     public static final double coneHighAngle = 180;
     public static final double coneMidAngle = 90;
-    public static final double coneLowAngle = 25;
+    public static final double coneLowAngle = 30;
     public static final double coneSpindexAngle = 0.0;
   }
 }

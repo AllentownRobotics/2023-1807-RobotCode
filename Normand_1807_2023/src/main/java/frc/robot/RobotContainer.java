@@ -139,7 +139,7 @@ public class RobotContainer {
     //arm buttons
     new POVButton(m_operatorController, 0).onTrue(new High(cubeMode, m_Arm));
     new POVButton(m_operatorController, 90).onTrue(new Mid(cubeMode, m_Arm));
-    new POVButton(m_operatorController, 270).onTrue(new Low(cubeMode));
+    new POVButton(m_operatorController, 270).onTrue(new Low(cubeMode, m_Arm));
     new POVButton(m_operatorController, 180).onTrue(new Spindex(cubeMode));
     new JoystickButton(m_operatorController, XboxController.Button.kStart.value)
         .onTrue(new InstantCommand(

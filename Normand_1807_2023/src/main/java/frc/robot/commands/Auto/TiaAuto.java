@@ -7,6 +7,7 @@ package frc.robot.commands.Auto;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.Arm.High;
+import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DriveSubsystem;
@@ -20,7 +21,7 @@ public class TiaAuto extends SequentialCommandGroup {
         new ResetOdometrytoTrajectory("tia", driveSubsystem),
         new ParallelDeadlineGroup(
           new FollowPath("tia", driveSubsystem).getCommand(),
-          new Mid(true, armSubsystem)),
+          new Low(true, armSubsystem)),
         new ResetOdometrytoTrajectory("tia2", driveSubsystem),
         new FollowPath("tia2", driveSubsystem).getCommand());
     }

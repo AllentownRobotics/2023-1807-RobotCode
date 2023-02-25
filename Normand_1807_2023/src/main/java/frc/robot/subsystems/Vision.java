@@ -15,17 +15,24 @@ public class Vision extends SubsystemBase{
   NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
   NetworkTableEntry tx = table.getEntry("tx");
   NetworkTableEntry ty = table.getEntry("ty");
+  NetworkTableEntry ta = table.getEntry("ta");
   double x;
   double y;
+  double area;
   double[] dis;
+  double distance;
+  double distancex;
 
   @Override
   public void periodic() {
       x = tx.getDouble(0.0);
       y = ty.getDouble(0.0);
-      dis = NetworkTableInstance.getDefault().getTable("limelight").getEntry("<targetpose_cameraspace>").getDoubleArray(new double[1]);
-
-      SmartDashboard.putNumberArray("Distance", dis);
+      area = ta.getDouble(0.0);
+      dis = NetworkTableInstance.getDefault().getTable("limelight").getEntry("botpose").getDoubleArray(new double[6]);
+      distance = dis[1];
+      distancex = dis[0];
+      SmartDashboard.putNumberArray("Distance array", dis);
+      SmartDashboard.putNumber("distance", distance);
       SmartDashboard.putNumber("LimelightX", x);
       SmartDashboard.putNumber("LimelightY", y);
   }
@@ -40,4 +47,13 @@ public class Vision extends SubsystemBase{
       return y;     
   }
 
+  public double getDistance()
+  {
+    return distance;
+  }
+
+  public double getDistanceX()
+  {
+    return distancex;
+  }
 }

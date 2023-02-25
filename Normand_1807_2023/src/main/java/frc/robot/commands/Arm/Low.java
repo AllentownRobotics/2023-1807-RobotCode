@@ -6,15 +6,18 @@ package frc.robot.commands.Arm;
 
 import frc.robot.RobotContainer;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.subsystems.Arm;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /** An example command that uses an example subsystem. */
 public class Low extends CommandBase {
   boolean cubeMode;
-  public Low(boolean mode) {
+  Arm armSubsystem;
+  public Low(boolean mode, Arm subsystem) {
     cubeMode = mode;
+    armSubsystem = subsystem;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.m_Arm);
+    addRequirements(armSubsystem);
   }
 
   // Called when the command is initially scheduled.
@@ -41,6 +44,6 @@ public class Low extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return armSubsystem.getDifference()<10;
   }
 }
