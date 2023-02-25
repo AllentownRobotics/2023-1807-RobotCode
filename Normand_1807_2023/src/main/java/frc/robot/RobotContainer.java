@@ -27,6 +27,8 @@ import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.commands.Arm.Spindex;
 import frc.robot.commands.Auto.*;
+import frc.robot.commands.Drive.TranslateToTag;
+import frc.robot.commands.Drive.TurnToTag;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -50,6 +52,7 @@ public class RobotContainer {
   public static Compress m_Compressor;
   public static Collector m_Collector;
   public static Arm m_Arm;
+  public static Vision m_vision;
   public static boolean cubeMode = false;
   // The driver's controller
   XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
@@ -69,6 +72,7 @@ public class RobotContainer {
     m_Compressor = new Compress();
     m_Collector = new Collector();
     m_Arm = new Arm();
+    m_vision = new Vision();
 
     m_Compressor.setDefaultCommand(new CompressCmd());
     // Configure the button bindings
@@ -117,6 +121,8 @@ public class RobotContainer {
         .onTrue(new InstantCommand(
             () -> m_robotDrive.zeroHeading(),
             m_robotDrive));
+    new JoystickButton(m_driverController, XboxController.Button.kA.value).whileTrue(new TurnToTag(m_vision, m_robotDrive));
+    new JoystickButton(m_driverController, XboxController.Button.kB.value).whileTrue(new TranslateToTag(m_vision, m_robotDrive));
 
     //spindexer buttons
     new JoystickButton(m_operatorController, XboxController.Button.kLeftBumper.value)
