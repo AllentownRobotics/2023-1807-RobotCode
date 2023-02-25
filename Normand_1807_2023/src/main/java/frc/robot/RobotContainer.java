@@ -26,7 +26,7 @@ import frc.robot.commands.Arm.High;
 import frc.robot.commands.Arm.Low;
 import frc.robot.commands.Arm.Mid;
 import frc.robot.commands.Arm.Spindex;
-import frc.robot.commands.Autos.*;
+import frc.robot.commands.Auto.*;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -76,10 +76,9 @@ public class RobotContainer {
 
     //chooser
     chooser = new SendableChooser<Command>();
-    chooser.setDefaultOption("Default Auto/Tia Auto", new ExampleAuto());
-    //chooser.addOption("Test", new ExampleAutoOne());
-    //chooser.addOption("Straigt Forward", new ExampleAutoTwo());
-    //chooser.addOption("Test 2", new ExampleAutoThree());
+    chooser.setDefaultOption("Default Auto", new ExampleAuto(m_robotDrive, m_Arm));
+    chooser.addOption("Test", new ExampleAuto2(m_robotDrive));
+    chooser.addOption("tia", new TiaAuto(m_robotDrive, m_Arm));
     Shuffleboard.getTab("Autos").add(chooser);
 
 
@@ -138,8 +137,8 @@ public class RobotContainer {
     .whileTrue(new CollectCmd(-CollectorConstants.collectSpeed));
 
     //arm buttons
-    new POVButton(m_operatorController, 0).onTrue(new High(cubeMode));
-    new POVButton(m_operatorController, 90).onTrue(new Mid(cubeMode));
+    new POVButton(m_operatorController, 0).onTrue(new High(cubeMode, m_Arm));
+    new POVButton(m_operatorController, 90).onTrue(new Mid(cubeMode, m_Arm));
     new POVButton(m_operatorController, 270).onTrue(new Low(cubeMode));
     new POVButton(m_operatorController, 180).onTrue(new Spindex(cubeMode));
     new JoystickButton(m_operatorController, XboxController.Button.kStart.value)
@@ -152,29 +151,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand(Trajectory autoTrajectory) {
-    var thetaController = new ProfiledPIDController(
-        AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-        autoTrajectory,
-        m_robotDrive::getPose, // Functional interface to feed supplier
-        DriveConstants.kDriveKinematics,
-
-        // Position controllers
-        new PIDController(AutoConstants.kPXController, 0, 0),
-        new PIDController(AutoConstants.kPYController, 0, 0),
-        thetaController,
-        m_robotDrive::setModuleStates,
-        m_robotDrive);
-
-    // Reset odometry to the starting pose of the trajectory.
-    m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
-
-    // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
-    // Run path following command, then stop at the end.
-    //return chooser.getSelected();
+  public Command getAutonomousCommand() {
+    return chooser.getSelected();
   }
 }

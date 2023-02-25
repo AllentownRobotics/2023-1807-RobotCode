@@ -93,4 +93,9 @@ public class Arm extends SubsystemBase {
   {
     disiredangle = angle;
   }
+
+  public double getDifference()
+  {
+    return Math.abs(leftEncoder.getPosition()-disiredangle);
+  }
 }
