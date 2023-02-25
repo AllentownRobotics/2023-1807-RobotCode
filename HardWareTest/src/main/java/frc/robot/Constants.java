@@ -39,7 +39,7 @@ public final class Constants {
 
     public static final int RIGHT_MOTOR_ID = 32;
 
-    public static final double PID_kP = 0.15;
+    public static final double PID_kP = 0.12;
     public static final double PID_kI = 0.0;
     public static final double PID_kD = 0.0;
     public static final double PID_kFF = 0.0;

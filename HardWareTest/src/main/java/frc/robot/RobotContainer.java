@@ -6,9 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Arm.ManualSetPointControl;
+import frc.robot.commands.Arm.Place;
 import frc.robot.commands.Arm.ResetArm;
-import frc.robot.commands.Arm.RotateArmToSetPoint;
+import frc.robot.commands.Arm.LowLevelCommands.ManualSetPointControl;
+import frc.robot.commands.Arm.LowLevelCommands.SetArmAngle;
+import frc.robot.commands.Arm.LowLevelCommands.SetCubeOrCone;
 import frc.robot.commands.Claw.ToggleClaw;
 import frc.robot.commands.Claw.ToggleWrist;
 import frc.robot.commands.Collector.Collect;
@@ -20,6 +22,7 @@ import frc.robot.subsystems.Cmprsr;
 import frc.robot.subsystems.Collector;
 import frc.robot.subsystems.Spindexer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -63,18 +66,22 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    SetCubeOrCone commonCommand = new SetCubeOrCone(arm, operatorController);
+
     // HIGH PLACEMENT
-    operatorController.povUp().onTrue(new RotateArmToSetPoint(arm, operatorController, 
-                                          ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH));
+    operatorController.povUp().onTrue(new Place(Commands.waitUntil(arm::getNOTHolding), 
+                                                new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH), 
+                                                commonCommand));
     
     // MID PLACEMENT
-    operatorController.povLeft().onTrue(new RotateArmToSetPoint(arm, operatorController, 
-                                          ArmConstants.ANGLE_CONE_MID, ArmConstants.ANGLE_CUBE_MID));
+    operatorController.povLeft().onTrue(new Place(Commands.waitUntil(arm::getNOTHolding), 
+                                                new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID, ArmConstants.ANGLE_CUBE_MID),
+                                                commonCommand));
 
     // ARM RESET
     operatorController.povDown().onTrue(new ResetArm(this));
 
-    operatorController.povRight().onTrue(new RotateArmToSetPoint(arm, 275.0));
+    operatorController.povRight().onTrue(new SetArmAngle(arm, 275.0));
 
 
 

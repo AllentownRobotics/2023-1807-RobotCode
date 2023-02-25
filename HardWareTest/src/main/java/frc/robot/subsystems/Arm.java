@@ -15,7 +15,7 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.ClawConstants;
+//import frc.robot.Constants.ClawConstants;
 
 public class Arm extends SubsystemBase {
   CANSparkMax leftMotor = new CANSparkMax(ArmConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
@@ -27,6 +27,8 @@ public class Arm extends SubsystemBase {
   SparkMaxPIDController pidController;
 
   double desiredAngle;
+
+  boolean placeCone;
 
   Claw claw;
 
@@ -82,14 +84,7 @@ public class Arm extends SubsystemBase {
 
     /*if (encoder.getPosition() < ClawConstants.ANGLE_WRIST_FLIPPOINT){
       claw.setWristOut(false);
-    }
-    else{
-      claw.setWristOut(true);
     }*/
-  }
-
-  public void BRAKE(){
-    leftMotor.set(0);
   }
 
   public double getAngle(){
@@ -106,11 +101,46 @@ public class Arm extends SubsystemBase {
 
   public void rotateBy(double degrees){
     desiredAngle += degrees;
-
-    //desiredAngle += degrees;
   }
 
   public void toggleWrist(){
     claw.toggleWrist();
+  }
+
+  public boolean getConePlace(){
+    return placeCone;
+  }
+
+  public void toggleConePlacing(){
+    placeCone = !placeCone;
+  }
+
+  public void setConePlacing(boolean conePlacing){
+    placeCone = conePlacing;
+  }
+
+  public boolean getNOTHolding(){
+    return !claw.holding;
+  }
+
+  public boolean atSetPoint(){
+    double error = Math.abs(encoder.getPosition() - desiredAngle); 
+    if (error <= 3.5){
+      return true;
+    }
+    return false;
+  }
+
+  public boolean atReset(){
+    if (encoder.getPosition() <= 11.5){
+      desiredAngle = 0.0;
+      //claw.setWristOut(false);
+      return true;
+    }
+    return false;
+  }
+
+  public void runAtSpeed(double percentSpeed){
+    leftMotor.set(percentSpeed);
   }
 }

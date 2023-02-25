@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClawConstants;
 
@@ -50,6 +51,9 @@ public class Claw extends SubsystemBase {
   // Handles setting piston position
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("holding", holding);
+    SmartDashboard.putBoolean("wrist out", wristOut);
+
     wristPiston.set(wristOut ? Value.kReverse : Value.kForward);
     clawPiston.set(holding ? Value.kForward : Value.kReverse);
   }

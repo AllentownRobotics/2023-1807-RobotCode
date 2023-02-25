@@ -4,9 +4,11 @@
 
 package frc.robot.commands.Arm;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
+import frc.robot.commands.Arm.LowLevelCommands.SetArmAngle;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -14,13 +16,13 @@ import frc.robot.RobotContainer;
 public class ResetArm extends SequentialCommandGroup {
   /** Creates a new ResetArm. */
   public ResetArm(RobotContainer rc) {
-    RotateArmToSetPoint resetCheckPoint = new RotateArmToSetPoint(
+    SetArmAngle resetCheckPoint = new SetArmAngle(
       rc.arm, 35.0);
-    WaitCommand timer = new WaitCommand(0.75);
-    RotateArmToSetPoint finalReset = new RotateArmToSetPoint(rc.arm, 11.0);
+    Command waitForArm = Commands.waitUntil(rc.arm::atSetPoint);
+    Command finalLower = Commands.run(() -> rc.arm.runAtSpeed(-0.05), rc.arm).until(rc.arm::atReset);
 
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(resetCheckPoint, timer, finalReset);
+    addCommands(resetCheckPoint, waitForArm, finalLower);
   }
 }
