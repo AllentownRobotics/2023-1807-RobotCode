@@ -20,7 +20,7 @@ import frc.robot.Constants.SpindexConstants;
 import frc.robot.commands.CollectCmd;
 import frc.robot.commands.CompressCmd;
 import frc.robot.commands.SpindexerCmd;
-import frc.robot.commands.Auto.*;
+import frc.robot.commands.Auto.Autos.*;
 import frc.robot.commands.Drive.TranslateToTag;
 import frc.robot.commands.Drive.TurnToTag;
 import frc.robot.subsystems.*;
@@ -74,9 +74,8 @@ public class RobotContainer {
 
     //chooser
     chooser = new SendableChooser<Command>();
-    chooser.setDefaultOption("Default Auto", new ExampleAuto(m_robotDrive, m_Arm));
-    chooser.addOption("Test", new ExampleAuto2(m_robotDrive));
-    chooser.addOption("tia", new TiaAuto(m_robotDrive, m_Arm));
+    chooser.setDefaultOption("Default Auto", new ConeHighEngage(m_robotDrive, m_Arm, m_Claw, this));
+    chooser.addOption("Mid Auto", new ConeHighLeaveEngage(m_robotDrive, m_Arm, m_Claw, this));
     Shuffleboard.getTab("Autos").add(chooser);
 
 

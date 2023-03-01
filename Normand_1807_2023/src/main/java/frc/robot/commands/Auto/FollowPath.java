@@ -17,9 +17,9 @@ import frc.robot.subsystems.DriveSubsystem;
 public class FollowPath {
     PathPlannerTrajectory autoTrajectory = null;
     DriveSubsystem m_robotDrive;
-    public FollowPath(String path, DriveSubsystem driveSubsystem)
+    public FollowPath(String path, double maxvel, double maxaccel, DriveSubsystem driveSubsystem)
     {
-        autoTrajectory = PathPlanner.loadPath(path, AutoConstants.kMaxSpeedMetersPerSecond, AutoConstants.kMaxAccelerationMetersPerSecondSquared);
+        autoTrajectory = PathPlanner.loadPath(path, maxvel, maxaccel);
         m_robotDrive = driveSubsystem;
     }
 

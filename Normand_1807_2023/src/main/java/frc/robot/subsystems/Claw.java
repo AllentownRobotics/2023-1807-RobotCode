@@ -4,14 +4,14 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.CompressorConfigType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClawConstants;
 import frc.robot.Constants.CompressorConstants;
+import frc.robot.Enums.ClawState;
+import frc.robot.Enums.WristState;
 
 public class Claw extends SubsystemBase {
 
@@ -20,43 +20,69 @@ public class Claw extends SubsystemBase {
   DoubleSolenoid clawPiston = new DoubleSolenoid(CompressorConstants.compressorCanId, PneumaticsModuleType.REVPH, 
     ClawConstants.clawForwardChannel, ClawConstants.clawReverseChannel);
   
-  boolean wristOut = false;
-  boolean holding = false;
+  WristState wristState = WristState.WristOut;
+  ClawState clawState = ClawState.Closed;
 
   public Claw() {
   }
 
-  public boolean getHolding(){
-    return holding;
+  /**
+   * Gets the current state of the claw
+   * @return The state of the claw
+   */
+  public ClawState getClawState(){
+    return clawState;
   }
 
-  public boolean getWristStraight(){
-    return wristOut;
+  /**
+   * Gets the current state of the wrist
+   * @return The state of the wrist
+   */
+  public WristState getWristState(){
+    return wristState;
   }
 
-  public void setHolding(boolean hold){
-    holding = hold;
+  /**
+   * Sets the claw state
+   * @param state State for the claw to be changed to
+   */
+  public void setClawState(ClawState state){
+    clawState = state;
   }
 
-  public void setWristOut(boolean wristStraight){
-    wristOut = wristStraight;
+  /**
+   * Sets the wrist state
+   * @param state State for the wrist to be changed to
+   */
+  public void setWristState(WristState state){
+    wristState = state;
   }
 
-  public void toggleHold(){
-    holding = !holding;
+  /**
+   * Toggles the current state of the claw
+   */
+  public void toggleClawState(){
+    if (clawState.equals(ClawState.Open)){
+      clawState = ClawState.Closed;
+      return;
+    }
+    clawState = ClawState.Open;
+  }
+  
+  /**
+   * Toggles the current state of the wrist
+   */
+  public void toggleWristState(){
+    if (wristState.equals(WristState.WristOut)){
+      wristState = WristState.WristDown;
+      return;
+    }
+    wristState = WristState.WristOut;
   }
 
-  public void toggleWrist(){
-    wristOut = !wristOut;
-  }
-
-  // Handles setting piston position
   @Override
   public void periodic() {
-    SmartDashboard.putBoolean("holding", holding);
-    SmartDashboard.putBoolean("wrist out", wristOut);
-
-    wristPiston.set(wristOut ? Value.kReverse : Value.kForward);
-    clawPiston.set(holding ? Value.kForward : Value.kReverse);
+    wristPiston.set(wristState.equals(WristState.WristOut) ? Value.kReverse : Value.kForward);
+    clawPiston.set(clawState.equals(ClawState.Closed) ? Value.kForward : Value.kReverse);
   }
 }
