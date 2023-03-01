@@ -19,6 +19,6 @@ public class ArmSubStationInTake extends ParallelCommandGroup {
    */
   public ArmSubStationInTake(RobotContainer rc) {
     addCommands(new SetWristToStandBy(rc.claw),
-                new SetArmAngle(rc.arm, 45.0));
+                new SetArmAngle(rc.arm, 35.0));
   }
 }

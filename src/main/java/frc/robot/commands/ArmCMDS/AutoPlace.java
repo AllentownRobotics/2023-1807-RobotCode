@@ -6,19 +6,34 @@ package frc.robot.commands.ArmCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.WristState;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Claw;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoPlace extends SequentialCommandGroup {
-  /** Creates a new PickUpFromGround. 
-   * @return */
-  public PickUpFromGround(RobotContainer rc) {
-}
+   /**
+   * Sequential command group which moved the arm to the desired angle then places the currently held game piece.
+   * NOTE: this commands does not reset the arm to its reset position
+   * To achieve this call {@link frc.robot.commands.Arm.ResetArm} after this command
+   * Ends 0.1 seconds (100 ms) after the game piece is placed
+   * @param arm Arm subsystem
+   * @param claw Claw subsystem
+   * @param angle Angle for the arm to place at
+   */
+  public AutoPlace(Arm arm, Claw claw, double angle) {
+    addCommands(new SetArmAngle(arm, angle), 
+                Commands.waitUntil(arm::atSetPoint),
+                new WaitCommand(0.25),
+                new SetClawState(claw, ClawState.Open),
+                new WaitCommand(0.1));
+  }
 }

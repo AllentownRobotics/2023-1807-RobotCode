@@ -40,7 +40,7 @@ import frc.robot.subsystems.DriveTrain;
         new PIDController(AutoContsants.PY_CONTROLLER, 0, 0),
         thetaController,
        drive::setModuleStates,
-        drive);
+    drive);
 
     // Reset odometry to the starting pose of the trajectory.
     //m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());

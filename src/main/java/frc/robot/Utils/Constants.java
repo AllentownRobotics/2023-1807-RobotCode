@@ -29,7 +29,7 @@ public final class Constants {
 }
 public static class GlobalConstants{
   //Pneumatics
-  public static final int PNEUMATICS_ID = 14;
+public static final int PNEUMATICS_ID = 14;
   
   //Gyro ID
 public static final int PIGEON_ID = 9;
@@ -145,11 +145,10 @@ public static class AutoContsants{
 }
 
 public static class ArmConstants{
-  
   public static final boolean USE_LEFT_ENCODER = true;
 
   public static final double ANGLE_OFFSET_FROM_ZERO = 9.5;
-  public static final double ANGLE_OFFSET_FROM_VERTICAL_DEGREES = 57.442 + ANGLE_OFFSET_FROM_ZERO;
+  public static final double ANGLE_OFFSET_FROM_VERTICAL_DEGREES = 57.442;
   public static final double HEIGHT_OFFSET_FROM_GROUND_INCHES = 35.219;
   public static final double ARM_LENGTH_INCHES = 30.254;
 
@@ -157,31 +156,36 @@ public static class ArmConstants{
 
   public static final int RIGHT_MOTOR_ID = 32;
 
-  public static final double PID_kP = 0.12;
-  public static final double PID_kI = 0.0;
+  public static final double PID_kP = 0.03;
+  public static final double PID_kI = 0.00000001;
   public static final double PID_kD = 0.0;
-  public static final double PID_kFF = 0.0;
+  public static final double PID_kFF = 0.0005;
   
-  public static final double ANGLE_CONE_INSURANCE = 5.0;
+  public static final double ANGLE_CONE_INSURANCE = 20.0;
+  public static final double ANGLE_CUBE_INSURANCE = 10.0;
   public static final double ANGLE_MANUAL_SPEED_MAX_DEGREESPERSECOND = 120.0;
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = ANGLE_MANUAL_SPEED_MAX_DEGREESPERSECOND * 0.02;
 
-  public static final double ANGLE_CONE_HIGH = 195.37664 - ANGLE_CONE_INSURANCE - ANGLE_OFFSET_FROM_ZERO;
-  public static final double ANGLE_CONE_MID = 210.2488 - ANGLE_CONE_INSURANCE - ANGLE_OFFSET_FROM_ZERO;
+  public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
+  public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE;
 
-  public static final double ANGLE_CUBE_HIGH = 195.37664 - ANGLE_OFFSET_FROM_ZERO;
-  public static final double ANGLE_CUBE_MID = 210.2488 - ANGLE_OFFSET_FROM_ZERO;
+  public static final double ANGLE_CUBE_HIGH = 201.182 - ANGLE_CUBE_INSURANCE;
+  public static final double ANGLE_CUBE_MID = 224.367 - ANGLE_CUBE_INSURANCE;
 
-  public static final double ANGLE_FROM_HEIGHT(double heightInches, boolean insure){
+  /**
+   * Calculates the angle required for the arm to rotate to in order to reach the desired height
+   * @param heightInches Height above ground for the arm to end up
+   * @return The angle for the arm to rotate to in order reach the desired height above the ground
+   */
+  public static double ANGLE_FROM_HEIGHT(double heightInches){
     double verticalDiff = heightInches - HEIGHT_OFFSET_FROM_GROUND_INCHES;
     double sideRatios = Math.abs(verticalDiff) / ARM_LENGTH_INCHES;
-    double angleABS = (270.0 - verticalDiff > 0.0 ? Math.asin(sideRatios) : -Math.asin(sideRatios));
-    double angle = angleABS - ANGLE_OFFSET_FROM_VERTICAL_DEGREES;
-
-    angle -= insure ? ANGLE_CONE_INSURANCE : 0.0;
+    double angleABS = (270.0 - (verticalDiff > 0.0 ? Math.asin(sideRatios) : -Math.asin(sideRatios)));
+    double angle = (angleABS - ANGLE_OFFSET_FROM_VERTICAL_DEGREES) + ANGLE_OFFSET_FROM_ZERO;
 
     return angle;
   }
+
 }
 public static class ClawConstants{
   public static final int WRIST_ID = GlobalConstants.PNEUMATICS_ID;
@@ -192,7 +196,8 @@ public static class ClawConstants{
   public static final int CLAW_CHANNEL_FORWARD = 4;
   public static final int CLAW_CHANNEL_BACKWARD = 1;
 
-  public static final double ANGLE_WRIST_FLIPPOINT = 190.0 + ArmConstants.ANGLE_OFFSET_FROM_ZERO;
+  public static final double ANGLE_WRIST_EXCLUSIONZONE_MIN = 195.595;
+  public static final double ANGLE_WRIST_EXCLUSIONZONE_MAX = 229.523 + ArmConstants.ANGLE_OFFSET_FROM_ZERO;
 }
 
 public static class SpindexerConstants{

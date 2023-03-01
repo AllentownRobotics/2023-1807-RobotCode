@@ -51,10 +51,10 @@ private SwerveModule BR = new SwerveModule(
 
 //odometry class to track robot pose 
 SwerveDriveOdometry odometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, 
-                    gyro.getRotation2d(), 
-                    new SwerveModulePosition[]{
-                      FL.getPosition(),
-                      FR.getPosition(),
+    gyro.getRotation2d(), 
+   new SwerveModulePosition[]{
+      FL.getPosition(),
+     FR.getPosition(),
                       BL.getPosition(),
                       BR.getPosition()
                     });
@@ -124,5 +124,26 @@ FR.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
 BL.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
 BR.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
 }
+
+public void setModuleStates(SwerveModuleState[] desiredStates) {
+  SwerveDriveKinematics.desaturateWheelSpeeds(
+      desiredStates, DriveConstants.MAX_SPEED_MPS);
+FL.setDesiredState(desiredStates[0]);
+FR.setDesiredState(desiredStates[1]);
+BL.setDesiredState(desiredStates[2]);
+BR.setDesiredState(desiredStates[3]);
+}
+
+/** Resets the drive encoders to currently read a position of 0. */
+public void resetEncoders() {
+  FL.resetEncoders();
+  BL.resetEncoders();
+  FR.resetEncoders();
+  BR.resetEncoders();
+}
+  /** Zeroes the heading of the robot. */
+  public void zeroHeading() {
+    gyro.reset();
+  }
 
 }

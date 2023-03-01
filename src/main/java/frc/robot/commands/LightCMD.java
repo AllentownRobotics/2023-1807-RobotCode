@@ -12,7 +12,7 @@ public class LightCMD extends CommandBase {
   public int animNumber;
   // 0 = red, 1 = green, 2 = blue, 3 = rainbow, 4 = blink, 5 = none
   /** Creates a new LEDCommand. */
-  public LEDCommand(int animNumber) {
+  public LightCMD(int animNumber) {
     this.animNumber = animNumber;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(RobotContainer.led);

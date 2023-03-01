@@ -15,6 +15,9 @@ import com.revrobotics.SparkMaxPIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Constants.ArmConstants;
+import frc.robot.Utils.Constants.ClawConstants;
+import frc.robot.Utils.Enums.ClawState;
+import frc.robot.Utils.Enums.PlacementType;
 
 public class Arm extends SubsystemBase {
   CANSparkMax leftMotor = new CANSparkMax(ArmConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
@@ -27,7 +30,7 @@ public class Arm extends SubsystemBase {
 
   double desiredAngle;
 
-  boolean placeCone;
+  PlacementType placeType;
 
   Claw claw;
 
@@ -35,11 +38,8 @@ public class Arm extends SubsystemBase {
     leftMotor.restoreFactoryDefaults();
     rightMotor.restoreFactoryDefaults();
 
-    // Determine which encoder to use
     encoder = ArmConstants.USE_LEFT_ENCODER ? leftMotor.getAbsoluteEncoder(Type.kDutyCycle) : rightMotor.getAbsoluteEncoder(Type.kDutyCycle); 
-    // If using right encoder set inversion false, if not set true
     encoder.setInverted(!ArmConstants.USE_LEFT_ENCODER);
-    // Set conversion factor to output in degrees and degrees/sec
     encoder.setPositionConversionFactor(360.0);
     encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor() / 60.0);
     
@@ -51,12 +51,12 @@ public class Arm extends SubsystemBase {
     pidController.setI(ArmConstants.PID_kI);
     pidController.setD(ArmConstants.PID_kD);
     pidController.setFF(ArmConstants.PID_kFF);
-    pidController.setOutputRange(-0.15,0.15);
+    pidController.setOutputRange(-0.4,0.4);
     pidController.setPositionPIDWrappingEnabled(false);
 
     leftMotor.setInverted(false);
 
-    // Have all motors follow primary
+    // Have all motors follor master
     rightMotor.follow(leftMotor, true);
 
     // Set all motors to brake
@@ -72,6 +72,8 @@ public class Arm extends SubsystemBase {
     this.claw = claw;
 
     desiredAngle = 0.0;
+
+    placeType = PlacementType.Cone;
   }
 
   @Override
@@ -80,69 +82,144 @@ public class Arm extends SubsystemBase {
 
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Set Point", desiredAngle);
-
-    /*if (encoder.getPosition() < ClawConstants.ANGLE_WRIST_FLIPPOINT){
-      claw.setWristOut(false);
-    }*/
   }
 
+  /**
+   * Gets the current angle of the arm
+   * @return the angle of the arm
+   */
   public double getAngle(){
     return encoder.getPosition();
   }
 
+  /**
+   * Gets the desired angle of the arm
+   * @return the desired angle of the arm
+   */
   public double getDesiredAngle(){
     return desiredAngle;
   }
 
+  /**
+   * Sets the angle the arm will attempt to go to
+   * @param angle The desired angle of the arm
+   */
   public void setDesiredAngle(double angle) {
     desiredAngle = angle;
   }
 
+  /**
+   * Sets the desired angle to the current angle shifted by the given number of degrees
+   * @param degrees Amount to change the current angle by
+   */
   public void rotateBy(double degrees){
-    desiredAngle += degrees;
+    desiredAngle = encoder.getPosition() + degrees;
   }
 
+  /**
+   * Toggles the wrist being straightened out
+   */
   public void toggleWrist(){
-    claw.toggleWrist();
+    claw.toggleWristState();
   }
 
-  public boolean getConePlace(){
-    return placeCone;
+  /**
+   * Gets the type of placement to be used true for cones and false for cubes
+   * @return The type of placement to use
+   */
+  public PlacementType getPlaceType(){
+    return placeType;
   }
 
-  public void toggleConePlacing(){
-    placeCone = !placeCone;
+  /**
+   * Toggles the placement type between cone and cube
+   */
+  public void togglePlacementType(){
+    if (placeType == PlacementType.Cone){
+      placeType = PlacementType.Cube;
+      return;
+    }
+    placeType = PlacementType.Cone;
   }
 
-  public void setConePlacing(boolean conePlacing){
-    placeCone = conePlacing;
+  /**
+   * Sets the placement type
+   * @param placementType placement type to set to
+   */
+  public void setPlaceType(PlacementType placementType){
+    placeType = placementType;
   }
 
+  /**
+   * Returns false of the claw is currently closed and true if it is currently open
+   * Best used as a boolean supplier for a {@code waitUntil} command
+   * @return Inverse of the claws current state
+   */
   public boolean getNOTHolding(){
-    return !claw.holding;
+    if (claw.clawState.equals(ClawState.Open)){
+      return true;
+    }
+    return false;
   }
 
+  /**
+   * Checks whether or not the arm is currently at the desired angle within a given tolerance defined in the constants.
+   * Best used as a boolean supplier with a {@code waitUntil} command
+   * @return If the arm is at the desired angle
+   */
   public boolean atSetPoint(){
-    double error = Math.abs(encoder.getPosition() - desiredAngle); 
-    if (error <= 3.5){
+    if (Math.abs(encoder.getPosition() - desiredAngle) <= 3.5){
       return true;
     }
     return false;
   }
 
+  /**
+   * Checks whether or not the arm is currently at the desired reset angle whithin a given tolerance defined in the constants.
+   * Best used as a boolean supplier with a {@code waitUntil} command
+   * @return If the arm is at the desired reset angle
+   */
   public boolean atReset(){
-    if (encoder.getPosition() <= 11.5){
+    if (encoder.getPosition() <= 13.0){
       desiredAngle = 0.0;
-      //claw.setWristOut(false);
       return true;
     }
     return false;
   }
 
+  /**
+   * Checks whether or not the arm is currently at desired bumper angle within a given tolerance defined in the constants.
+   * Best used as a boolean supplier with a {@code waitUntil} command
+   * @return If the arm is at the desired bumpers angle
+   */
+  public boolean atBumpers(){
+    if (encoder.getPosition() >= 290.0){
+      desiredAngle = 300.0;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Checks whether or not the arm has passed the desired wrist flip point within a given tolerance defined in the constants.
+   * Best used as a boolean supplier with a {@code waitUntil} command
+   * @return If the arm is passed the flip point
+   */
+  public boolean isWristAllowedOut(){
+    boolean minCheck = encoder.getPosition() >= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MIN;
+    boolean maxCheck = encoder.getPosition() <= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MAX;
+    if (minCheck && maxCheck){
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Sets the motors to run at the given percent speed
+   * @param percentSpeed the speed for the motors to run at
+   */
   public void runAtSpeed(double percentSpeed){
     leftMotor.set(percentSpeed);
   }
-  public Arm() {}
-
 
 }

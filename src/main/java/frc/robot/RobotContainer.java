@@ -21,10 +21,14 @@ import frc.robot.Utils.Constants.GlobalConstants;
 import frc.robot.Utils.Constants.SpindexerConstants;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.SpindexerCMD;
+import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.Place;
 import frc.robot.commands.ArmCMDS.ResetArm;
+import frc.robot.commands.ArmCMDS.LowLevelCMDS.ManualSetPointControl;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetCubeOrCone;
+import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
+import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.TranslateToTag;
@@ -45,12 +49,12 @@ import frc.robot.subsystems.Vision;
 public class RobotContainer {
   //subsystems 
   public static DriveTrain drive = new DriveTrain();
-  public static Arm arm = new Arm();
   public static Claw claw = new Claw();
+  public static Arm arm = new Arm(claw);
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
   public static Vision vision = new Vision();
- 
+  
 
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
@@ -74,62 +78,65 @@ public class RobotContainer {
    SetCubeOrCone commonCommand = new SetCubeOrCone(arm, opController);
 
     //drive buttons
-    new JoystickButton(driveController, XboxController.Button.kRightBumper.value)
+  
+       driveController.rightBumper() 
         .whileTrue(new RunCommand(
             () -> drive.setX(),
             drive));
-    new JoystickButton(driveController, XboxController.Button.kLeftBumper.value)
+    driveController.leftBumper()
         .onTrue(new InstantCommand(
             () -> fieldOriented = !fieldOriented));
-    new JoystickButton(driveController, XboxController.Button.kStart.value)
+    driveController.start()
         .onTrue(new InstantCommand(
             () -> drive.zeroHeading(),
             drive));
-    new JoystickButton(driveController, XboxController.Button.kA.value).whileTrue(new TurnToTag(vision, drive));
-    new JoystickButton(driveController, XboxController.Button.kB.value).whileTrue(new TranslateToTag(vision, drive));
+driveController.a()
+            .whileTrue(new TurnToTag(vision, drive));
+  driveController.b()
+  .whileTrue(new TranslateToTag(vision, drive));
 
-    //spindexer buttons
-    new JoystickButton(opController, XboxController.Button.kLeftBumper.value)
-    .whileTrue(new SpindexerCMD(SpindexerConstants.SPINDEXER_MOTOR_MAXOUTPUT));
-    new JoystickButton(opController, XboxController.Button.kRightBumper.value)
-    .whileTrue(new SpindexerCMD(-SpindexerConstants.SPINDEXER_MOTOR_MAXOUTPUT));
-
-    //claw buttons
-    /*new JoystickButton(m_operatorController, XboxController.Button.kA.value)
-    .onTrue(new ClawCmd());
-    new JoystickButton(m_operatorController, XboxController.Button.kB.value)
-    .onTrue(new WristCmd());*/
-
-   
-   
-   
-   // HIGH PLACEMENT
-    opController.povUp().onTrue(new Place(Commands.waitUntil(arm::getNOTHolding), 
-                                                new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH), 
-                                                commonCommand));
-  
+    // HIGH PLACEMENT
+    opController.povUp().onTrue(new HighNode(arm, claw, opController));
+    
     // MID PLACEMENT
-    opController.povLeft().onTrue(new Place(Commands.waitUntil(arm::getNOTHolding), 
-                                                new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID, ArmConstants.ANGLE_CUBE_MID),
-                                                commonCommand));
-
+    opController.povLeft().onTrue(new MidNode(arm, claw, opController));
+    
     // ARM RESET
     opController.povDown().onTrue(new ResetArm(this));
+    
+    // MANUAL CONTROL
+    armManualControl.whileTrue(new ManualSetPointControl(arm, opController));
+    
+    // INTAKE POSITION
+    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
 
-    opController.povRight().onTrue(new SetArmAngle(arm, 275.0));
-
-
+    // AUTO WRIST
+    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).whileFalse(
+                                            Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
 
     opController.b().onTrue(new ToggleWrist(claw));
 
+    // SPINDEXER FORWARD
+    opController.rightTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+                                                                    new RunAtSpeed(spindexer, 1.0, opController));
+    // SPINDEXER REVERSE
+    opController.leftTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+                       new RunAtSpeed(spindexer, -1.0, opController));
+  }
+
+   
+   
+   
+   
+
 
     //default commands 
   
 
-  }
+  
 
   /**
    * Use this method ito define your trigger->command mappings. Triggers can be created via the
