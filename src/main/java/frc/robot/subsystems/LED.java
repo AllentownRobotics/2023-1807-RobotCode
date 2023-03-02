@@ -45,7 +45,7 @@ public class LED extends SubsystemBase {
     direction = Direction.Forward;
     bounce = BounceMode.Front;
 
-    candle = new CANdle(3);
+    candle = new CANdle(10);
     config = new CANdleConfiguration();
     config.stripType = LEDStripType.RGB;
     candle.configAllSettings(config);
