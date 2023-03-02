@@ -80,6 +80,10 @@ public class LED extends SubsystemBase {
     candle.setLEDs(0, 0, 0);
   }
   
+  public void SetColor(int r, int g, int b)
+  {
+    candle.setLEDs(r, g, b);
+  }
   public void IdleAnim() {
     candle.animate(idleFadeAnim, 0);
   }

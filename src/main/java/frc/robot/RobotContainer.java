@@ -31,6 +31,9 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
+import frc.robot.commands.LEDCMDS.ReadyDrop;
+import frc.robot.commands.LEDCMDS.WantCone;
+import frc.robot.commands.LEDCMDS.WantCube;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
@@ -131,6 +134,10 @@ public class RobotContainer {
     // SPINDEXER REVERSE
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
+
+    opController.start().onTrue(new WantCube(light));
+    opController.back().onTrue(new WantCone(light));
+    driveController.y().onTrue(new ReadyDrop(light));
   }
 
    
