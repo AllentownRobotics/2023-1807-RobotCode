@@ -31,12 +31,12 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
-import frc.robot.commands.DriveCMDS.TranslateToTag;
-import frc.robot.commands.DriveCMDS.TurnToTag;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Compress;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Spindexer;
 
 /**
@@ -52,7 +52,8 @@ public class RobotContainer {
   public static Arm arm = new Arm(claw);
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
-  public static Vision vision = new Vision();
+  public static Limelight limelight = new Limelight();
+  public static LED led = new LED();
   
 
   //Contollers 
@@ -78,21 +79,10 @@ public class RobotContainer {
 
     //drive buttons
   
-       driveController.rightBumper() 
-        .whileTrue(new RunCommand(
-            () -> drive.setX(),
-            drive));
-    driveController.leftBumper()
-        .onTrue(new InstantCommand(
-            () -> fieldOriented = !fieldOriented));
-    driveController.start()
-        .onTrue(new InstantCommand(
-            () -> drive.zeroHeading(),
-            drive));
-driveController.a()
-            .whileTrue(new TurnToTag(vision, drive));
-  driveController.b()
-  .whileTrue(new TranslateToTag(vision, drive));
+       driveController.rightBumper().whileTrue(new RunCommand(() -> drive.setX(), drive));
+    driveController.leftBumper().onTrue(new InstantCommand(() -> fieldOriented = !fieldOriented));
+    driveController.start().onTrue(new InstantCommand(() -> drive.zeroHeading(), drive));
+
 
     // HIGH PLACEMENT
     opController.povUp().onTrue(new HighNode(arm, claw, opController));

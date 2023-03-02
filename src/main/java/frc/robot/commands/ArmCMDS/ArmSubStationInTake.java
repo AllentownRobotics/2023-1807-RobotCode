@@ -7,6 +7,7 @@ package frc.robot.commands.ArmCMDS;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
+import frc.robot.commands.ClawCMDS.WristToStandBy;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -18,7 +19,7 @@ public class ArmSubStationInTake extends ParallelCommandGroup {
    * @param rc
    */
   public ArmSubStationInTake(RobotContainer rc) {
-    addCommands(new SetWristToStandBy(rc.claw),
+    addCommands(new WristToStandBy(rc.claw),
                 new SetArmAngle(rc.arm, 35.0));
   }
 }
