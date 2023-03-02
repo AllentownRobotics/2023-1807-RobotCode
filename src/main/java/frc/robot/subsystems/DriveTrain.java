@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
@@ -82,14 +83,14 @@ return odometry.getPoseMeters();
 
 //resets odometry to a specific pose 
 public void resetOdometry(Pose2d pose2d){
-odometry.resetPosition
-(gyro.getRotation2d(), 
-new SwerveModulePosition[]{
-  FL.getPosition(),
-  FR.getPosition(),
-  BL.getPosition(),
-  BR.getPosition()
-}, pose2d);
+  odometry.resetPosition
+    (gyro.getRotation2d(), 
+    new SwerveModulePosition[]{
+      FL.getPosition(),
+      FR.getPosition(),
+      BL.getPosition(),
+      BR.getPosition()
+      }, pose2d);
 }
 
 /*drive method  w/ joystick info:
@@ -144,6 +145,46 @@ public void resetEncoders() {
   /** Zeroes the heading of the robot. */
   public void zeroHeading() {
     gyro.reset();
+  }
+
+
+  //IN COMES SPRINGER STUFF
+  public void setGyroDegrees(double yaw) {
+    gyro.setYaw(yaw);
+  }
+
+  public CommandBase gyroSanityCheck() {
+    return runOnce(
+        () -> {
+          gyro.setYaw(Limelight.targetRelPos[5] + 180);
+        });
+  }
+
+  public CommandBase gyroSanityCheckHP() {
+    return runOnce(
+        () -> {
+          gyro.setYaw(Limelight.targetRelPos[5]);
+        });
+  }
+
+  public void levelSet(double speed) {
+    FL.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    FR.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    BL.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+    BR.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
+  }
+
+
+  public double getPitch() {
+    return gyro.getPitch();
+  }
+
+  public double getYaw() {
+    return gyro.getYaw();
+  }
+
+  public double getRoll() {
+    return gyro.getRoll();
   }
 
 }
