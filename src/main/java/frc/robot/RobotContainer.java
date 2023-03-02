@@ -30,6 +30,7 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
+import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
@@ -57,6 +58,7 @@ public class RobotContainer {
   public static LED light = new LED();
   
   
+  
 
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
@@ -75,7 +77,8 @@ public class RobotContainer {
   
   public RobotContainer() {
     
-    
+    comp.setDefaultCommand(new CompressCMD());
+    drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
     
     
     // Configure the trigger bindings

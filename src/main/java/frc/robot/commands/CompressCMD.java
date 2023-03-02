@@ -13,7 +13,9 @@ public class CompressCMD extends CommandBase {
   Compress comp;
 
 
-  public CompressCMD(Compress comp) {
+  public CompressCMD(Compress comp) {}
+   /** Creates a new Compress_ACTIVE. */
+   public CompressCMD() {
     addRequirements(RobotContainer.comp);
   }
 
@@ -35,5 +37,5 @@ public class CompressCMD extends CommandBase {
   @Override
   public boolean isFinished() {
     return false;
-  }
-}
+  }}
+
