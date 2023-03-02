@@ -168,7 +168,7 @@ public class Limelight extends SubsystemBase {
       double LLHeight = 0;
       double LLAngle = 0;
       double TargetHeight = 0;
-      double combinedAngle = TargetHeight - y;
+      double combinedAngle = LLAngle - y;
       return (TargetHeight - LLHeight)*Math.tan(Units.degreesToRadians(combinedAngle));
     }
 

@@ -1,21 +1,13 @@
 package frc.robot.commands.DrivingCMDS;
 
 import frc.robot.subsystems.DriveTrain;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 
 public class DriveCMD extends CommandBase {
-
-    private double rot;
-    private double xSpeed;
-    private double ySpeed;
 
     
     private boolean fieldOriented;
