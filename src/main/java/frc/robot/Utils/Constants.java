@@ -39,7 +39,7 @@ public static final int PIGEON_ID = 9;
 public static final class DriveConstants{
 
 //Drive parameters 
-public static final double MAX_SPEED_MPS = 2;
+public static final double MAX_SPEED_MPS = 4;
 public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
 
 //chassis config
