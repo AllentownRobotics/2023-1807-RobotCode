@@ -48,13 +48,13 @@ import frc.robot.subsystems.Spindexer;
  */
 public class RobotContainer {
   //subsystems 
-  public static DriveTrain drive = new DriveTrain();
-  public static Claw claw = new Claw();
-  public static Arm arm = new Arm(claw);
-  public static Compress comp = new Compress();
-  public static Spindexer spindexer = new Spindexer();
-  public static Limelight limelight = new Limelight();
-  public static LED led = new LED();
+  public final DriveTrain drive = new DriveTrain();
+  public final Claw claw = new Claw();
+  public final Arm arm = new Arm(claw);
+  public final Compress comp = new Compress();
+  public final Spindexer spindexer = new Spindexer();
+  public final Limelight limelight = new Limelight();
+  public final LED led = new LED();
   
 
   //Contollers 
@@ -96,6 +96,9 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
+    
+    
+    
     armManualControl.whileTrue(new ManualSetPointControl(arm, opController));
     
     // INTAKE POSITION

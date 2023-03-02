@@ -6,13 +6,18 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Spindexer;
 
 public class SpindexerCMD extends CommandBase {
   double speed = 0.0;
-  public SpindexerCMD(double spd) {
+
+  private Spindexer spindexer;
+
+  public SpindexerCMD(double spd, Spindexer spindexer) {
     speed = spd;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.spindexer);
+    this.spindexer = spindexer;
+    addRequirements(spindexer);
   }
 
   // Called when the command is initially scheduled.
@@ -22,7 +27,7 @@ public class SpindexerCMD extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    RobotContainer.spindexer.spin(speed);
+    spindexer.spin(speed);
   }
 
   // Called once the command ends or is interrupted.
