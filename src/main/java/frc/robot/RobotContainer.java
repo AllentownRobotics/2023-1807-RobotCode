@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Utils.Constants;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
@@ -63,7 +64,8 @@ public class RobotContainer {
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
   boolean fieldOriented = false;
-  
+  Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
+
   //auto chooser
   private SendableChooser<Command> chooser;
   
@@ -109,10 +111,10 @@ public class RobotContainer {
     opController.b().onTrue(new ToggleWrist(claw));
 
     // SPINDEXER FORWARD
-    opController.rightTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+    opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                                                                     new RunAtSpeed(spindexer, 1.0, opController));
     // SPINDEXER REVERSE
-    opController.leftTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+    opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
   }
 
