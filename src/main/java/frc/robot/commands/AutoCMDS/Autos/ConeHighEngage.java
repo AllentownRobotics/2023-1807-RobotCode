@@ -13,6 +13,7 @@ import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.AutoCMDS.FollowPath;
+import frc.robot.commands.AutoCMDS.ResetOdometryToTrajectory;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
@@ -26,7 +27,7 @@ public class ConeHighEngage extends SequentialCommandGroup {
     {
       addCommands(new SetClawState(claw, ClawState.Closed),
       new AutoPlace(arm, claw, 180.182),
-      new ResetOdometrytoTrajectory("ConeHighEngage", drive),
+      new ResetOdometryToTrajectory("ConeHighEngage", drive),
       new ParallelDeadlineGroup(
         new FollowPath("ConeHighEngage", 3, 3, drive).getCommand(),
         new ResetArm(rc)),

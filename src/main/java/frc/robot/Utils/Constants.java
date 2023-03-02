@@ -26,6 +26,9 @@ public final class Constants {
     public static final int DRIVE_CONTROLLER = 1;
     public static final int OP_CONTROLLER = 0; 
     public static final double OP_CONTROLLER_THRESHOLD_SPINDEXER = 0.08;
+    public static final int OP_CONTROLLER_AXISID_LEFTSTICK_Y = 1;
+
+
 }
 public static class GlobalConstants{
   //Pneumatics
@@ -201,8 +204,15 @@ public static class ClawConstants{
 }
 
 public static class SpindexerConstants{
-  public static final int SPINDEXER_MOTOR_ID = 0;
+  public static final int SPINDEXER_MOTOR_ID = 11;
   public static final double SPINDEXER_MOTOR_MAXOUTPUT = 0.5;
+
+  public static final double SPINDEXER_GEARING_MOTORTOTABLE = 22.0 / 1.0;
+
+  public static final double SPINDEXER_P = 0.08;
+  public static final double SPINDEXER_I = 0.0;
+  public static final double SPINDEXER_D = 0.0;
+  public static final double SPINDEXER_FF = 0.0;
 
  }
  public static class ColorConstants {

@@ -18,7 +18,7 @@ public class ResetOdometryToTrajectory extends InstantCommand {
   PathPlannerTrajectory autoTrajectory = null;
   DriveTrain drive = null;
  
-  public ResetOdometrytoTrajectory(String path, DriveTrain drive) {
+  public ResetOdometryToTrajectory(String path, DriveTrain drive) {
     autoTrajectory = PathPlanner.loadPath(path, AutoContsants.AUTO_MAX_SPEED_MPS, AutoContsants.AUTO_MAX_ACCELERATION_MPS_SQUARED);
     this.drive = drive;
    

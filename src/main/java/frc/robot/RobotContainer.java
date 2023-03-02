@@ -20,7 +20,6 @@ import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
 import frc.robot.Utils.Constants.SpindexerConstants;
 import frc.robot.commands.CompressCMD;
-import frc.robot.commands.SpindexerCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.Place;
 import frc.robot.commands.ArmCMDS.ResetArm;
@@ -31,12 +30,13 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
-import frc.robot.commands.DriveCMDS.TranslateToTag;
-import frc.robot.commands.DriveCMDS.TurnToTag;
+import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
+
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Compress;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.Vision;
 
@@ -54,12 +54,18 @@ public class RobotContainer {
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
   public static Vision vision = new Vision();
+  public static LED light = new LED();
+  
   
 
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
   CommandXboxController opController = new CommandXboxController(ControllerConstants.OP_CONTROLLER);
 
+  Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
+  Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
+  
+  
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
   boolean fieldOriented = false;
@@ -90,10 +96,6 @@ public class RobotContainer {
         .onTrue(new InstantCommand(
             () -> drive.zeroHeading(),
             drive));
-driveController.a()
-            .whileTrue(new TurnToTag(vision, drive));
-  driveController.b()
-  .whileTrue(new TranslateToTag(vision, drive));
 
     // HIGH PLACEMENT
     opController.povUp().onTrue(new HighNode(arm, claw, opController));
@@ -120,10 +122,10 @@ driveController.a()
     opController.b().onTrue(new ToggleWrist(claw));
 
     // SPINDEXER FORWARD
-    opController.rightTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
-                                                                    new RunAtSpeed(spindexer, 1.0, opController));
+    opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+                                   new RunAtSpeed(spindexer, 1.0, opController));
     // SPINDEXER REVERSE
-    opController.leftTrigger(OperatorConstants.OPERATOR_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
+    opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
   }
 

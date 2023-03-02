@@ -15,30 +15,30 @@ public class LightCMD extends CommandBase {
   public LightCMD(int animNumber) {
     this.animNumber = animNumber;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.led);
+    addRequirements(RobotContainer.light);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
     switch (animNumber) {
-        case AnimNumberConstants.IDLE_ANIM_NUMBER: RobotContainer.led.IdleAnim();
+        case AnimNumberConstants.IDLE_ANIM_NUMBER: RobotContainer.light.IdleAnim();
         break;
-        case AnimNumberConstants.CONE_REQ_ANIM_NUMBER: RobotContainer.led.ConeReqAnim();
+        case AnimNumberConstants.CONE_REQ_ANIM_NUMBER: RobotContainer.light.ConeReqAnim();
         break;
-        case AnimNumberConstants.CUBE_REQ_ANIM_NUMBER: RobotContainer.led.CubeReqAnim();
+        case AnimNumberConstants.CUBE_REQ_ANIM_NUMBER: RobotContainer.light.CubeReqAnim();
         break;
-        case AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER: RobotContainer.led.ConeTransportAnim();
+        case AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER: RobotContainer.light.ConeTransportAnim();
         break;
-        case AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER: RobotContainer.led.CubeTransportAnim();
+        case AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER: RobotContainer.light.CubeTransportAnim();
         break;
-        case AnimNumberConstants.CONE_SCORE_ANIM_NUMBER: RobotContainer.led.ConeScoreAnim(); 
+        case AnimNumberConstants.CONE_SCORE_ANIM_NUMBER: RobotContainer.light.ConeScoreAnim(); 
         break;
-        case AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER: RobotContainer.led.CubeScoreAnim();
+        case AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER: RobotContainer.light.CubeScoreAnim();
         break;
-        case AnimNumberConstants.ENDGAME_ANIM_NUMBER: RobotContainer.led.EndGameAnim();
+        case AnimNumberConstants.ENDGAME_ANIM_NUMBER: RobotContainer.light.EndGameAnim();
         break;
-        case AnimNumberConstants.RESET_ANIM_NUMBER: RobotContainer.led.NoAnim();
+        case AnimNumberConstants.RESET_ANIM_NUMBER: RobotContainer.light.NoAnim();
         break;
       }
   }
@@ -52,7 +52,7 @@ public class LightCMD extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    RobotContainer.led.NoAnim();
+    RobotContainer.light.NoAnim();
   }
 
   // Returns true when the command should end.
