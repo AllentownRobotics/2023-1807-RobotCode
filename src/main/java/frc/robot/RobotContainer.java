@@ -80,6 +80,7 @@ public class RobotContainer {
     comp.setDefaultCommand(new CompressCMD());
     drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
     
+    drive.resetEncoders();
     
     // Configure the trigger bindings
     configureBindings();
