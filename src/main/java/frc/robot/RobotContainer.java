@@ -21,7 +21,6 @@ import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
 import frc.robot.Utils.Constants.SpindexerConstants;
 import frc.robot.commands.CompressCMD;
-import frc.robot.commands.SpindexerCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.Place;
 import frc.robot.commands.ArmCMDS.ResetArm;
@@ -32,6 +31,8 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
+import frc.robot.commands.DrivingCMDS.DriveCMD;
+import frc.robot.commands.SpindexerCMDS.SpindexerCMD;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Compress;
@@ -73,7 +74,8 @@ public class RobotContainer {
     
     
     
-    
+    drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
+
     // Configure the trigger bindings
     configureBindings();
    
@@ -81,44 +83,44 @@ public class RobotContainer {
 
     //drive buttons
   
-       driveController.rightBumper().whileTrue(new RunCommand(() -> drive.setX(), drive));
-    driveController.leftBumper().onTrue(new InstantCommand(() -> fieldOriented = !fieldOriented));
-    driveController.start().onTrue(new InstantCommand(() -> drive.zeroHeading(), drive));
+      driveController.rightBumper().whileTrue(new RunCommand(() -> drive.setX(), drive));
+      driveController.leftBumper().onTrue(new InstantCommand(() -> fieldOriented = !fieldOriented));
+      driveController.start().onTrue(new InstantCommand(() -> drive.zeroHeading(), drive));
 
 
-    // HIGH PLACEMENT
-    opController.povUp().onTrue(new HighNode(arm, claw, opController));
-    
-    // MID PLACEMENT
-    opController.povLeft().onTrue(new MidNode(arm, claw, opController));
-    
-    // ARM RESET
-    opController.povDown().onTrue(new ResetArm(this));
-    
-    // MANUAL CONTROL
-    
-    
-    
-    armManualControl.whileTrue(new ManualSetPointControl(arm, opController));
-    
-    // INTAKE POSITION
-    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
+      // HIGH PLACEMENT
+      opController.povUp().onTrue(new HighNode(arm, claw, opController));
+      
+      // MID PLACEMENT
+      opController.povLeft().onTrue(new MidNode(arm, claw, opController));
+      
+      // ARM RESET
+      opController.povDown().onTrue(new ResetArm(this));
+      
+      
+      // INTAKE POSITION
+      opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
 
-    // AUTO WRIST
-    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).whileFalse(
-                                            Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
+      // AUTO WRIST
+      wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).whileFalse(
+                                              Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    // CLAW TOGGLE
-    opController.x().onTrue(new ToggleClaw(claw));
+      // CLAW TOGGLE
+      opController.x().onTrue(new ToggleClaw(claw));
 
-    opController.b().onTrue(new ToggleWrist(claw));
+      opController.b().onTrue(new ToggleWrist(claw));
 
-    // SPINDEXER FORWARD
-    opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
-                                                                    new RunAtSpeed(spindexer, 1.0, opController));
-    // SPINDEXER REVERSE
-    opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
-                       new RunAtSpeed(spindexer, -1.0, opController));
+/* STUFF I DIDNT FIX
+
+      // MANUAL CONTROL
+      armManualControl.whileTrue(new ManualSetPointControl(arm, opController));
+      // SPINDEXER FORWARD
+      opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(new RunAtSpeed(spindexer, 1.0, opController));
+      // SPINDEXER REVERSE
+      opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(new RunAtSpeed(spindexer, -1.0, opController));
+
+
+      */
   }
 
    

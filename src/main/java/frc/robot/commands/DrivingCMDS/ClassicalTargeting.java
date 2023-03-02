@@ -1,4 +1,4 @@
-package frc.robot.commands.TargetingCMDS;
+package frc.robot.commands.DrivingCMDS;
 
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.DriveTrain;
