@@ -83,7 +83,7 @@ turningSparkMax.setSmartCurrentLimit(ModuleConstants.TURN_MOTOR_CURRENT_LIMIT);
 driveSparkMax.burnFlash();
 turningSparkMax.burnFlash();
 
-chassisAngularOffset = chassisAngularOffset;
+this.chassisAngularOffset = chassisAngularOffset;
 desiredState.angle = new Rotation2d(turningEncoder.getPosition());
 driveEncoder.setPosition(0);
 }
@@ -108,8 +108,8 @@ public void setDesiredState(SwerveModuleState swerveModuleStates){
 
   //apply chassis angular offset to desired state 
   SwerveModuleState correctedDesiredState = new SwerveModuleState();
-  correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
-  correctedDesiredState.angle = desiredState.angle.plus(Rotation2d.fromRadians(chassisAngularOffset));
+  correctedDesiredState.speedMetersPerSecond = swerveModuleStates.speedMetersPerSecond;
+  correctedDesiredState.angle = swerveModuleStates.angle.plus(Rotation2d.fromRadians(chassisAngularOffset));
 
   //optimize refrences state to eliminate rotation more than 90 degrees
   SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState,
@@ -119,7 +119,7 @@ public void setDesiredState(SwerveModuleState swerveModuleStates){
   drivePIDController.setReference(optimizedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
   turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
 
-  desiredState = desiredState;
+  desiredState = optimizedDesiredState;
 }
 public void setDesiredStateNoOpt(SwerveModuleState desiredState) {
 
@@ -134,7 +134,7 @@ public void setDesiredStateNoOpt(SwerveModuleState desiredState) {
   drivePIDController.setReference(correctedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
   turningPIDController.setReference(correctedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
 
-  desiredState = desiredState;
+  correctedDesiredState = desiredState;
 }
 
 //zeros all swerve modules encoders 

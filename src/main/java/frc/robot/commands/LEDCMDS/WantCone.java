@@ -21,6 +21,6 @@ public class WantCone extends InstantCommand {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    ledSubsystem.SetColor(0,255,255);
+    ledSubsystem.SetColor(255,255,0);
   }
 }

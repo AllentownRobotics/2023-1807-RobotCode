@@ -208,10 +208,8 @@ public class Arm extends SubsystemBase {
   public boolean isWristAllowedOut(){
     boolean minCheck = encoder.getPosition() >= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MIN;
     boolean maxCheck = encoder.getPosition() <= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MAX;
-    if (minCheck && maxCheck){
-      return true;
-    }
-    return false;
+    
+    return !(minCheck && maxCheck);
   }
 
   /**

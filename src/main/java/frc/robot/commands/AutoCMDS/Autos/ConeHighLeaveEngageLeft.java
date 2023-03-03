@@ -10,24 +10,25 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.Utils.Enums.ClawState;
 import frc.robot.commands.ArmCMDS.*;
+import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.AutoCMDS.FollowPath;
 import frc.robot.commands.AutoCMDS.ResetOdometrytoTrajectory;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
+import frc.robot.commands.ClawCMDS.LowLevelCMDS.*;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.DriveTrain;
 
 /** Add your docs here. */
-public class ConeHighEngage extends SequentialCommandGroup {
-    public ConeHighEngage(DriveTrain driveSubsystem, Arm armSubsystem, Claw clawSubsystem, RobotContainer robotContainer)
+public class ConeHighLeaveEngageLeft extends SequentialCommandGroup {
+    public ConeHighLeaveEngageLeft(DriveTrain driveSubsystem, Arm armSubsystem, Claw clawSubsystem, RobotContainer robotContainer)
     {
       addCommands(
         new SetClawState(clawSubsystem, ClawState.Closed),
         new AutoPlace(armSubsystem, clawSubsystem, 180.182),
-        new ResetOdometrytoTrajectory("ConeHighEngage", driveSubsystem),
+        new ResetOdometrytoTrajectory("ConeHighLeaveEngageLeft", driveSubsystem),
         new ParallelDeadlineGroup(
-          new FollowPath("ConeHighEngage", 3, 3, driveSubsystem).getCommand(),
+          new FollowPath("ConeHighLeaveEngageLeft", 3, 3, driveSubsystem).getCommand(),
           new ResetArm(robotContainer)),
         new AutoLevel(driveSubsystem),
         Commands.runOnce(() -> driveSubsystem.setX(), driveSubsystem));

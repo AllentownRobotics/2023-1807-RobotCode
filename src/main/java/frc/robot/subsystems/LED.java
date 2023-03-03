@@ -40,7 +40,15 @@ public class LED extends SubsystemBase {
 
   double endgameBright;
 
-  public LED() {
+  public LED(){
+    candle = new CANdle(10);
+
+    config = new CANdleConfiguration();
+    config.stripType = LEDStripType.RGB;
+    candle.configAllSettings(config);
+  }
+
+  /*public LED() {
 
     direction = Direction.Forward;
     bounce = BounceMode.Front;
@@ -78,12 +86,13 @@ public class LED extends SubsystemBase {
     endgameBright = 0;
     
     candle.setLEDs(0, 0, 0);
-  }
+  }*/
   
   public void SetColor(int r, int g, int b)
   {
     candle.setLEDs(r, g, b);
   }
+  /*
   public void IdleAnim() {
     candle.animate(idleFadeAnim, 0);
   }
@@ -180,7 +189,7 @@ public double SetEndgameBright() {
     candle.clearAnimation(2);
     candle.clearAnimation(3);
     candle.clearAnimation(4);
-  }
+  }*/
   @Override
   public void periodic() {
     // This method will be called once per scheduler run

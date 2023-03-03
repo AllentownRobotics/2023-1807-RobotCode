@@ -25,7 +25,7 @@ public class DriveCMD extends CommandBase {
       addRequirements(drive);
 
       this.fieldOriented = fieldOriented;
-      this.drivecontroller = drivecontroller;
+      this.drivecontroller = controller;
   }
 
   @Override

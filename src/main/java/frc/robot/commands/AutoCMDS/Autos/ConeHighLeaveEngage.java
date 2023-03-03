@@ -9,30 +9,28 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.Utils.Enums.ClawState;
+import frc.robot.commands.ArmCMDS.*;
 import frc.robot.commands.ArmCMDS.AutoPlace;
-import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.AutoCMDS.FollowPath;
-import frc.robot.commands.AutoCMDS.ResetOdometryToTrajectory;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
+import frc.robot.commands.AutoCMDS.ResetOdometrytoTrajectory;
+import frc.robot.commands.ClawCMDS.LowLevelCMDS.*;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.DriveTrain;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
+/** Add your docs here. */
 public class ConeHighLeaveEngage extends SequentialCommandGroup {
-  public ConeHighLeaveEngage(DriveTrain drive, Arm arm, Claw claw, RobotContainer rc)
-  {
-    addCommands(
-      new SetClawState(claw, ClawState.Closed),
-      new AutoPlace(arm, claw, 180.182),
-      new ResetOdometryToTrajectory("ConeHighLeaveEngage", drive),
-      new ParallelDeadlineGroup(
-        new FollowPath("ConeHighLeaveEngage", 2, 2, drive).getCommand(),
-        new ResetArm(rc)),
-      new AutoLevel(drive),
-      Commands.runOnce(() -> drive.setX(), drive));
-  }
+    public ConeHighLeaveEngage(DriveTrain driveSubsystem, Arm armSubsystem, Claw clawSubsystem, RobotContainer robotContainer)
+    {
+      addCommands(
+        new SetClawState(clawSubsystem, ClawState.Closed),
+        new AutoPlace(armSubsystem, clawSubsystem, 180.182),
+        new ResetOdometrytoTrajectory("ConeHighLeaveEngage", driveSubsystem),
+        new ParallelDeadlineGroup(
+          new FollowPath("ConeHighLeaveEngage", 2, 2, driveSubsystem).getCommand(),
+          new ResetArm(robotContainer)),
+        new AutoLevel(driveSubsystem),
+        Commands.runOnce(() -> driveSubsystem.setX(), driveSubsystem));
+    }
 }

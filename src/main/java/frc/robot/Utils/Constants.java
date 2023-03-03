@@ -43,7 +43,7 @@ public static final int PIGEON_ID = 9;
 public static final class DriveConstants{
 
 //Drive parameters 
-public static final double MAX_SPEED_MPS = 2;
+public static final double MAX_SPEED_MPS = 4;
 public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
 
 //chassis config
@@ -199,13 +199,13 @@ public static class ClawConstants{
   public static final int CLAW_CHANNEL_FORWARD = 4;
   public static final int CLAW_CHANNEL_BACKWARD = 1;
 
-  public static final double ANGLE_WRIST_EXCLUSIONZONE_MIN = 195.595;
+  public static final double ANGLE_WRIST_EXCLUSIONZONE_MIN = 206.595;
   public static final double ANGLE_WRIST_EXCLUSIONZONE_MAX = 229.523 + ArmConstants.ANGLE_OFFSET_FROM_ZERO;
 }
 
 public static class SpindexerConstants{
   public static final int SPINDEXER_MOTOR_ID = 11;
-  public static final double SPINDEXER_MOTOR_MAXOUTPUT = 0.5;
+  public static final double SPINDEXER_MOTOR_MAXOUTPUT = 0.25;
 
   public static final double SPINDEXER_GEARING_MOTORTOTABLE = 22.0 / 1.0;
 

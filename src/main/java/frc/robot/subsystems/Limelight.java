@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -18,13 +19,16 @@ public class Limelight extends SubsystemBase {
 
   public static double x;
   public static double y;
+  public static double ta;
   public static double[] targetRelPos;
   public static double[] RoboRelPos;
 
   public static boolean tv;
 
   public double LimePipeline = 1;
-  public double AprilPipeline = 0;
+  public double April2DPipeline = 0;
+  public double April3DPipeline = 9;
+
   public double purplePipeline = 2;
   public double yellowPipeline = 3;
   public double HumanPlayerAprilTag = 5;
@@ -38,12 +42,11 @@ public class Limelight extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public Limelight() {
     table = NetworkTableInstance.getDefault().getTable("limelight");
-    currentPipeline = AprilPipeline;
+    currentPipeline = April2DPipeline;
   }
 
   /**
    * Example command factory method.
-   * @return 
    *
    * @return a command
    */
@@ -74,13 +77,23 @@ public class Limelight extends SubsystemBase {
         });
   }
 
-  public CommandBase setAprilPipe() {
+  public CommandBase setApril2DPipe() {
     // Inline construction of command goes here.
     // Subsystem::RunOnce implicitly requires `this` subsystem.
     return runOnce(
         () -> {
-          table.getEntry("pipeline").setDouble(AprilPipeline);
-          currentPipeline = AprilPipeline;
+          table.getEntry("pipeline").setDouble(April2DPipeline);
+          currentPipeline = April2DPipeline;
+        });
+  }
+
+  public CommandBase setApril3DPipe() {
+    // Inline construction of command goes here.
+    // Subsystem::RunOnce implicitly requires `this` subsystem.
+    return runOnce(
+        () -> {
+          table.getEntry("pipeline").setDouble(April2DPipeline);
+          currentPipeline = April3DPipeline;
         });
   }
 
@@ -128,8 +141,12 @@ public class Limelight extends SubsystemBase {
     return Commands.sequence(LightOn(), setLimePipe());
   }
 
-  public CommandBase AprilTracking() {
-    return Commands.sequence(LightOff(), setAprilPipe());
+  public CommandBase April2DTracking() {
+    return Commands.sequence(LightOff(), setApril2DPipe());
+  }
+
+  public CommandBase April3DTracking() {
+    return Commands.sequence(LightOff(), setApril3DPipe());
   }
 
   public CommandBase ConeTracking() {
@@ -157,11 +174,6 @@ public class Limelight extends SubsystemBase {
   }
 
 
-  public boolean targetAquired() {
-    return tv;
-  }
-
-
   public static double distanceFromTargetMeters() {
     
     if (currentPipeline == 0 || currentPipeline == 5 || currentPipeline ==8) {
@@ -170,7 +182,7 @@ public class Limelight extends SubsystemBase {
       double LLHeight = 0;
       double LLAngle = 0;
       double TargetHeight = 0;
-      double combinedAngle = LLAngle - y;
+      double combinedAngle = TargetHeight - y;
       return (TargetHeight - LLHeight)*Math.tan(Units.degreesToRadians(combinedAngle));
     }
 
@@ -189,7 +201,16 @@ public class Limelight extends SubsystemBase {
   }
 
 
-  
+  public BooleanSupplier targetAquired() {
+    return () -> tv;
+  }
+
+
+  public BooleanSupplier tape() {
+    if (currentPipeline == 1)
+      {return () -> true;}
+      else {return () -> false;}
+  }
 
   
 
@@ -198,30 +219,38 @@ public class Limelight extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
-    RoboRelPos = table.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
+    try {
+      RoboRelPos = table.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
 
-    targetRelPos = table.getEntry("camerapose_targetspace").getDoubleArray(new double[6]);
+      targetRelPos = table.getEntry("camerapose_targetspace").getDoubleArray(new double[6]);
 
-    x = table.getEntry("tx").getDouble(0.0);
-    y = table.getEntry("ty").getDouble(0.0);
+      
 
-    if (table.getEntry("tv").getDouble(0.0) == 1) {
-      tv = true;
-    } else {tv = false;}
+      x = table.getEntry("tx").getDouble(0.0);
+      y = table.getEntry("ty").getDouble(0.0);
+      ta = table.getEntry("ta").getDouble(0.0);
 
-    SmartDashboard.putNumber("X", x);
-    SmartDashboard.putNumber("Y", y);
 
-    SmartDashboard.putBoolean("Target Aquired", tv);
- 
-    SmartDashboard.putNumber("Target Spec X", RoboRelPos[0]);
-    SmartDashboard.putNumber("Target Spec Y", RoboRelPos[1]);
-    SmartDashboard.putNumber("Target Spec Z", RoboRelPos[2]);
-    SmartDashboard.putNumber("Target Spec Roll", RoboRelPos[3]);
-    SmartDashboard.putNumber("Target Spec Pitch", RoboRelPos[4]);
-    SmartDashboard.putNumber("Target Spec Yaw", RoboRelPos[5]);
+      if (table.getEntry("tv").getDouble(0.0) == 1) {
+        tv = true;
+      } else {tv = false;}
 
-    SmartDashboard.putNumber("Pipeline", currentPipeline);
+      SmartDashboard.putNumber("X", x);
+      SmartDashboard.putNumber("Y", y);
+
+      SmartDashboard.putBoolean("Target Aquired", tv);
+  
+      SmartDashboard.putNumber("Target Spec X", RoboRelPos[0]);
+      SmartDashboard.putNumber("Target Spec Y", RoboRelPos[1]);
+      SmartDashboard.putNumber("Target Spec Z", RoboRelPos[2]);
+      SmartDashboard.putNumber("Target Spec Roll", RoboRelPos[3]);
+      SmartDashboard.putNumber("Target Spec Pitch", RoboRelPos[4]);
+      SmartDashboard.putNumber("Target Spec Yaw", RoboRelPos[5]);
+
+      SmartDashboard.putNumber("Pipeline", currentPipeline);
+    } catch (Exception e) {}
+
+
 
 
 

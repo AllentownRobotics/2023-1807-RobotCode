@@ -95,7 +95,7 @@ public void periodic() {
     wristPiston.set(wristState.equals(WristState.WristOut) ? Value.kReverse : Value.kForward);
   }
   else{
-    wristPiston.set(Value.kReverse);
+    wristPiston.set(Value.kForward);
   }
 
   clawPiston.set(clawState.equals(ClawState.Closed) ? Value.kForward : Value.kReverse);

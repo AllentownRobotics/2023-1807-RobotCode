@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -28,9 +29,11 @@ import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetCubeOrCone;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
+import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
+import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
 import frc.robot.commands.LEDCMDS.ReadyDrop;
 import frc.robot.commands.LEDCMDS.WantCone;
 import frc.robot.commands.LEDCMDS.WantCube;
@@ -41,6 +44,7 @@ import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Compress;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Spindexer;
 import frc.robot.subsystems.Vision;
 
@@ -57,8 +61,8 @@ public class RobotContainer {
   public static Arm arm = new Arm(claw);
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
-  public static Vision vision = new Vision();
   public static LED light = new LED();
+  public static Limelight limelight = new Limelight();
   
   
   
@@ -73,7 +77,7 @@ public class RobotContainer {
   
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
-  boolean fieldOriented = false;
+  boolean fieldOriented = true;
   
   //auto chooser
   private SendableChooser<Command> chooser;
@@ -88,21 +92,21 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
    
-   SetCubeOrCone commonCommand = new SetCubeOrCone(arm, opController);
-
     //drive buttons
   
        driveController.rightBumper() 
         .whileTrue(new RunCommand(
             () -> drive.setX(),
             drive));
-    driveController.leftBumper()
-        .onTrue(new InstantCommand(
-            () -> fieldOriented = !fieldOriented));
     driveController.start()
         .onTrue(new InstantCommand(
             () -> drive.zeroHeading(),
             drive));
+
+    driveController.povUp().onTrue(limelight.April2DTracking());
+    driveController.povDown().onTrue(limelight.TapeTracking());
+
+    driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController));
 
     // HIGH PLACEMENT
     opController.povUp().onTrue(new HighNode(arm, claw, opController));
@@ -114,13 +118,13 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(new ManualSetPointControl(arm, opController));
+    armManualControl.whileTrue(Commands.run(() -> arm.rotateBy(-10 * opController.getLeftY()), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
 
     // AUTO WRIST
-    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).whileFalse(
+    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
                                             Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
     // CLAW TOGGLE
@@ -135,9 +139,9 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
 
-    opController.start().onTrue(new WantCube(light));
-    opController.back().onTrue(new WantCone(light));
-    driveController.y().onTrue(new ReadyDrop(light));
+    opController.start().whileTrue(Commands.run(() -> light.SetColor(255, 255, 0)));
+    opController.back().onTrue(new WantCube(light));
+    driveController.rightTrigger().onTrue(new ReadyDrop(light));
   }
 
    
