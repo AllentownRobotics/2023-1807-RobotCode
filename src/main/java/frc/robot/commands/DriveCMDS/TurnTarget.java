@@ -38,13 +38,13 @@ public class TurnTarget extends CommandBase {
     public void execute() {
 
 
-        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeading(), 180), true);
+        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeading(), 0), true);
     }
 
 
     @Override
     public boolean isFinished() {
-        if (Math.abs(s_Swerve.getHeading()) % 360 >= 178 && Math.abs(s_Swerve.getHeading()) % 360 <= 182) {
+        if (Math.abs(s_Swerve.getHeading()) % 360 >= 358 || Math.abs(s_Swerve.getHeading()) % 360 <= 2) {
             return true;
         } else {return false;}
 

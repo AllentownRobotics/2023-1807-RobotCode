@@ -26,9 +26,9 @@ public class ConeHighLeaveEngageLeft extends SequentialCommandGroup {
       addCommands(
         new SetClawState(clawSubsystem, ClawState.Closed),
         new AutoPlace(armSubsystem, clawSubsystem, 180.182),
-        new ResetOdometrytoTrajectory("ConeHighLeaveEngageLeft", driveSubsystem),
+        new ResetOdometrytoTrajectory("ConeHighEngageLeft", driveSubsystem),
         new ParallelDeadlineGroup(
-          new FollowPath("ConeHighLeaveEngageLeft", 3, 3, driveSubsystem).getCommand(),
+          new FollowPath("ConeHighEngageLeft", 3, 3, driveSubsystem).getCommand(),
           new ResetArm(robotContainer)),
         new AutoLevel(driveSubsystem),
         Commands.runOnce(() -> driveSubsystem.setX(), driveSubsystem));

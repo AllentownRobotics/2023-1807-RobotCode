@@ -5,6 +5,7 @@
 package frc.robot.commands.ArmCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
@@ -31,7 +32,7 @@ public class AutoPlace extends SequentialCommandGroup {
    */
   public AutoPlace(Arm arm, Claw claw, double angle) {
     addCommands(new SetArmAngle(arm, angle), 
-                Commands.waitUntil(arm::atSetPoint),
+                new ParallelRaceGroup(Commands.waitUntil(arm::atSetPoint), new WaitCommand(3.25)),
                 new WaitCommand(0.25),
                 new SetClawState(claw, ClawState.Open),
                 new WaitCommand(0.1));

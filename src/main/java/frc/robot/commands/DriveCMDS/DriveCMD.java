@@ -31,8 +31,8 @@ public class DriveCMD extends CommandBase {
   @Override
   public void execute() {
       drive.drive(
-          translate.calculate(MathUtil.applyDeadband(-drivecontroller.getLeftY(), 0.3)),
-          strafe.calculate(MathUtil.applyDeadband(-drivecontroller.getLeftX(), 0.3)),
+          translate.calculate(MathUtil.applyDeadband(drivecontroller.getLeftY(), 0.3)),
+          strafe.calculate(MathUtil.applyDeadband(drivecontroller.getLeftX(), 0.3)),
           MathUtil.applyDeadband(-drivecontroller.getRightX(), 0.3),
           fieldOriented);
   }

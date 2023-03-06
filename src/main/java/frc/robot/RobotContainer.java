@@ -6,36 +6,35 @@ package frc.robot;
 
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ControllerConstants;
-import frc.robot.Utils.Constants.GlobalConstants;
-import frc.robot.Utils.Constants.SpindexerConstants;
+import frc.robot.Utils.Enums.ClawState;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
-import frc.robot.commands.ArmCMDS.Place;
+import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.ArmCMDS.ResetArm;
-import frc.robot.commands.ArmCMDS.LowLevelCMDS.ManualSetPointControl;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
-import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetCubeOrCone;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
+import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
+import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngage;
+import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngageLeft;
+import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
 import frc.robot.commands.LEDCMDS.ReadyDrop;
-import frc.robot.commands.LEDCMDS.WantCone;
 import frc.robot.commands.LEDCMDS.WantCube;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
@@ -46,7 +45,6 @@ import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Spindexer;
-import frc.robot.subsystems.Vision;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -80,7 +78,7 @@ public class RobotContainer {
   boolean fieldOriented = true;
   
   //auto chooser
-  private SendableChooser<Command> chooser;
+  private SendableChooser<Command> chooser = new SendableChooser<Command>();
   
   public RobotContainer() {
     
@@ -89,11 +87,19 @@ public class RobotContainer {
     
     drive.resetEncoders();
     
+    chooser.setDefaultOption("Mid", new ConeHighLeaveEngage(drive, arm, claw, this));
+    chooser.addOption("Right", new ConeHighEngage(drive, arm, claw, this));
+    chooser.addOption("Left", new ConeHighLeaveEngageLeft(drive, arm, claw, this));
+
+    SmartDashboard.putData("Auto Chooser", chooser);
+
     // Configure the trigger bindings
     configureBindings();
    
     //drive buttons
   
+    driveController.x().whileTrue(new AutoLevel(drive));
+
        driveController.rightBumper() 
         .whileTrue(new RunCommand(
             () -> drive.setX(),
@@ -118,7 +124,9 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(Commands.run(() -> arm.rotateBy(-10 * opController.getLeftY()), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+    armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
+                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle()))));
+
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
@@ -139,21 +147,12 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
 
-    opController.start().whileTrue(Commands.run(() -> light.SetColor(255, 255, 0)));
+    opController.start().whileTrue(Commands.run(() -> light.SetColor(255, 225, 0)));
     opController.back().onTrue(new WantCube(light));
     driveController.rightTrigger().onTrue(new ReadyDrop(light));
+
+    //driveController.leftStick().whileTrue(new AutoLevel(drive));
   }
-
-   
-   
-   
-   
-
-
-    //default commands 
-  
-
-  
 
   /**
    * Use this method ito define your trigger->command mappings. Triggers can be created via the

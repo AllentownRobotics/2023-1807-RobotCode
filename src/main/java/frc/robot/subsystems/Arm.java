@@ -51,7 +51,7 @@ public class Arm extends SubsystemBase {
     pidController.setI(ArmConstants.PID_kI);
     pidController.setD(ArmConstants.PID_kD);
     pidController.setFF(ArmConstants.PID_kFF);
-    pidController.setOutputRange(-0.4,0.4);
+    pidController.setOutputRange(-0.3,0.3);
     pidController.setPositionPIDWrappingEnabled(false);
 
     leftMotor.setInverted(false);
@@ -168,7 +168,7 @@ public class Arm extends SubsystemBase {
    * @return If the arm is at the desired angle
    */
   public boolean atSetPoint(){
-    if (Math.abs(encoder.getPosition() - desiredAngle) <= 3.5){
+    if (Math.abs(encoder.getPosition() - desiredAngle) <= 4.5){
       return true;
     }
     return false;

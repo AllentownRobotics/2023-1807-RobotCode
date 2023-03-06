@@ -92,10 +92,10 @@ public static final class NeoMotorConstants {
 
 //Calculations for drive motor conversion factors and feed forwards
     public static final double DRIVE_MOTOR_FREE_SPEED_RPS = NeoMotorConstants.NEO_FREE_SPEED / 60;
-    public static final double WHEEL_DIAMETER_METERS = 0.0762;
+    public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(2.85);
     public static final double WHEEL_CIRCUMFRENCE_METERS = WHEEL_DIAMETER_METERS * Math.PI;
     public static final double DRIVE_MOTOR_REDUCTION = (45.0 * 22) / (DRIVE_MOTOR_TEETH * 15);
-    public static final double DRIVE_WHEEL_FREE_SPEED_RPS = (DRIVE_MOTOR_FREE_SPEED_RPS* WHEEL_CIRCUMFRENCE_METERS) / DRIVE_MOTOR_REDUCTION;
+    public static final double DRIVE_WHEEL_FREE_SPEED_RPS = (DRIVE_MOTOR_FREE_SPEED_RPS * WHEEL_CIRCUMFRENCE_METERS) / DRIVE_MOTOR_REDUCTION;
 
     public static final double DRIVE_ENCODER_POS_FACTOR = (WHEEL_DIAMETER_METERS * Math.PI)
     / DRIVE_MOTOR_REDUCTION; // meters
@@ -166,14 +166,14 @@ public static class ArmConstants{
   
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 10.0;
-  public static final double ANGLE_MANUAL_SPEED_MAX_DEGREESPERSECOND = 120.0;
-  public static final double ANGLE_MANUAL_INPUT_MODIFIER = ANGLE_MANUAL_SPEED_MAX_DEGREESPERSECOND * 0.02;
+  public static final double ANGLE_MID_OFFSET = 15.0;
+  public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
-  public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
-  public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE;
+  public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE - 5.0;
+  public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE - ANGLE_MID_OFFSET;
 
-  public static final double ANGLE_CUBE_HIGH = 201.182 - ANGLE_CUBE_INSURANCE;
-  public static final double ANGLE_CUBE_MID = 224.367 - ANGLE_CUBE_INSURANCE;
+  public static final double ANGLE_CUBE_HIGH = 201.182 - ANGLE_CUBE_INSURANCE - 5.0;
+  public static final double ANGLE_CUBE_MID = 224.367 - ANGLE_CUBE_INSURANCE - ANGLE_MID_OFFSET;
 
   /**
    * Calculates the angle required for the arm to rotate to in order to reach the desired height

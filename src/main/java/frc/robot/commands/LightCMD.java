@@ -15,7 +15,7 @@ public class LightCMD extends CommandBase {
   public LightCMD(int animNumber) {
     this.animNumber = animNumber;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(RobotContainer.light);
+    //addRequirements(RobotContainer.light);
   }
 
   // Called when the command is initially scheduled.

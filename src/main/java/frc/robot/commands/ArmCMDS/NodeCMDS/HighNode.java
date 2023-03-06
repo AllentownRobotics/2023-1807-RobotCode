@@ -19,7 +19,7 @@ import frc.robot.subsystems.Claw;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class HighNode extends SequentialCommandGroup {
  /**
-   * Sequential command group that sets the wrist state down then actuates the arm for placement at high nodes.
+   * Sequential command group that sets the wrist state out then actuates the arm for placement at high nodes.
    * Ends after the currently held game piece is dropped
    * @param arm Arm subsystem
    * @param claw Claw subsystem

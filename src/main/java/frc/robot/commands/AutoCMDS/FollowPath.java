@@ -38,7 +38,7 @@ public class FollowPath {
         new PIDController(AutoContsants.PY_CONTROLLER, 0, 0),
         thetaController,
         m_robotDrive::setModuleStates,
-        true,
+        false,
         m_robotDrive);
         
     // Reset odometry to the starting pose of the trajectory.

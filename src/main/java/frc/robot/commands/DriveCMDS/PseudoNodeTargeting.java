@@ -64,7 +64,7 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
             //Forward Motion Sequence
             //new RunCommand(() -> m_drive.drive(kDrivingPID.calculate(Limelight.y, yTarget), 0, 0, false)).until(() -> kDrivingPID.atSetpoint())
             new TurnTarget(m_drive),
-            new RunCommand(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(controller.getLeftY(), 0.3)), kStrafingPID.calculate(Limelight.x, 0), kturningPID.calculate(m_drive.getHeading(), 180), false)
+            new RunCommand(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(controller.getLeftY(), 0.3)), kStrafingPID.calculate(Limelight.x, 0), kturningPID.calculate(m_drive.getHeading(), 0), false)
             , m_drive)
             //new ForwardCubeTarget(m_drive)
             
