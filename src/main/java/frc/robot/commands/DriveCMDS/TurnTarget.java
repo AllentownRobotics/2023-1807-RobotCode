@@ -1,12 +1,8 @@
 package frc.robot.commands.DriveCMDS;
 
 import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.Limelight;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 
 public class TurnTarget extends CommandBase {
@@ -38,13 +34,13 @@ public class TurnTarget extends CommandBase {
     public void execute() {
 
 
-        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeading(), 0), true);
+        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeadingDegrees(), 0), true);
     }
 
 
     @Override
     public boolean isFinished() {
-        if (Math.abs(s_Swerve.getHeading()) % 360 >= 358 || Math.abs(s_Swerve.getHeading()) % 360 <= 2) {
+        if (Math.abs(s_Swerve.getHeadingDegrees()) % 360 >= 358 || Math.abs(s_Swerve.getHeadingDegrees()) % 360 <= 2) {
             return true;
         } else {return false;}
 

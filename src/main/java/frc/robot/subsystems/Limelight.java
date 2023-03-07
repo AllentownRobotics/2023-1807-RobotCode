@@ -4,15 +4,27 @@
 
 package frc.robot.subsystems;
 
-import java.util.function.BooleanSupplier;
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Utils.Constants.DriveConstants;
+import frc.robot.Utils.Constants.FieldConstants;
 
 public class Limelight extends SubsystemBase {
   public NetworkTable table;
@@ -34,15 +46,20 @@ public class Limelight extends SubsystemBase {
   public double HumanPlayerAprilTag = 5;
   public double RightShelfPOI = 8;
 
-
-
-
   public static double currentPipeline;
+
+  private SwerveDriveOdometry localTargetSpaceOdometry;
 
   /** Creates a new ExampleSubsystem. */
   public Limelight() {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
+  }
+
+  public void initLocalOdometry(DriveTrain drive){
+    localTargetSpaceOdometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, 
+    drive.getHeading(),
+    drive.getModulePositions());
   }
 
   /**
@@ -65,7 +82,6 @@ public class Limelight extends SubsystemBase {
           table.getEntry("ledMode").setDouble(1);
         });
   }
-
 
   public CommandBase setLimePipe() {
     // Inline construction of command goes here.
@@ -145,26 +161,6 @@ public class Limelight extends SubsystemBase {
     return Commands.sequence(LightOff(), setApril2DPipe());
   }
 
-  public CommandBase April3DTracking() {
-    return Commands.sequence(LightOff(), setApril3DPipe());
-  }
-
-  public CommandBase ConeTracking() {
-    return Commands.sequence(LightOff(), setConePipe());
-  }  
-  
-  public CommandBase CubeTracking() {
-    return Commands.sequence(LightOff(), setCubePipe());
-  }
-
-  public CommandBase HPStationTracking() {
-    return Commands.sequence(LightOff(), setHPpipe());
-  }
-
-  public CommandBase ShelfTracking() {
-    return Commands.sequence(LightOff(), setShelfPipe());
-  }
-
   public double angleX() {
     return x;
   }
@@ -173,23 +169,21 @@ public class Limelight extends SubsystemBase {
     return y;
   }
 
-
   public static double distanceFromTargetMeters() {
     
     if (currentPipeline == 0 || currentPipeline == 5 || currentPipeline ==8) {
       return targetRelPos[2];
     } else if (currentPipeline == 1 || currentPipeline == 3) {
       double LLHeight = 0;
-      double LLAngle = 0;
       double TargetHeight = 0;
       double combinedAngle = TargetHeight - y;
-      return (TargetHeight - LLHeight)*Math.tan(Units.degreesToRadians(combinedAngle));
+      return (TargetHeight - LLHeight) * Math.tan(Units.degreesToRadians(combinedAngle));
     }
 
      else {return 0;}
   }
 
-  public double[] april3DCords() {
+  public double[] april3DCordsBotPoseTargetSpace() {
     return table.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
   }
 
@@ -200,20 +194,48 @@ public class Limelight extends SubsystemBase {
 
   }
 
-
-  public BooleanSupplier targetAquired() {
-    return () -> tv;
+  public Pose2d robotPoseTargetSpace(){
+    double[] values = april3DCordsBotPoseTargetSpace();
+    return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
   }
 
-
-  public BooleanSupplier tape() {
-    if (currentPipeline == 1)
-      {return () -> true;}
-      else {return () -> false;}
+  public void resetLocalOdometryPosition(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions){
+    localTargetSpaceOdometry.resetPosition(gyroAngle, modulePositions, robotPoseTargetSpace());
   }
 
-  
+  public boolean targetAquired() {
+    return tv;
+  }
 
+  public PathPlannerTrajectory generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
+    Rotation2d heading = new Rotation2d(xVel, yVel);
+    Translation2d targetNodePosition = new Translation2d(offset, -0.75);
+    return PathPlanner.generatePath(
+      new PathConstraints(3, 3),
+      new PathPoint(localTargetSpaceOdometry.getPoseMeters().getTranslation(), heading, robotOrientation),
+      new PathPoint(targetNodePosition, heading, new Rotation2d(Math.PI))
+    );
+  }
+
+  public PathPlannerTrajectory generateSubstationTrajectory(Pose2d robotPose, double xVel, double yVel){
+    Rotation2d heading = new Rotation2d(xVel, yVel);
+    return PathPlanner.generatePath(
+      new PathConstraints(3, 3),
+      new PathPoint(robotPose.getTranslation(), heading, robotPose.getRotation()),
+      new PathPoint(FieldConstants.SINGLESUBSTATION_ALLIANCERELATIVE, heading, new Rotation2d(Math.PI / 2.0))
+    );
+  }
+
+  public Pose2d robotPoseAllianceSpace(){
+    String entryName = DriverStation.getAlliance().equals(Alliance.Blue) ? "botpose_wpiblue" : "botpose_wpired";
+    double[] values = table.getEntry(entryName).getDoubleArray(new double[6]);
+
+    return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
+  }
+
+  public SwerveDriveOdometry getLocalOdometryInstance(){
+    return localTargetSpaceOdometry;
+  }
 
   @Override
   public void periodic() {
@@ -249,13 +271,6 @@ public class Limelight extends SubsystemBase {
 
       SmartDashboard.putNumber("Pipeline", currentPipeline);
     } catch (Exception e) {}
-
-
-
-
-
-
-
   }
 
 }

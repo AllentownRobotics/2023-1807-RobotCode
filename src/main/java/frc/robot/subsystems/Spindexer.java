@@ -15,9 +15,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Constants.SpindexerConstants;
 
 public class Spindexer extends SubsystemBase {
-
-
-  private CANSparkMax spindexMotor;
   CANSparkMax motor = new CANSparkMax(SpindexerConstants.SPINDEXER_MOTOR_ID, MotorType.kBrushless);
 
   RelativeEncoder encoder;

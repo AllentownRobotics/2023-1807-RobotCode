@@ -9,6 +9,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.subsystems.DriveTrain;
@@ -17,32 +18,38 @@ import frc.robot.subsystems.DriveTrain;
 public class FollowPath {
     PathPlannerTrajectory autoTrajectory = null;
     DriveTrain m_robotDrive;
+    SwerveDriveOdometry odometry;
+
     public FollowPath(String path, double maxvel, double maxaccel, DriveTrain driveSubsystem)
     {
         autoTrajectory = PathPlanner.loadPath(path, maxvel, maxaccel);
         m_robotDrive = driveSubsystem;
+        odometry = driveSubsystem.getOdometryInstance();
+    }
+
+    public FollowPath(PathPlannerTrajectory path, double maxVelocity, double maxAccel, DriveTrain driveSubsystem, SwerveDriveOdometry odometry){
+        autoTrajectory = path;
+        m_robotDrive = driveSubsystem;
+        this.odometry = odometry;
     }
 
     public PPSwerveControllerCommand getCommand()
     {
-        var thetaController = new PIDController(
-        AutoContsants.P_THETA_CONTROLLER, 0, 0);
-    thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    PPSwerveControllerCommand swerveControllerCommand = new PPSwerveControllerCommand(
-        autoTrajectory,
-        m_robotDrive::getPose, // Functional interface to feed supplier
-        DriveConstants.DRIVE_KINEMATICS,
+        var thetaController = new PIDController(AutoContsants.P_THETA_CONTROLLER, 0, 0);
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        PPSwerveControllerCommand swerveControllerCommand = new PPSwerveControllerCommand(
+            autoTrajectory,
+            m_robotDrive::getPose, // Functional interface to feed supplier
+            DriveConstants.DRIVE_KINEMATICS,
 
         // Position controllers
-        new PIDController(AutoContsants.PX_CONTROLLER, 0, 0),
-        new PIDController(AutoContsants.PY_CONTROLLER, 0, 0),
-        thetaController,
-        m_robotDrive::setModuleStates,
-        false,
-        m_robotDrive);
-        
-    // Reset odometry to the starting pose of the trajectory.
-    //m_robotDrive.resetOdometry(autoTrajectory.getInitialPose());
+            new PIDController(AutoContsants.PX_CONTROLLER, 0, 0),
+            new PIDController(AutoContsants.PY_CONTROLLER, 0, 0),
+            thetaController,
+            m_robotDrive::setModuleStates,
+            false,
+            m_robotDrive);
 
     // Run path following command, then stop at the end.
     return swerveControllerCommand;

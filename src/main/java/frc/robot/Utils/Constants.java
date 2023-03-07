@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.util.Color;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -22,7 +21,7 @@ import edu.wpi.first.wpilibj.util.Color;
  */
 public final class Constants {
  
-  public static class ControllerConstants{ 
+public static class ControllerConstants{ 
     public static final int DRIVE_CONTROLLER = 1;
     public static final int OP_CONTROLLER = 0; 
     public static final double OP_CONTROLLER_THRESHOLD_SPINDEXER = 0.08;
@@ -38,44 +37,55 @@ public static final int PNEUMATICS_ID = 14;
 public static final int PIGEON_ID = 9;
 }
 
+public static class FieldConstants{
+  public static Translation2d SINGLESUBSTATION_ALLIANCERELATIVE = new Translation2d(14.2, 7.5);
+  public static double POST_LATERALOFFSET_FROMAPRILTAG_METERS = Units.inchesToMeters(9.5);
+}
 
 //DriveTrain
 public static final class DriveConstants{
 
-//Drive parameters 
-public static final double MAX_SPEED_MPS = 4;
-public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
+  public static final double ODOMETRY_SHELFLIFE_SECONDS = 10.0;
 
-//chassis config
-public static final double TRACK_WIDTH = Units.inchesToMeters(26); 
-public static final double WHEEL_BASE = Units.inchesToMeters(26);
+  //Drive parameters 
+  public static final double MAX_SPEED_MPS = 4;
+  public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
 
-public static final SwerveDriveKinematics DRIVE_KINEMATICS = new SwerveDriveKinematics(
+  //chassis config
+  public static final double TRACK_WIDTH = Units.inchesToMeters(26); 
+  public static final double WHEEL_BASE = Units.inchesToMeters(26);
+
+  /**
+   * Follows Unified order
+   */
+  public static final Translation2d[] MODULE_POSITIONS = {
     new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2),
     new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2),
     new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2),
-    new Translation2d(-WHEEL_BASE /2, -TRACK_WIDTH /2));
+    new Translation2d(-WHEEL_BASE /2, -TRACK_WIDTH /2)};
 
-//angular offsets of modules from chassis
-public static final double FL_CHASSIS_OFFSET = -Math.PI / 2;
-public static final double FR_CHASSIS_OFFSET = 0.0; 
-public static final double BL_CHASSIS_OFFSET = Math.PI; 
-public static final double BR_CHASSIS_OFFSET = Math.PI / 2;
+  public static final SwerveDriveKinematics DRIVE_KINEMATICS = new SwerveDriveKinematics(MODULE_POSITIONS);
 
-//SPARK CAN IDS
-/*driving motor ids */
-public static final int FL_DRIVE_ID = 1;
-public static final int BL_DRIVE_ID = 5;
-public static final int FR_DRIVE_ID = 3;
-public static final int BR_DRIVE_ID = 7; 
+  //angular offsets of modules from chassis
+  public static final double FL_CHASSIS_OFFSET = -Math.PI / 2;
+  public static final double FR_CHASSIS_OFFSET = 0.0; 
+  public static final double BL_CHASSIS_OFFSET = Math.PI; 
+  public static final double BR_CHASSIS_OFFSET = Math.PI / 2;
 
-/*turning motors ids */
-public static final int FL_TURN_ID = 2; 
-public static final int BL_TURN_ID = 6; 
-public static final int FR_TURN_ID = 4; 
-public static final int BR_TURN_ID = 8;
+  //SPARK CAN IDS
+  /*driving motor ids */
+  public static final int FL_DRIVE_ID = 1;
+  public static final int BL_DRIVE_ID = 5;
+  public static final int FR_DRIVE_ID = 3;
+  public static final int BR_DRIVE_ID = 7; 
 
-public static final boolean GYRO_REVERSED = false;
+  /*turning motors ids */
+  public static final int FL_TURN_ID = 2; 
+  public static final int BL_TURN_ID = 6; 
+  public static final int FR_TURN_ID = 4; 
+  public static final int BR_TURN_ID = 8;
+
+  public static final boolean GYRO_REVERSED = false;
 
 
 }
@@ -86,11 +96,11 @@ public static final class NeoMotorConstants {
 
   public static final class ModuleConstants{
     /*pinion gear teeth */    
-    public static final int DRIVE_MOTOR_TEETH = 13;  
+    public static final int DRIVE_MOTOR_TEETH = 14;  
 
     public static final boolean TURN_ENCODER_INVERTED = true;
 
-//Calculations for drive motor conversion factors and feed forwards
+    //Calculations for drive motor conversion factors and feed forwards
     public static final double DRIVE_MOTOR_FREE_SPEED_RPS = NeoMotorConstants.NEO_FREE_SPEED / 60;
     public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(2.85);
     public static final double WHEEL_CIRCUMFRENCE_METERS = WHEEL_DIAMETER_METERS * Math.PI;
@@ -250,5 +260,4 @@ public static class AnimNumberConstants {
   public static final int ENDGAME_ANIM_NUMBER = 7;
   public static final int RESET_ANIM_NUMBER = 8;
 }
-
 }

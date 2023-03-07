@@ -12,8 +12,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Utils.Constants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,8 +54,11 @@ public class DriveTrain extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
+  private double lastOdometryReset;
+
   /** Creates a new DriveSubsystem. */
   public DriveTrain() {
+    lastOdometryReset = 0.0;
   }
 
   @Override
@@ -86,6 +89,8 @@ public class DriveTrain extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
   public void resetOdometry(Pose2d pose) {
+    double periodTotalTime = DriverStation.isTeleop() ? 135.0 : 15.0;
+
     m_odometry.resetPosition(
         m_gyro.getRotation2d(),
         new SwerveModulePosition[] {
@@ -95,6 +100,21 @@ public class DriveTrain extends SubsystemBase {
             m_rearRight.getPosition()
         },
         pose);
+
+    
+    lastOdometryReset = periodTotalTime - DriverStation.getMatchTime();
+  }
+
+  public SwerveDriveOdometry getOdometryInstance(){
+    return m_odometry;
+  }
+
+  public boolean isOdometryValid(){
+    double periodTotalTime = DriverStation.isTeleop() ? 135.0 : 15.0;
+    double currentTime = periodTotalTime - DriverStation.getMatchTime();
+    double timeSinceReset = currentTime - lastOdometryReset;
+
+    return timeSinceReset <= DriveConstants.ODOMETRY_SHELFLIFE_SECONDS;
   }
 
   /**
@@ -169,13 +189,35 @@ public class DriveTrain extends SubsystemBase {
     m_gyro.reset();
   }
 
+  public SwerveModulePosition[] getModulePositions(){
+    return new SwerveModulePosition[] {
+      m_frontLeft.getPosition(),
+      m_frontRight.getPosition(),
+      m_rearLeft.getPosition(),
+      m_rearRight.getPosition()
+    };
+  }
+
+  public SwerveModuleState[] getModuleStates(){
+    return new SwerveModuleState[]{
+      m_frontLeft.getState(),
+      m_frontRight.getState(),
+      m_rearLeft.getState(),
+      m_rearRight.getState()
+    };
+  }
+
   /**
    * Returns the heading of the robot.
    *
    * @return the robot's heading in degrees, from -180 to 180
    */
-  public double getHeading() {
+  public double getHeadingDegrees() {
     return m_gyro.getRotation2d().getDegrees();
+  }
+
+  public Rotation2d getHeading(){
+    return m_gyro.getRotation2d();
   }
 
   public double getRoll() {
@@ -189,6 +231,10 @@ public class DriveTrain extends SubsystemBase {
     m_rearRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
   }
   
+  public ChassisSpeeds getCompononetVelocities(){
+    return DriveConstants.DRIVE_KINEMATICS.toChassisSpeeds(getModuleStates());
+  }
+
   /**
    * Returns the turn rate of the robot.
    *

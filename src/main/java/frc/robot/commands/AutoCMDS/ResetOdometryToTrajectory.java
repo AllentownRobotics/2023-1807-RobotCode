@@ -13,10 +13,10 @@ import frc.robot.subsystems.DriveTrain;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ResetOdometrytoTrajectory extends InstantCommand {
+public class ResetOdometryToTrajectory extends InstantCommand {
   PathPlannerTrajectory autoTrajectory = null;
   DriveTrain driveSubsystem = null;
-  public ResetOdometrytoTrajectory(String path, DriveTrain driveSubsystem) {
+  public ResetOdometryToTrajectory(String path, DriveTrain driveSubsystem) {
     autoTrajectory = PathPlanner.loadPath(path, AutoContsants.AUTO_MAX_SPEED_MPS, AutoContsants.AUTO_MAX_ACCELERATION_MPS_SQUARED);
     this.driveSubsystem = driveSubsystem;
     // Use addRequirements() here to declare subsystem dependencies.

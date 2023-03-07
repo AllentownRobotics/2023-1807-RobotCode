@@ -6,6 +6,8 @@ package frc.robot;
 
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,26 +17,22 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ControllerConstants;
-import frc.robot.Utils.Enums.ClawState;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
-import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.ArmCMDS.ResetArm;
-import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoLevel;
+import frc.robot.commands.AutoCMDS.FollowPath;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngageLeft;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-import frc.robot.commands.LEDCMDS.ReadyDrop;
+import frc.robot.commands.LEDCMDS.WantCone;
 import frc.robot.commands.LEDCMDS.WantCube;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
@@ -54,16 +52,15 @@ import frc.robot.subsystems.Spindexer;
  */
 public class RobotContainer {
   //subsystems 
-  public static DriveTrain drive = new DriveTrain();
-  public static Claw claw = new Claw();
-  public static Arm arm = new Arm(claw);
+  public DriveTrain drive = new DriveTrain();
+  public Claw claw = new Claw();
+  public Arm arm = new Arm(claw);
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
   public static LED light = new LED();
   public static Limelight limelight = new Limelight();
   
-  
-  
+
 
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
@@ -72,7 +69,8 @@ public class RobotContainer {
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
   
-  
+  Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
+
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
   boolean fieldOriented = true;
@@ -81,6 +79,9 @@ public class RobotContainer {
   private SendableChooser<Command> chooser = new SendableChooser<Command>();
   
   public RobotContainer() {
+
+    limelight.initLocalOdometry(drive);
+    limelight.April2DTracking();
     
     comp.setDefaultCommand(new CompressCMD());
     drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
@@ -109,8 +110,6 @@ public class RobotContainer {
             () -> drive.zeroHeading(),
             drive));
 
-    driveController.povUp().onTrue(limelight.April2DTracking());
-    driveController.povDown().onTrue(limelight.TapeTracking());
 
     driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController));
 
@@ -147,11 +146,48 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
 
-    opController.start().whileTrue(Commands.run(() -> light.SetColor(255, 225, 0)));
+    opController.start().onTrue(new WantCone(light));
     opController.back().onTrue(new WantCube(light));
-    driveController.rightTrigger().onTrue(new ReadyDrop(light));
 
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
+
+    // Right Nodes
+    driveController.povRight().whileTrue(new FollowPath(
+        limelight.generateNodeTrajectory(drive.getHeading(), 
+          -Units.inchesToMeters(10.0),
+          drive.getCompononetVelocities().vxMetersPerSecond, 
+          drive.getCompononetVelocities().vyMetersPerSecond), 
+        2.0,
+        1.5, 
+        drive, 
+        limelight.getLocalOdometryInstance()).getCommand());
+
+    // Left Nodes
+    driveController.povLeft().whileTrue(new FollowPath(
+        limelight.generateNodeTrajectory(drive.getHeading(), 
+          Units.inchesToMeters(10.0),
+          drive.getCompononetVelocities().vxMetersPerSecond, 
+          drive.getCompononetVelocities().vyMetersPerSecond), 
+        2.0,
+        1.5, 
+        drive, 
+        limelight.getLocalOdometryInstance()).getCommand());
+    
+    // Cube Nodes
+    driveController.povUp().whileTrue(new FollowPath(
+        limelight.generateNodeTrajectory(drive.getHeading(), 
+          0.0,
+          drive.getCompononetVelocities().vxMetersPerSecond, 
+          drive.getCompononetVelocities().vyMetersPerSecond), 
+        2.0,
+        1.5, 
+        drive, 
+        limelight.getLocalOdometryInstance()).getCommand());
+
+    // Odometry Sanity Check
+    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(Commands.repeatingSequence(Commands.waitSeconds(0.75).andThen(
+        Commands.runOnce(() -> drive.resetOdometry(limelight.robotPoseAllianceSpace())).andThen(
+        Commands.runOnce(() -> limelight.resetLocalOdometryPosition(drive.getHeading(), drive.getModulePositions()))))));
   }
 
   /**
