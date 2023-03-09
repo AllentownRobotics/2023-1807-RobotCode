@@ -16,7 +16,7 @@ public class AprilTagOdometryHandler extends ParallelCommandGroup {
   /** Creates a new AprilTagOdometryHandler. */
   public AprilTagOdometryHandler(DriveTrain drive, Limelight limelight) {
     addCommands(Commands.repeatingSequence(Commands.waitSeconds(0.75).andThen(
-        Commands.runOnce(() -> drive.resetOdometry(limelight.robotPoseAllianceSpace())))),
+          Commands.runOnce(() -> drive.resetOdometry(limelight.robotPoseAllianceSpace())))),
       Commands.repeatingSequence(Commands.runOnce(() -> limelight.resetLocalOdometryPosition(drive.getHeading(), drive.getModulePositions()))));
   }
 }

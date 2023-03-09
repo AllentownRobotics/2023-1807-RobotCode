@@ -25,8 +25,8 @@ import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
+import frc.robot.commands.AutoCMDS.AutoAlignNodes;
 import frc.robot.commands.AutoCMDS.AutoLevel;
-import frc.robot.commands.AutoCMDS.FollowPath;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngageLeft;
@@ -98,9 +98,24 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
-   
-    //drive buttons
-  
+
+    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
+      Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
+
+    // Odometry Sanity Check
+    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(new AprilTagOdometryHandler(drive, limelight));
+  }
+
+  /**
+   * Use this method ito define your trigger->command mappings. Triggers can be created via the
+   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+   * predicate, or via the named factories in {@link
+   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * joysticks}.
+   */
+  private void configureBindings() {
     driveController.x().whileTrue(new AutoLevel(drive));
 
        driveController.rightBumper() 
@@ -136,10 +151,6 @@ public class RobotContainer {
     opController.leftBumper().whileTrue(Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cube))).onFalse(
                                             Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cone)));
 
-    // AUTO WRIST
-    wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
-                                            Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
-
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
 
@@ -158,58 +169,13 @@ public class RobotContainer {
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
 
     // Right Nodes
-    driveController.povRight().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
-        limelight.generateNodeTrajectory(drive.getHeading(), 
-          -Units.inchesToMeters(10.0),
-          drive.getCompononetVelocities().vxMetersPerSecond, 
-          drive.getCompononetVelocities().vyMetersPerSecond), 
-        2.0,
-        1.5, 
-        drive, 
-        limelight.getLocalOdometryInstance()).getCommand());
+    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10)));
 
     // Left Nodes
-    driveController.povLeft().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
-        limelight.generateNodeTrajectory(drive.getHeading(), 
-          Units.inchesToMeters(10.0),
-          drive.getCompononetVelocities().vxMetersPerSecond, 
-          drive.getCompononetVelocities().vyMetersPerSecond), 
-        2.0,
-        1.5, 
-        drive, 
-        limelight.getLocalOdometryInstance()).getCommand());
+    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10)));
     
     // Cube Nodes
-    driveController.povDown().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
-        limelight.generateNodeTrajectory(drive.getHeading(), 
-          0.0,
-          drive.getCompononetVelocities().vxMetersPerSecond, 
-          drive.getCompononetVelocities().vyMetersPerSecond), 
-        2.0,
-        1.5, 
-        drive, 
-        limelight.getLocalOdometryInstance()).getCommand());
-
-    // Odometry Sanity Check
-    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(new AprilTagOdometryHandler(drive, limelight));
-  }
-
-  /**
-   * Use this method ito define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-  
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-
+    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0));
   }
 
   /**

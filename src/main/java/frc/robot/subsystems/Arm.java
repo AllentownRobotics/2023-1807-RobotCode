@@ -42,7 +42,7 @@ public class Arm extends SubsystemBase {
     encoder = ArmConstants.USE_LEFT_ENCODER ? leftMotor.getAbsoluteEncoder(Type.kDutyCycle) : rightMotor.getAbsoluteEncoder(Type.kDutyCycle); 
     encoder.setInverted(!ArmConstants.USE_LEFT_ENCODER);
     encoder.setPositionConversionFactor(360.0);
-    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor() / 60.0);
+    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor());
     
     pidController = leftMotor.getPIDController();
     pidController.setFeedbackDevice(encoder);
@@ -85,10 +85,14 @@ public class Arm extends SubsystemBase {
 
   @Override
   public void periodic() {
-    pidController.setReference(desiredAngle, ControlType.kPosition);
+    pidController.setReference(desiredAngle, ControlType.kPosition, 0);
 
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
+    SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
+
+    putPIDValues();
+    reassignPIDValues();
   }
 
   /**
@@ -240,15 +244,18 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));
   }
 
+  /**
+   * Sets all PID values to SmartDashboard values
+   */
   public void reassignPIDValues(){
     pidController.setP(SmartDashboard.getNumber("P", 0.0), 0);
     pidController.setI(SmartDashboard.getNumber("I", 0.0), 0);
     pidController.setD(SmartDashboard.getNumber("D", 0.0), 0);
     pidController.setFF(SmartDashboard.getNumber("FF", 0.0), 0);
     pidController.setOutputRange(SmartDashboard.getNumber("Min percent", 0.0), SmartDashboard.getNumber("Max percent", 0.0), 0);
-    SmartDashboard.getNumber("MaxAcceleration", 0.0);
-    SmartDashboard.getNumber("MaxVelocity", 0.0);
-    SmartDashboard.getNumber("MinVelocity", 0.0);
-    SmartDashboard.getNumber("MinError", 0.0);
+    pidController.setSmartMotionMaxAccel(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MaxAcceleration", 0.0)), 0);
+    pidController.setSmartMotionMaxVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MaxVelocity", 0.0)), 0);
+    pidController.setSmartMotionMinOutputVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MinVelocity", 0.0)), 0);
+    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);
   }
 }
