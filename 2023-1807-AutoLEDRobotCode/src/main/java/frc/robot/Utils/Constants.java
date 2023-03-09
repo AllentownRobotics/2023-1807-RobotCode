@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 
 /**
@@ -246,10 +248,9 @@ public static class AnimNumberConstants {
 
   public static final int CONE_SCORE_ANIM_NUMBER = 5;
   public static final int CUBE_SCORE_ANIM_NUMBER = 6;
-  public static final int READY_DROP_ANIM_NUMBER = 7;
 
-  public static final int ENDGAME_ANIM_NUMBER = 8;
-  public static final int RESET_ANIM_NUMBER = 9;
+  public static final int ENDGAME_ANIM_NUMBER = 7;
+  public static final int RESET_ANIM_NUMBER = 8;
+}
 }
 
-}

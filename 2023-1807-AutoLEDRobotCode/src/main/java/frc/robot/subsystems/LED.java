@@ -18,7 +18,9 @@ import com.ctre.phoenix.led.SingleFadeAnimation;
 import com.ctre.phoenix.led.StrobeAnimation;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LED extends SubsystemBase {
@@ -36,9 +38,15 @@ public class LED extends SubsystemBase {
   BounceMode bounce;
   WPI_Pigeon2 pigeon;
 
+  public static int TEAM_R;
+  public static int TEAM_G;
+  public static int TEAM_B;
+
   public static Timer timer;
 
   double endgameBright;
+  double tilt;
+
   public static int animNumber;
   
   public LED() {
@@ -58,8 +66,26 @@ public class LED extends SubsystemBase {
 
     pigeon = new WPI_Pigeon2(9);
 
+    DriverStation.Alliance alliance = DriverStation.getAlliance();
+  
+    if (alliance == DriverStation.Alliance.Blue) {
+      TEAM_R = ColorConstants.BLUE_TEAM_R;
+      TEAM_G = ColorConstants.BLUE_TEAM_G;
+      TEAM_B = ColorConstants.BLUE_TEAM_B;
+    }
+    else if (alliance == DriverStation.Alliance.Red) {
+      TEAM_R = ColorConstants.RED_TEAM_R;
+      TEAM_G = ColorConstants.RED_TEAM_G;
+      TEAM_B = ColorConstants.RED_TEAM_B;
+    }
+    else { 
+      TEAM_R = 255;
+      TEAM_G = 255;
+      TEAM_B = 255;
+    }
+
     idleFadeAnim = new SingleFadeAnimation
-    (ColorConstants.RED_TEAM_R, ColorConstants.RED_TEAM_G, ColorConstants.RED_TEAM_B, 
+    (TEAM_R, TEAM_G, TEAM_B, 
     0, .15, 68, 0);
 
     coneFlowAnim = new ColorFlowAnimation
@@ -108,10 +134,6 @@ public class LED extends SubsystemBase {
   
   public void CubeTransportAnim() {
     candle.animate(cubeLarsonAnim, 2);
-  }
-
-  public void ReadyDropAnim() {
-    candle.setLEDs(0, 255, 0);
   }
 
   public void ConeScoreAnim() {
@@ -164,14 +186,21 @@ public void EndGameAnim() {
   while (true) {
   SetEndgameBright();
   candle.configBrightnessScalar(endgameBright);
-  candle.setLEDs(ColorConstants.RED_TEAM_R, ColorConstants.RED_TEAM_G, ColorConstants.RED_TEAM_B);
+  candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
+  while (tilt < 2.5) {
+    timer.start();
+    candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
+    Timer.delay(.5);
+    candle.setLEDs(0, 0, 0);
+    Timer.delay(.5);
+  }
   }
 }
 
 public double SetEndgameBright() {
 
   // use the pythagorean theorem to account for pitch and roll in one variable
-  double tilt = (Math.sqrt((Math.pow(pigeon.getRoll(), 2)) + Math.pow(pigeon.getPitch(), 2)));
+  tilt = (Math.sqrt((Math.pow(pigeon.getRoll(), 2)) + Math.pow(pigeon.getPitch(), 2)));
   
   while (true) {
     // function to set the brightness (logistic function I picked, you can pick your own)
@@ -225,8 +254,6 @@ public double SetEndgameBright() {
       case AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER: CubeScoreAnim();
       break;
       case AnimNumberConstants.ENDGAME_ANIM_NUMBER: EndGameAnim();
-      break;
-      case AnimNumberConstants.READY_DROP_ANIM_NUMBER: ReadyDropAnim();
       break;
       case AnimNumberConstants.RESET_ANIM_NUMBER: NoAnim();
       break;

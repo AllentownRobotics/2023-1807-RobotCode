@@ -151,7 +151,6 @@ public class RobotContainer {
 
     opController.start().whileTrue(Commands.runOnce(() -> light.setAnimNumber(AnimNumberConstants.CONE_REQ_ANIM_NUMBER)));
     opController.back().onTrue(Commands.runOnce(() -> light.setAnimNumber(AnimNumberConstants.CUBE_REQ_ANIM_NUMBER)));
-    driveController.rightTrigger().onTrue(Commands.runOnce(() -> light.setAnimNumber(AnimNumberConstants.READY_DROP_ANIM_NUMBER)));
 
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
   }
