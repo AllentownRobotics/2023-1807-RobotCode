@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -47,12 +48,18 @@ public class Arm extends SubsystemBase {
     pidController.setFeedbackDevice(encoder);
 
     // Set PID values from SysID
-    pidController.setP(ArmConstants.PID_kP);
-    pidController.setI(ArmConstants.PID_kI);
-    pidController.setD(ArmConstants.PID_kD);
-    pidController.setFF(ArmConstants.PID_kFF);
-    pidController.setOutputRange(-0.3,0.3);
+    pidController.setP(ArmConstants.PID_kP, 0);
+    pidController.setI(ArmConstants.PID_kI, 0);
+    pidController.setD(ArmConstants.PID_kD, 0);
+    pidController.setFF(ArmConstants.PID_kFF, 0);
+    pidController.setOutputRange(-0.35, 0.35, 0);
     pidController.setPositionPIDWrappingEnabled(false);
+
+    pidController.setSmartMotionAccelStrategy(AccelStrategy.kSCurve, 0);
+    pidController.setSmartMotionMaxVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(ArmConstants.MAX_SPEED_LINEAR_METERSPERSECOND), 0);
+    pidController.setSmartMotionMaxAccel(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(ArmConstants.MAX_SPEED_LINEAR_METERSPERSECOND) * 10, 0);
+    pidController.setSmartMotionMinOutputVelocity(0.5, 0);
+    pidController.setSmartMotionAllowedClosedLoopError(0.5, 0);
 
     leftMotor.setInverted(false);
 
@@ -156,10 +163,7 @@ public class Arm extends SubsystemBase {
    * @return Inverse of the claws current state
    */
   public boolean getNOTHolding(){
-    if (claw.clawState.equals(ClawState.Open)){
-      return true;
-    }
-    return false;
+    return claw.getClawState().equals(ClawState.Open);
   }
 
   /**
@@ -220,4 +224,31 @@ public class Arm extends SubsystemBase {
     leftMotor.set(percentSpeed);
   }
 
+  /**
+   * Puts all PID values on SmartDashboard
+   */
+  public void putPIDValues(){
+    SmartDashboard.putNumber("P", pidController.getP(0));
+    SmartDashboard.putNumber("I", pidController.getI(0));
+    SmartDashboard.putNumber("D", pidController.getD(0));
+    SmartDashboard.putNumber("FF", pidController.getFF(0));
+    SmartDashboard.putNumber("Min percent", pidController.getOutputMin(0));
+    SmartDashboard.putNumber("Max percent", pidController.getOutputMax(0));
+    SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
+    SmartDashboard.putNumber("MaxVelocity", pidController.getSmartMotionMaxVelocity(0));
+    SmartDashboard.putNumber("MinVelocity", pidController.getSmartMotionMinOutputVelocity(0));
+    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));
+  }
+
+  public void reassignPIDValues(){
+    pidController.setP(SmartDashboard.getNumber("P", 0.0), 0);
+    pidController.setI(SmartDashboard.getNumber("I", 0.0), 0);
+    pidController.setD(SmartDashboard.getNumber("D", 0.0), 0);
+    pidController.setFF(SmartDashboard.getNumber("FF", 0.0), 0);
+    pidController.setOutputRange(SmartDashboard.getNumber("Min percent", 0.0), SmartDashboard.getNumber("Max percent", 0.0), 0);
+    SmartDashboard.getNumber("MaxAcceleration", 0.0);
+    SmartDashboard.getNumber("MaxVelocity", 0.0);
+    SmartDashboard.getNumber("MinVelocity", 0.0);
+    SmartDashboard.getNumber("MinError", 0.0);
+  }
 }

@@ -173,17 +173,19 @@ public static class ArmConstants{
   public static final double PID_kI = 0.00000001;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0005;
+  public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.0;
   
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 10.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
-  public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE - 5.0;
+  public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
   public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE - ANGLE_MID_OFFSET;
 
-  public static final double ANGLE_CUBE_HIGH = 201.182 - ANGLE_CUBE_INSURANCE - 5.0;
+  public static final double ANGLE_CUBE_HIGH = 201.182 - ANGLE_CUBE_INSURANCE;
   public static final double ANGLE_CUBE_MID = 224.367 - ANGLE_CUBE_INSURANCE - ANGLE_MID_OFFSET;
+  
 
   /**
    * Calculates the angle required for the arm to rotate to in order to reach the desired height
@@ -197,6 +199,17 @@ public static class ArmConstants{
     double angle = (angleABS - ANGLE_OFFSET_FROM_VERTICAL_DEGREES) + ANGLE_OFFSET_FROM_ZERO;
 
     return angle;
+  }
+
+  /**
+   * Calculates the angular velocity for the arm to rotate at in order to reach the desired linear velociy
+   * @param metersPerSecond Linear velocity to convert to angular velocity
+   * @return The angular velocity which corresponds to the linear velocity provided in degrees per second
+   */
+  public static double ANGULARVELOCITY_FROM_LINEAR(double metersPerSecond){
+    double armCircumfrence = 2.0 * Units.inchesToMeters(ARM_LENGTH_INCHES) * Math.PI;
+    double angularVelocity = (metersPerSecond / armCircumfrence) * 360.0;
+    return angularVelocity;
   }
 
 }

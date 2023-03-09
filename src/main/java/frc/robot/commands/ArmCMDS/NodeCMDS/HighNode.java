@@ -5,7 +5,6 @@
 package frc.robot.commands.ArmCMDS.NodeCMDS;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Enums.WristState;
 import frc.robot.commands.ArmCMDS.WaitForPlace;
@@ -25,8 +24,8 @@ public class HighNode extends SequentialCommandGroup {
    * @param claw Claw subsystem
    * @param controller Operator controller
    */
-  public HighNode(Arm arm, Claw claw, CommandXboxController controller) {
+  public HighNode(Arm arm, Claw claw) {
     addCommands(new SetWristState(claw, WristState.WristOut),
-                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH), controller));
+                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH)));
   }
 }

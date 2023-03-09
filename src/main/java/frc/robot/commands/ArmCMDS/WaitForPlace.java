@@ -6,9 +6,7 @@ package frc.robot.commands.ArmCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
-import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetCubeOrCone;
 import frc.robot.subsystems.Arm;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -21,11 +19,11 @@ public class WaitForPlace extends ParallelDeadlineGroup {
    * the currently held game piece. Allows for the operator to switch between cube and cone placement angles.
    * Ends once the operator places the piece
    */
-  public WaitForPlace(Arm arm, SetArmAngle angles, CommandXboxController controller) {
+  public WaitForPlace(Arm arm, SetArmAngle angles) {
     // Add the deadline command in the super() call. Add other commands using
     // addCommands().
     super(Commands.waitUntil(arm::getNOTHolding));
 
-    addCommands(Commands.repeatingSequence(angles, new SetCubeOrCone(arm, controller)));
+    addCommands(Commands.repeatingSequence(angles));
   }
 }

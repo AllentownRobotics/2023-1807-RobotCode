@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ControllerConstants;
+import frc.robot.Utils.Enums.PlacementType;
+import frc.robot.commands.AprilTagOdometryHandler;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.ResetArm;
@@ -58,7 +60,7 @@ public class RobotContainer {
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
   public static LED light = new LED();
-  public static Limelight limelight = new Limelight();
+  public Limelight limelight = new Limelight(this);
   
 
 
@@ -114,10 +116,10 @@ public class RobotContainer {
     driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController));
 
     // HIGH PLACEMENT
-    opController.povUp().onTrue(new HighNode(arm, claw, opController));
+    opController.povUp().onTrue(new HighNode(arm, claw));
     
     // MID PLACEMENT
-    opController.povLeft().onTrue(new MidNode(arm, claw, opController));
+    opController.povLeft().onTrue(new MidNode(arm, claw));
     
     // ARM RESET
     opController.povDown().onTrue(new ResetArm(this));
@@ -129,6 +131,10 @@ public class RobotContainer {
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
+
+    // USE CUBE OR CONE
+    opController.leftBumper().whileTrue(Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cube))).onFalse(
+                                            Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cone)));
 
     // AUTO WRIST
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
@@ -152,7 +158,7 @@ public class RobotContainer {
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
 
     // Right Nodes
-    driveController.povRight().whileTrue(new FollowPath(
+    driveController.povRight().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
         limelight.generateNodeTrajectory(drive.getHeading(), 
           -Units.inchesToMeters(10.0),
           drive.getCompononetVelocities().vxMetersPerSecond, 
@@ -163,7 +169,7 @@ public class RobotContainer {
         limelight.getLocalOdometryInstance()).getCommand());
 
     // Left Nodes
-    driveController.povLeft().whileTrue(new FollowPath(
+    driveController.povLeft().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
         limelight.generateNodeTrajectory(drive.getHeading(), 
           Units.inchesToMeters(10.0),
           drive.getCompononetVelocities().vxMetersPerSecond, 
@@ -174,7 +180,7 @@ public class RobotContainer {
         limelight.getLocalOdometryInstance()).getCommand());
     
     // Cube Nodes
-    driveController.povUp().whileTrue(new FollowPath(
+    driveController.povDown().and(limelight::isTargetNodeTag).whileTrue(new FollowPath(
         limelight.generateNodeTrajectory(drive.getHeading(), 
           0.0,
           drive.getCompononetVelocities().vxMetersPerSecond, 
@@ -185,9 +191,7 @@ public class RobotContainer {
         limelight.getLocalOdometryInstance()).getCommand());
 
     // Odometry Sanity Check
-    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(Commands.repeatingSequence(Commands.waitSeconds(0.75).andThen(
-        Commands.runOnce(() -> drive.resetOdometry(limelight.robotPoseAllianceSpace())).andThen(
-        Commands.runOnce(() -> limelight.resetLocalOdometryPosition(drive.getHeading(), drive.getModulePositions()))))));
+    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(new AprilTagOdometryHandler(drive, limelight));
   }
 
   /**

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.FieldConstants;
 
@@ -48,12 +49,16 @@ public class Limelight extends SubsystemBase {
 
   public static double currentPipeline;
 
+  RobotContainer rc;
+
   private SwerveDriveOdometry localTargetSpaceOdometry;
 
   /** Creates a new ExampleSubsystem. */
-  public Limelight() {
+  public Limelight(RobotContainer rc) {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
+
+    this.rc = rc;
   }
 
   public void initLocalOdometry(DriveTrain drive){
@@ -237,6 +242,22 @@ public class Limelight extends SubsystemBase {
     return localTargetSpaceOdometry;
   }
 
+  public boolean isTargetNodeTag(){
+    if (!tv){
+      return false;
+    }
+
+    double id = table.getEntry("tid").getDouble(0);
+    if (id >= 8.0 && id <= 6.0){
+      return true;
+    }
+    if (id <= 3.0 && id >= 1.0){
+      return true;
+    }
+
+    return false;
+  }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -271,6 +292,8 @@ public class Limelight extends SubsystemBase {
 
       SmartDashboard.putNumber("Pipeline", currentPipeline);
     } catch (Exception e) {}
+
+    localTargetSpaceOdometry.update(rc.drive.getHeading(), rc.drive.getModulePositions());
   }
 
 }
