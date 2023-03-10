@@ -44,8 +44,8 @@ public static class FieldConstants{
 
 //DriveTrain
 public static final class DriveConstants{
-
   public static final double ODOMETRY_SHELFLIFE_SECONDS = 10.0;
+  public static final double JERK_COLLISION_THRESHOLD = 5.0;
 
   //Drive parameters 
   public static final double MAX_SPEED_MPS = 4;
@@ -169,12 +169,13 @@ public static class ArmConstants{
 
   public static final int RIGHT_MOTOR_ID = 32;
 
+  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 4.5;
+
   public static final double PID_kP = 0.03;
   public static final double PID_kI = 0.00000001;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0005;
   public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.0;
-  
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 10.0;
   public static final double ANGLE_MID_OFFSET = 15.0;

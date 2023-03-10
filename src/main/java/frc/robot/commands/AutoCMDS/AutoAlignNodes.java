@@ -6,6 +6,7 @@ package frc.robot.commands.AutoCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 
@@ -14,14 +15,14 @@ import frc.robot.subsystems.Limelight;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoAlignNodes extends SequentialCommandGroup {
   /** Creates a new AutoAlignNodes. */
-  public AutoAlignNodes(DriveTrain drive, Limelight limelight, double offset) {
+  public AutoAlignNodes(DriveTrain drive, Limelight limelight, double offset, CommandXboxController controller) {
     addCommands(Commands.waitUntil(limelight::isTargetNodeTag), new FollowPath(
       limelight.generateNodeTrajectory(drive.getHeading(), 
         offset,
-        drive.getCompononetVelocities().vxMetersPerSecond, 
-        drive.getCompononetVelocities().vyMetersPerSecond), 
-      2.0,
-      1.5, 
+        controller.getLeftX(), 
+        controller.getLeftY()), 
+      3.0,
+      3.0, 
       drive, 
       limelight.getLocalOdometryInstance()).getCommand());
   }

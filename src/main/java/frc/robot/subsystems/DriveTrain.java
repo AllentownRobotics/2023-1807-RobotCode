@@ -12,7 +12,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
@@ -43,6 +46,11 @@ public class DriveTrain extends SubsystemBase {
   // The gyro sensor
   private final WPI_Pigeon2 m_gyro = new WPI_Pigeon2(GlobalConstants.PIGEON_ID);
 
+  private final Accelerometer builtInAccel = new BuiltInAccelerometer();
+
+  private double lastAccelX = 0;
+  private double lastAccelY = 0;
+
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.DRIVE_KINEMATICS,
@@ -54,11 +62,15 @@ public class DriveTrain extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
-  private double lastOdometryReset;
+  private double lastOdometryReset = 0;
 
+  private Field2d odometryField = new Field2d();      
+
+  public boolean collided = false;
   /** Creates a new DriveSubsystem. */
   public DriveTrain() {
     lastOdometryReset = 0.0;
+    SmartDashboard.putData("Alliance Odometry", odometryField);
   }
 
   @Override
@@ -72,6 +84,8 @@ public class DriveTrain extends SubsystemBase {
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+
+    odometryField.setRobotPose(m_odometry.getPoseMeters());
   }
 
   /**
@@ -101,7 +115,7 @@ public class DriveTrain extends SubsystemBase {
         },
         pose);
 
-    
+    collided = false;
     lastOdometryReset = periodTotalTime - DriverStation.getMatchTime();
   }
 
@@ -109,12 +123,18 @@ public class DriveTrain extends SubsystemBase {
     return m_odometry;
   }
 
+  /**
+   * Gets whether or not the odometry can be considered reliable. Returns true if it is valid and false otherwise.
+   * The odometry becomes invalid if more than 10 seconds have passed since seeing an april tag, or the robot detects a collision.
+   * Odometry will return to being valid after the robot sees an april tag for 1.5 uninterrupted seconds. 
+   * @return Whether or not the odometry is valid
+   */
   public boolean isOdometryValid(){
     double periodTotalTime = DriverStation.isTeleop() ? 135.0 : 15.0;
     double currentTime = periodTotalTime - DriverStation.getMatchTime();
     double timeSinceReset = currentTime - lastOdometryReset;
 
-    return timeSinceReset <= DriveConstants.ODOMETRY_SHELFLIFE_SECONDS;
+    return !collided && timeSinceReset <= DriveConstants.ODOMETRY_SHELFLIFE_SECONDS;
   }
 
   /**
@@ -143,14 +163,6 @@ public class DriveTrain extends SubsystemBase {
     m_frontRight.setDesiredState(swerveModuleStates[1]);
     m_rearLeft.setDesiredState(swerveModuleStates[2]);
     m_rearRight.setDesiredState(swerveModuleStates[3]);
-    if(fieldRelative)
-    {
-      SmartDashboard.putString("Orientation", "Field Oriented");
-    }
-    else
-    {
-      SmartDashboard.putString("Orientation", "Robot Oriented");
-    }
   }
 
   /**
@@ -184,11 +196,17 @@ public class DriveTrain extends SubsystemBase {
     m_rearRight.resetEncoders();
   }
 
-  /** Zeroes the heading of the robot. */
+  /**
+   * Zeroes the heading of the robot. 
+   */
   public void zeroHeading() {
     m_gyro.reset();
   }
 
+  /**
+   * Gets the current position of all the swerve modules
+   * @return The current position of all the swerve modules
+   */
   public SwerveModulePosition[] getModulePositions(){
     return new SwerveModulePosition[] {
       m_frontLeft.getPosition(),
@@ -198,6 +216,10 @@ public class DriveTrain extends SubsystemBase {
     };
   }
 
+  /**
+   * Gets the current state of all the swerve modules
+   * @return The current state of all the swerve modules
+   */
   public SwerveModuleState[] getModuleStates(){
     return new SwerveModuleState[]{
       m_frontLeft.getState(),
@@ -209,21 +231,32 @@ public class DriveTrain extends SubsystemBase {
 
   /**
    * Returns the heading of the robot.
-   *
    * @return the robot's heading in degrees, from -180 to 180
    */
   public double getHeadingDegrees() {
     return m_gyro.getRotation2d().getDegrees();
   }
 
+  /**
+   * Gets the current heading of the robot
+   * @ The robot's heading
+   */
   public Rotation2d getHeading(){
     return m_gyro.getRotation2d();
   }
 
+  /**
+   * Gets the rotation of the robot on the roll axis
+   * @return The roll of the robot
+   */
   public double getRoll() {
     return m_gyro.getRoll();
   }
 
+  /**
+   * Drives at the given speed in forwards and backwards direction. Primarily used for leveling during autonomous
+   * @param speed The speed to drive at
+   */
   public void levelSet(double speed) {
     m_frontLeft.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
     m_frontRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
@@ -231,6 +264,10 @@ public class DriveTrain extends SubsystemBase {
     m_rearRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
   }
   
+  /**
+   * Gets the current chassis speeds of the robot for use to break down into component velocities
+   * @return The current chassis speeds of the robot
+   */
   public ChassisSpeeds getCompononetVelocities(){
     return DriveConstants.DRIVE_KINEMATICS.toChassisSpeeds(getModuleStates());
   }
@@ -259,5 +296,22 @@ public class DriveTrain extends SubsystemBase {
     m_rearLeft.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(90)));
     m_rearRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(90)));
 
+  }
+
+  /**
+   * Calculates the magnitude of the xy jerk vector
+   * @return The magnitude of the xy jerk vector
+   */
+  public double getJerkMagnitude(){
+    double xAccel = builtInAccel.getX();
+    double yAccel = builtInAccel.getY();
+
+    double xJerk = (xAccel - lastAccelX) / 0.02;
+    double yJerk = (yAccel - lastAccelY) / 0.02;
+
+    lastAccelX = xAccel;
+    lastAccelY = yAccel;
+
+    return Math.sqrt((xJerk * xJerk) + (yJerk * yJerk));
   }
 }

@@ -5,6 +5,7 @@
 package frc.robot;
 
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ControllerConstants;
+import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.PlacementType;
 import frc.robot.commands.AprilTagOdometryHandler;
 import frc.robot.commands.CompressCMD;
@@ -27,6 +29,7 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoAlignNodes;
 import frc.robot.commands.AutoCMDS.AutoLevel;
+import frc.robot.commands.AutoCMDS.FollowPath;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngage;
 import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngageLeft;
@@ -63,7 +66,6 @@ public class RobotContainer {
   public Limelight limelight = new Limelight(this);
   
 
-
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
   CommandXboxController opController = new CommandXboxController(ControllerConstants.OP_CONTROLLER);
@@ -72,6 +74,8 @@ public class RobotContainer {
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
   
   Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
+
+  Trigger collisionTrigger = new Trigger(() -> drive.getJerkMagnitude() >= DriveConstants.JERK_COLLISION_THRESHOLD);
 
   SlewRateLimiter strafe = new SlewRateLimiter(5);
   SlewRateLimiter translate = new SlewRateLimiter(5);
@@ -101,6 +105,8 @@ public class RobotContainer {
 
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
+
+    collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
 
     // Odometry Sanity Check
     visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(new AprilTagOdometryHandler(drive, limelight));
@@ -140,8 +146,9 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
-                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle()))));
+    armManualControl.whileTrue(Commands.repeatingSequence(
+      Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle() + (5 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).withInterruptBehavior(
+        InterruptionBehavior.kCancelIncoming)).onFalse(Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle())));
 
     
     // INTAKE POSITION
@@ -158,10 +165,10 @@ public class RobotContainer {
 
     // SPINDEXER FORWARD
     opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
-                                   new RunAtSpeed(spindexer, 1.0, opController));
+                                   new RunAtSpeed(spindexer, opController::getRightTriggerAxis));
     // SPINDEXER REVERSE
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
-                       new RunAtSpeed(spindexer, -1.0, opController));
+                       new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
     opController.start().onTrue(new WantCone(light));
     opController.back().onTrue(new WantCube(light));
@@ -169,13 +176,22 @@ public class RobotContainer {
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
 
     // Right Nodes
-    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10)));
+    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
 
     // Left Nodes
-    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10)));
+    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10), driveController));
     
     // Cube Nodes
-    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0));
+    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));
+
+    // 
+    driveController.leftBumper().whileTrue(new FollowPath(limelight.generateSubstationTrajectory(drive.getPose(), 
+        driveController.getLeftX(),
+        driveController.getLeftY()), 
+      4.0,
+      3.0,
+      drive,
+      limelight.getLocalOdometryInstance()).getCommand());
   }
 
   /**

@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -53,10 +54,13 @@ public class Limelight extends SubsystemBase {
 
   private SwerveDriveOdometry localTargetSpaceOdometry;
 
+  private Field2d localOdometryField = new Field2d();
+
   /** Creates a new ExampleSubsystem. */
   public Limelight(RobotContainer rc) {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
+    SmartDashboard.putData("Target Odometry", localOdometryField);
 
     this.rc = rc;
   }
@@ -201,7 +205,12 @@ public class Limelight extends SubsystemBase {
 
   public Pose2d robotPoseTargetSpace(){
     double[] values = april3DCordsBotPoseTargetSpace();
-    return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
+    try{
+      return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
+    }
+    catch (Exception e){
+      return new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
+    }
   }
 
   public void resetLocalOdometryPosition(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions){
@@ -225,7 +234,7 @@ public class Limelight extends SubsystemBase {
   public PathPlannerTrajectory generateSubstationTrajectory(Pose2d robotPose, double xVel, double yVel){
     Rotation2d heading = new Rotation2d(xVel, yVel);
     return PathPlanner.generatePath(
-      new PathConstraints(3, 3),
+      new PathConstraints(4, 3),
       new PathPoint(robotPose.getTranslation(), heading, robotPose.getRotation()),
       new PathPoint(FieldConstants.SINGLESUBSTATION_ALLIANCERELATIVE, heading, new Rotation2d(Math.PI / 2.0))
     );
@@ -278,7 +287,7 @@ public class Limelight extends SubsystemBase {
         tv = true;
       } else {tv = false;}
 
-      SmartDashboard.putNumber("X", x);
+      /*SmartDashboard.putNumber("X", x);
       SmartDashboard.putNumber("Y", y);
 
       SmartDashboard.putBoolean("Target Aquired", tv);
@@ -290,10 +299,11 @@ public class Limelight extends SubsystemBase {
       SmartDashboard.putNumber("Target Spec Pitch", RoboRelPos[4]);
       SmartDashboard.putNumber("Target Spec Yaw", RoboRelPos[5]);
 
-      SmartDashboard.putNumber("Pipeline", currentPipeline);
+      SmartDashboard.putNumber("Pipeline", currentPipeline);*/
     } catch (Exception e) {}
 
     localTargetSpaceOdometry.update(rc.drive.getHeading(), rc.drive.getModulePositions());
+    localOdometryField.setRobotPose(localTargetSpaceOdometry.getPoseMeters());
   }
 
 }

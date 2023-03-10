@@ -13,7 +13,13 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ClawConstants;
@@ -35,6 +41,24 @@ public class Arm extends SubsystemBase {
 
   Claw claw;
 
+  PWMSparkMax motor = new PWMSparkMax(0);
+
+  Mechanism2d armMechanism = new Mechanism2d(2 * Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES) + Units.inchesToMeters(23) + 1.0, 
+                                              Units.inchesToMeters(ArmConstants.HEIGHT_OFFSET_FROM_GROUND_INCHES));
+  MechanismRoot2d armRoot = armMechanism.getRoot("Arm", 
+                                            Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES) + Units.inchesToMeters(23) + 0.5, 
+                                            0.0);
+
+  MechanismLigament2d armUprights = armRoot.append(new MechanismLigament2d("Uprights", 
+                                    Units.inchesToMeters(ArmConstants.HEIGHT_OFFSET_FROM_GROUND_INCHES),
+                                    90.0, 6, new Color8Bit(255, 255, 255)));
+  MechanismLigament2d upperArm = armUprights.append(new MechanismLigament2d("UpperArm", 
+                                    Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES),
+                                    90.0 - ArmConstants.ANGLE_OFFSET_FROM_VERTICAL_DEGREES, 6, new Color8Bit(255, 255, 0)));
+  MechanismLigament2d foreArm = upperArm.append(new MechanismLigament2d("Forearm",
+                                    Units.inchesToMeters(23),
+                                    180.0 - ArmConstants.ANGLE_OFFSET_FROM_ZERO, 6, new Color8Bit(255, 0, 255)));
+
   public Arm(Claw claw) {
     leftMotor.restoreFactoryDefaults();
     rightMotor.restoreFactoryDefaults();
@@ -47,7 +71,7 @@ public class Arm extends SubsystemBase {
     pidController = leftMotor.getPIDController();
     pidController.setFeedbackDevice(encoder);
 
-    // Set PID values from SysID
+    // Set PID values
     pidController.setP(ArmConstants.PID_kP, 0);
     pidController.setI(ArmConstants.PID_kI, 0);
     pidController.setD(ArmConstants.PID_kD, 0);
@@ -81,18 +105,24 @@ public class Arm extends SubsystemBase {
     desiredAngle = 0.0;
 
     placeType = PlacementType.Cone;
+
+    //putPIDValues();
+    SmartDashboard.putData("Arm Mechanism", armMechanism);
   }
 
   @Override
   public void periodic() {
     pidController.setReference(desiredAngle, ControlType.kPosition, 0);
 
+    double armAbsAngle = ArmConstants.ANGLE_OFFSET_FROM_VERTICAL_DEGREES + encoder.getPosition() - ArmConstants.ANGLE_OFFSET_FROM_ZERO;
+    upperArm.setAngle(-90.0 + armAbsAngle);
+    foreArm.setAngle(180.0 - armAbsAngle);
+
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
 
-    putPIDValues();
-    reassignPIDValues();
+    //reassignPIDValues();
   }
 
   /**
@@ -162,11 +192,11 @@ public class Arm extends SubsystemBase {
   }
 
   /**
-   * Returns false of the claw is currently closed and true if it is currently open
+   * Returns true if the claw is currently closed and false if it is currently open
    * Best used as a boolean supplier for a {@code waitUntil} command
-   * @return Inverse of the claws current state
+   * @return Truth state of the statment "the claw is closed"
    */
-  public boolean getNOTHolding(){
+  public boolean getHolding(){
     return claw.getClawState().equals(ClawState.Open);
   }
 
@@ -176,7 +206,7 @@ public class Arm extends SubsystemBase {
    * @return If the arm is at the desired angle
    */
   public boolean atSetPoint(){
-    if (Math.abs(encoder.getPosition() - desiredAngle) <= 4.5){
+    if (Math.abs(encoder.getPosition() - desiredAngle) <= ArmConstants.ANGLE_CHECKTOLERANCE_DEGREES){
       return true;
     }
     return false;
@@ -238,24 +268,33 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("FF", pidController.getFF(0));
     SmartDashboard.putNumber("Min percent", pidController.getOutputMin(0));
     SmartDashboard.putNumber("Max percent", pidController.getOutputMax(0));
-    SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
+    /*SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
     SmartDashboard.putNumber("MaxVelocity", pidController.getSmartMotionMaxVelocity(0));
     SmartDashboard.putNumber("MinVelocity", pidController.getSmartMotionMinOutputVelocity(0));
-    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));
+    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));*/
   }
 
   /**
    * Sets all PID values to SmartDashboard values
    */
   public void reassignPIDValues(){
-    pidController.setP(SmartDashboard.getNumber("P", 0.0), 0);
-    pidController.setI(SmartDashboard.getNumber("I", 0.0), 0);
-    pidController.setD(SmartDashboard.getNumber("D", 0.0), 0);
-    pidController.setFF(SmartDashboard.getNumber("FF", 0.0), 0);
-    pidController.setOutputRange(SmartDashboard.getNumber("Min percent", 0.0), SmartDashboard.getNumber("Max percent", 0.0), 0);
-    pidController.setSmartMotionMaxAccel(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MaxAcceleration", 0.0)), 0);
-    pidController.setSmartMotionMaxVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MaxVelocity", 0.0)), 0);
-    pidController.setSmartMotionMinOutputVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(SmartDashboard.getNumber("MinVelocity", 0.0)), 0);
-    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);
+    pidController.setP(SmartDashboard.getNumber("P", ArmConstants.PID_kP), 0);
+    pidController.setI(SmartDashboard.getNumber("I", ArmConstants.PID_kI), 0);
+    pidController.setD(SmartDashboard.getNumber("D", ArmConstants.PID_kD), 0);
+    pidController.setFF(SmartDashboard.getNumber("FF", ArmConstants.PID_kFF), 0);
+    pidController.setOutputRange(SmartDashboard.getNumber("Min percent", -0.35), SmartDashboard.getNumber("Max percent", 0.35), 0);
+    /*pidController.setSmartMotionMaxAccel(SmartDashboard.getNumber("MaxAcceleration", 0.0), 0);
+    pidController.setSmartMotionMaxVelocity(SmartDashboard.getNumber("MaxVelocity", 0.0), 0);
+    pidController.setSmartMotionMinOutputVelocity(SmartDashboard.getNumber("MinVelocity", 0.0), 0);
+    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);*/
+  }
+
+  /**
+   * Sets the idle mode on the arm motors to the given idle mode
+   * @param idleMode The idle mode for the arm motors to change to
+   */
+  public void setBrakes(IdleMode idleMode){
+    leftMotor.setIdleMode(idleMode);
+    rightMotor.setIdleMode(idleMode);
   }
 }

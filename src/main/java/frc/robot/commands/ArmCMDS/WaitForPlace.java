@@ -20,9 +20,7 @@ public class WaitForPlace extends ParallelDeadlineGroup {
    * Ends once the operator places the piece
    */
   public WaitForPlace(Arm arm, SetArmAngle angles) {
-    // Add the deadline command in the super() call. Add other commands using
-    // addCommands().
-    super(Commands.waitUntil(arm::getNOTHolding));
+    super(Commands.waitUntil(() -> !arm.getHolding()));
 
     addCommands(Commands.repeatingSequence(angles));
   }

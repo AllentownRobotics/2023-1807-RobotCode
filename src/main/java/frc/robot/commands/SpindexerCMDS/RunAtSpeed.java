@@ -4,22 +4,21 @@
 
 package frc.robot.commands.SpindexerCMDS;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.Spindexer;
 
 public class RunAtSpeed extends CommandBase {
   Spindexer spindexer;
-
-  double directionMod;
   
-  CommandXboxController controller;
-  public RunAtSpeed(Spindexer spindexer, double directionMod, CommandXboxController controller) {
+  DoubleSupplier inputSupplier;
+
+  public RunAtSpeed(Spindexer spindexer, DoubleSupplier inputSupplier) {
     addRequirements(spindexer);
 
     this.spindexer = spindexer;
-    this.directionMod = directionMod;
-    this.controller = controller;
+    this.inputSupplier = inputSupplier;
   }
 
   // Called when the command is initially scheduled.
@@ -29,9 +28,7 @@ public class RunAtSpeed extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double varSpeed = directionMod == -1.0 ? controller.getLeftTriggerAxis() : controller.getRightTriggerAxis();
-
-    spindexer.spindex(directionMod * varSpeed);
+    spindexer.spindex(inputSupplier.getAsDouble());
   }
 
   // Called once the command ends or is interrupted.
