@@ -14,6 +14,7 @@ import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Utils.Constants.ModuleConstants;
 
 /** Add your docs here. */
@@ -141,4 +142,15 @@ public void setDesiredStateNoOpt(SwerveModuleState desiredState) {
 public void resetEncoders() {
   driveEncoder.setPosition(0);
 }
+
+
+public void DriveDistance(double meters) {
+  drivePIDController.setReference(driveEncoder.getPosition() + meters, CANSparkMax.ControlType.kPosition);
+}
+
+public void rotateModule (double angleDegrees) {
+  turningPIDController.setReference(Units.degreesToRadians(angleDegrees) + chassisAngularOffset, CANSparkMax.ControlType.kPosition);
+}
+
+
 }

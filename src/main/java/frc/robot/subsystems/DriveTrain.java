@@ -21,7 +21,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class DriveTrain extends SubsystemBase {
   // Create MAXSwerveModules
@@ -319,4 +324,31 @@ public class DriveTrain extends SubsystemBase {
 
     return Math.sqrt((xJerk * xJerk) + (yJerk * yJerk));
   }
+
+
+
+  public CommandBase driveDistance(double meters, double direction) {
+    return Commands.sequence(
+      new ParallelCommandGroup(
+        /* 
+        new InstantCommand(() -> m_frontLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
+        new InstantCommand(() -> m_frontRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
+        new InstantCommand(() -> m_rearLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
+        new InstantCommand(() -> m_rearRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction))))
+        */
+        new InstantCommand(() -> m_frontLeft.rotateModule(0)),
+        new InstantCommand(() -> m_frontRight.rotateModule(0)),
+        new InstantCommand(() -> m_rearLeft.rotateModule(0)),
+        new InstantCommand(() -> m_rearRight.rotateModule(0))
+      ),
+      new WaitCommand(1),
+      new ParallelCommandGroup(
+        new InstantCommand(() -> m_frontLeft.DriveDistance(meters)),
+        new InstantCommand(() -> m_frontRight.DriveDistance(meters)),
+        new InstantCommand(() -> m_rearLeft.DriveDistance(meters)),
+        new InstantCommand(() -> m_rearRight.DriveDistance(meters))
+      )
+    );
+  }
+
 }

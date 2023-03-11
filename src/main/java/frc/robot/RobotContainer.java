@@ -187,6 +187,8 @@ public class RobotContainer {
     // Cube Nodes
     driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));
 
+
+    driveController.povUp().whileTrue(drive.driveDistance(1,0));
     // 
     driveController.leftBumper().whileTrue(new FollowPath(limelight.generateSubstationTrajectory(drive.getPose(), 
         driveController.getLeftX(),
