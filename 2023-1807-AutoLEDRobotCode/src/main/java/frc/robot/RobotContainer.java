@@ -117,10 +117,10 @@ public class RobotContainer {
     driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController));
 
     // HIGH PLACEMENT
-    opController.povUp().onTrue(new HighNode(arm, claw, opController));
+    opController.povUp().onTrue(new HighNode(arm, claw, opController, light));
     
     // MID PLACEMENT
-    opController.povLeft().onTrue(new MidNode(arm, claw, opController));
+    opController.povLeft().onTrue(new MidNode(arm, claw, opController, light));
     
     // ARM RESET
     opController.povDown().onTrue(new ResetArm(this));
@@ -131,7 +131,7 @@ public class RobotContainer {
 
     
     // INTAKE POSITION
-    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
+    opController.rightBumper().onTrue(new ArmSubStationInTake(this, light)).onFalse(new ResetArm(this));
 
     // AUTO WRIST
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(

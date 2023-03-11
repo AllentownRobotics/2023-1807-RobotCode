@@ -17,6 +17,7 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.LED;
 
 /** Add your docs here. */
 public class ConeHighEngage extends SequentialCommandGroup {
@@ -24,7 +25,7 @@ public class ConeHighEngage extends SequentialCommandGroup {
     {
       addCommands(
         new SetClawState(clawSubsystem, ClawState.Closed),
-        new AutoPlace(armSubsystem, clawSubsystem, 180.182),
+        new AutoPlace(armSubsystem, clawSubsystem, 180.182, robotContainer.light),
         new ResetOdometrytoTrajectory("ConeHighEngage", driveSubsystem),
         new ParallelDeadlineGroup(
           new FollowPath("ConeHighEngage", 3, 3, driveSubsystem).getCommand(),

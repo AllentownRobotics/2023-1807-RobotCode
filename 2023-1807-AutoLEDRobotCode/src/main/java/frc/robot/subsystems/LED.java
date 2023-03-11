@@ -153,7 +153,7 @@ public class LED extends SubsystemBase {
     }
 
     candle.setLEDs(0, 0, 0);
-    IdleAnim();
+    setAnimNumber(AnimNumberConstants.IDLE_ANIM_NUMBER);
   
         timer.stop();
         timer.reset();
@@ -176,7 +176,7 @@ for (int i = 0; i < 3; i++) {
   }
 
 Timer.delay(.8);
-IdleAnim();
+setAnimNumber(AnimNumberConstants.IDLE_ANIM_NUMBER);
 
 timer.stop();
     timer.reset();
@@ -187,11 +187,16 @@ public void EndGameAnim() {
   SetEndgameBright();
   candle.configBrightnessScalar(endgameBright);
   candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
+
   while (tilt < 2.5) {
     timer.start();
+
     candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
+
     Timer.delay(.5);
+
     candle.setLEDs(0, 0, 0);
+
     Timer.delay(.5);
   }
   }
