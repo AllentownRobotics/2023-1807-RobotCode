@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.WristState;
+import frc.robot.commands.LightCMD;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
@@ -37,6 +38,7 @@ public class AutoPlace extends SequentialCommandGroup {
                 new WaitCommand(0.25),
                 new SetClawState(claw, ClawState.Open),
                 new WaitCommand(0.1),
-                Commands.runOnce(() -> light.TranslateReqAndTransport()));
+                Commands.runOnce(() -> light.TranslateReqAndTransport()),
+                Commands.runOnce(() -> new LightCMD(LED.animNumber)));
   }
 }

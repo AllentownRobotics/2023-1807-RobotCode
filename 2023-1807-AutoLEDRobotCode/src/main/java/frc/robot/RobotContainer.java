@@ -61,7 +61,7 @@ public class RobotContainer {
   public static Arm arm = new Arm(claw);
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
-  public static LED light = new LED();
+  public static LED light = new LED(drive);
   public static Limelight limelight = new Limelight();
   
   

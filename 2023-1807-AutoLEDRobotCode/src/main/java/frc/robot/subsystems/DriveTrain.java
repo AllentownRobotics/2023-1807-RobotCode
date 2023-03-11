@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -182,6 +183,10 @@ public class DriveTrain extends SubsystemBase {
     return m_gyro.getRoll();
   }
 
+  public WPI_Pigeon2 getGyro()
+  {
+    return m_gyro;
+  } 
   public void levelSet(double speed) {
     m_frontLeft.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));
     m_frontRight.setDesiredState(new SwerveModuleState(speed, Rotation2d.fromDegrees(0)));

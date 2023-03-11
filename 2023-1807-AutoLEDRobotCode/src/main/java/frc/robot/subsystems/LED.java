@@ -13,7 +13,6 @@ import com.ctre.phoenix.led.CANdleConfiguration;
 import com.ctre.phoenix.led.ColorFlowAnimation;
 import com.ctre.phoenix.led.LarsonAnimation;
 import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
-import com.ctre.phoenix.led.RainbowAnimation;
 import com.ctre.phoenix.led.SingleFadeAnimation;
 import com.ctre.phoenix.led.StrobeAnimation;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
@@ -30,7 +29,6 @@ public class LED extends SubsystemBase {
   static ColorFlowAnimation coneFlowAnim;
   StrobeAnimation cubeStrobeAnim;
   static ColorFlowAnimation cubeFlowAnim;
-  RainbowAnimation rainbowAnim;
   static SingleFadeAnimation idleFadeAnim;
   static LarsonAnimation coneLarsonAnim;
   static LarsonAnimation cubeLarsonAnim;
@@ -48,8 +46,10 @@ public class LED extends SubsystemBase {
   static double tilt;
 
   public static int animNumber;
+
+  private DriveTrain driveTrain;
   
-  public LED() {
+  public LED(DriveTrain driveTrain) {
     candle = new CANdle(10);
   
     config = new CANdleConfiguration();
@@ -59,13 +59,9 @@ public class LED extends SubsystemBase {
     direction = Direction.Forward;
     bounce = BounceMode.Front;
 
-    candle = new CANdle(10);
-    config = new CANdleConfiguration();
-    config.stripType = LEDStripType.RGB;
-    candle.configAllSettings(config);
+    pigeon = driveTrain.getGyro();
 
-    pigeon = new WPI_Pigeon2(9);
-
+    // using alliance color to set colors
     DriverStation.Alliance alliance = DriverStation.getAlliance();
   
     if (alliance == DriverStation.Alliance.Blue) {
@@ -84,6 +80,7 @@ public class LED extends SubsystemBase {
       TEAM_B = 255;
     }
 
+    // establishing animations
     idleFadeAnim = new SingleFadeAnimation
     (TEAM_R, TEAM_G, TEAM_B, 
     0, .15, 68, 0);
@@ -181,7 +178,7 @@ setAnimNumber(AnimNumberConstants.IDLE_ANIM_NUMBER);
 timer.stop();
     timer.reset();
 }
-  // always change brightness to the correct value
+  // always changes brightness to the correct value
 public static void EndGameAnim() {
   while (true) {
   SetEndgameBright();
