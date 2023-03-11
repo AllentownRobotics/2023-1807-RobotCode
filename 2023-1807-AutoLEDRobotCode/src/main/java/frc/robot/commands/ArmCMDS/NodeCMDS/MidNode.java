@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.RobotContainer;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Enums.WristState;
+import frc.robot.commands.LightCMD;
 import frc.robot.commands.ArmCMDS.WaitForPlace;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
@@ -31,6 +32,7 @@ public class MidNode extends SequentialCommandGroup {
   public MidNode(Arm arm, Claw claw, CommandXboxController controller, LED light) {
     addCommands(new SetWristState(claw, WristState.WristDown),
                 new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID, ArmConstants.ANGLE_CUBE_MID), controller), 
-                Commands.runOnce(() -> light.TranslateReqAndTransport()));
+                Commands.runOnce(() -> light.TranslateReqAndTransport()),
+                Commands.runOnce(() -> new LightCMD(LED.animNumber)));
   }
 }

@@ -149,8 +149,8 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, -1.0, opController));
 
-    opController.start().whileTrue(Commands.runOnce(() -> light.setAnimNumber(AnimNumberConstants.CONE_REQ_ANIM_NUMBER)));
-    opController.back().onTrue(Commands.runOnce(() -> light.setAnimNumber(AnimNumberConstants.CUBE_REQ_ANIM_NUMBER)));
+    opController.start().whileTrue(Commands.runOnce(() -> new LightCMD(AnimNumberConstants.CONE_REQ_ANIM_NUMBER)));
+    opController.back().onTrue(Commands.runOnce(() -> new LightCMD(AnimNumberConstants.CUBE_REQ_ANIM_NUMBER)));
 
     //driveController.leftStick().whileTrue(new AutoLevel(drive));
   }

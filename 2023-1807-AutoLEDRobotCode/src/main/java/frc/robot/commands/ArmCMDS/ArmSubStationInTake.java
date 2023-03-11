@@ -8,6 +8,7 @@ package frc.robot.commands.ArmCMDS;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.RobotContainer;
+import frc.robot.commands.LightCMD;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.WristToStandBy;
 import frc.robot.subsystems.LED;
@@ -27,7 +28,8 @@ public class ArmSubStationInTake extends ParallelCommandGroup {
 
     addCommands(new WristToStandBy(rc.claw),
                 new SetArmAngle(rc.arm, 35.0),
-                Commands.runOnce(() -> light.TranslateReqAndTransport()));
+                Commands.runOnce(() -> light.TranslateReqAndTransport()),
+                Commands.runOnce(() -> new LightCMD(LED.animNumber)));
   }
 }
 

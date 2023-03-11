@@ -24,19 +24,19 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LED extends SubsystemBase {
-  CANdle candle;
+  static CANdle candle;
   CANdleConfiguration config;
   StrobeAnimation coneStrobeAnim;
-  ColorFlowAnimation coneFlowAnim;
+  static ColorFlowAnimation coneFlowAnim;
   StrobeAnimation cubeStrobeAnim;
-  ColorFlowAnimation cubeFlowAnim;
+  static ColorFlowAnimation cubeFlowAnim;
   RainbowAnimation rainbowAnim;
-  SingleFadeAnimation idleFadeAnim;
-  LarsonAnimation coneLarsonAnim;
-  LarsonAnimation cubeLarsonAnim;
+  static SingleFadeAnimation idleFadeAnim;
+  static LarsonAnimation coneLarsonAnim;
+  static LarsonAnimation cubeLarsonAnim;
   Direction direction;
   BounceMode bounce;
-  WPI_Pigeon2 pigeon;
+  static WPI_Pigeon2 pigeon;
 
   public static int TEAM_R;
   public static int TEAM_G;
@@ -44,8 +44,8 @@ public class LED extends SubsystemBase {
 
   public static Timer timer;
 
-  double endgameBright;
-  double tilt;
+  static double endgameBright;
+  static double tilt;
 
   public static int animNumber;
   
@@ -112,31 +112,31 @@ public class LED extends SubsystemBase {
     candle.setLEDs(0, 0, 0);
   }
 
-  public void setAnimNumber(int animNumber) {
+  public static void setAnimNumber(int animNumber) {
     LED.animNumber = animNumber;
   }
   
-  public void IdleAnim() {
+  public static void IdleAnim() {
     candle.animate(idleFadeAnim, 0);
   }
   
-  public void ConeReqAnim() {
+  public static void ConeReqAnim() {
     candle.setLEDs(ColorConstants.CONE_R, ColorConstants.CONE_G, ColorConstants.CONE_B);
   }
   
-  public void CubeReqAnim() {
+  public static void CubeReqAnim() {
     candle.setLEDs(ColorConstants.CUBE_R, ColorConstants.CUBE_G, ColorConstants.CUBE_B);
   }
   
-  public void ConeTransportAnim() {
+  public static void ConeTransportAnim() {
     candle.animate(coneLarsonAnim, 1);
   }
   
-  public void CubeTransportAnim() {
+  public static void CubeTransportAnim() {
     candle.animate(cubeLarsonAnim, 2);
   }
 
-  public void ConeScoreAnim() {
+  public static void ConeScoreAnim() {
     
     timer.start();
     candle.animate(coneFlowAnim, 3);
@@ -159,7 +159,7 @@ public class LED extends SubsystemBase {
         timer.reset();
   }
 
-  public void CubeScoreAnim() {
+  public static void CubeScoreAnim() {
     timer.start();
 candle.animate(cubeFlowAnim, 4);
 
@@ -182,7 +182,7 @@ timer.stop();
     timer.reset();
 }
   // always change brightness to the correct value
-public void EndGameAnim() {
+public static void EndGameAnim() {
   while (true) {
   SetEndgameBright();
   candle.configBrightnessScalar(endgameBright);
@@ -202,7 +202,7 @@ public void EndGameAnim() {
   }
 }
 
-public double SetEndgameBright() {
+public static double SetEndgameBright() {
 
   // use the pythagorean theorem to account for pitch and roll in one variable
   tilt = (Math.sqrt((Math.pow(pigeon.getRoll(), 2)) + Math.pow(pigeon.getPitch(), 2)));
@@ -214,7 +214,7 @@ public double SetEndgameBright() {
   }
 }
 
-  public void NoAnim() {
+  public static void NoAnim() {
 
     // clears animation slots and sets LEDs to 0
     candle.setLEDs(0, 0, 0);
@@ -226,7 +226,7 @@ public double SetEndgameBright() {
     candle.clearAnimation(4);
   }
 
-  public static void TranslateReqAndTransport() {
+  public void TranslateReqAndTransport() {
     if (animNumber == AnimNumberConstants.CONE_REQ_ANIM_NUMBER) {
       animNumber = AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER;
 
@@ -243,25 +243,5 @@ public double SetEndgameBright() {
 
   @Override
   public void periodic() {
-    switch (animNumber) {
-      case AnimNumberConstants.IDLE_ANIM_NUMBER: IdleAnim();
-      break;
-      case AnimNumberConstants.CONE_REQ_ANIM_NUMBER: ConeReqAnim();
-      break;
-      case AnimNumberConstants.CUBE_REQ_ANIM_NUMBER: CubeReqAnim();
-      break;
-      case AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER: ConeTransportAnim();
-      break;
-      case AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER: CubeTransportAnim();
-      break;
-      case AnimNumberConstants.CONE_SCORE_ANIM_NUMBER: ConeScoreAnim(); 
-      break;
-      case AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER: CubeScoreAnim();
-      break;
-      case AnimNumberConstants.ENDGAME_ANIM_NUMBER: EndGameAnim();
-      break;
-      case AnimNumberConstants.RESET_ANIM_NUMBER: NoAnim();
-      break;
   }
-}
 }
