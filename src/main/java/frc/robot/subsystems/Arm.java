@@ -10,7 +10,6 @@ import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
-import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController;
 
 import edu.wpi.first.math.util.Units;
@@ -33,7 +32,7 @@ public class Arm extends SubsystemBase {
 
   AbsoluteEncoder encoder;
 
-  SparkMaxPIDController pidController;
+  public SparkMaxPIDController pidController;
 
   double desiredAngle;
 
@@ -79,12 +78,6 @@ public class Arm extends SubsystemBase {
     pidController.setOutputRange(-0.35, 0.35, 0);
     pidController.setPositionPIDWrappingEnabled(false);
 
-    pidController.setSmartMotionAccelStrategy(AccelStrategy.kSCurve, 0);
-    pidController.setSmartMotionMaxVelocity(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(ArmConstants.MAX_SPEED_LINEAR_METERSPERSECOND), 0);
-    pidController.setSmartMotionMaxAccel(ArmConstants.ANGULARVELOCITY_FROM_LINEAR(ArmConstants.MAX_SPEED_LINEAR_METERSPERSECOND) * 10, 0);
-    pidController.setSmartMotionMinOutputVelocity(0.5, 0);
-    pidController.setSmartMotionAllowedClosedLoopError(0.5, 0);
-
     leftMotor.setInverted(false);
 
     // Have all motors follor master
@@ -105,9 +98,6 @@ public class Arm extends SubsystemBase {
     desiredAngle = 0.0;
 
     placeType = PlacementType.Cone;
-
-    //putPIDValues();
-    SmartDashboard.putData("Arm Mechanism", armMechanism);
   }
 
   @Override
@@ -115,14 +105,14 @@ public class Arm extends SubsystemBase {
     pidController.setReference(desiredAngle, ControlType.kPosition, 0);
 
     double armAbsAngle = ArmConstants.ANGLE_OFFSET_FROM_VERTICAL_DEGREES + encoder.getPosition() - ArmConstants.ANGLE_OFFSET_FROM_ZERO;
-    upperArm.setAngle(-90.0 + armAbsAngle);
+    upperArm.setAngle(armAbsAngle - 90.0);
     foreArm.setAngle(180.0 - armAbsAngle);
 
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
 
-    //reassignPIDValues();
+    SmartDashboard.putNumber("Percent Range", pidController.getOutputMax(0));
   }
 
   /**
@@ -268,10 +258,10 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("FF", pidController.getFF(0));
     SmartDashboard.putNumber("Min percent", pidController.getOutputMin(0));
     SmartDashboard.putNumber("Max percent", pidController.getOutputMax(0));
-    /*SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
+    SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
     SmartDashboard.putNumber("MaxVelocity", pidController.getSmartMotionMaxVelocity(0));
     SmartDashboard.putNumber("MinVelocity", pidController.getSmartMotionMinOutputVelocity(0));
-    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));*/
+    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));
   }
 
   /**
@@ -283,10 +273,10 @@ public class Arm extends SubsystemBase {
     pidController.setD(SmartDashboard.getNumber("D", ArmConstants.PID_kD), 0);
     pidController.setFF(SmartDashboard.getNumber("FF", ArmConstants.PID_kFF), 0);
     pidController.setOutputRange(SmartDashboard.getNumber("Min percent", -0.35), SmartDashboard.getNumber("Max percent", 0.35), 0);
-    /*pidController.setSmartMotionMaxAccel(SmartDashboard.getNumber("MaxAcceleration", 0.0), 0);
+    pidController.setSmartMotionMaxAccel(SmartDashboard.getNumber("MaxAcceleration", 0.0), 0);
     pidController.setSmartMotionMaxVelocity(SmartDashboard.getNumber("MaxVelocity", 0.0), 0);
     pidController.setSmartMotionMinOutputVelocity(SmartDashboard.getNumber("MinVelocity", 0.0), 0);
-    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);*/
+    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);
   }
 
   /**
@@ -296,5 +286,25 @@ public class Arm extends SubsystemBase {
   public void setBrakes(IdleMode idleMode){
     leftMotor.setIdleMode(idleMode);
     rightMotor.setIdleMode(idleMode);
+  }
+  
+  public boolean shouldDampen(){
+    double encoderVelocity = encoder.getVelocity();
+    double checkDirection = -1.0 * (encoderVelocity / Math.abs(encoderVelocity));
+    double rampAngle = desiredAngle + (checkDirection * ArmConstants.ANGLE_RAMPDISTANCE_DEGREES);
+    
+    double error = checkDirection * (rampAngle - encoder.getPosition());
+
+    return error >= 0;
+  }
+
+  public void rampDown(){
+    double error = Math.abs(encoder.getPosition() - desiredAngle);
+
+    double correctedError = ArmConstants.ANGLE_RAMPDISTANCE_DEGREES - error;
+    double speedOffsetFromMax = correctedError * ArmConstants.SPEED_RAMPDOWNRATE_PERCENTPERDEGREE;
+    double newPercentRange = ArmConstants.SPEED_FULL_PERCENTOUTPUT - speedOffsetFromMax;
+
+    pidController.setOutputRange(-newPercentRange, newPercentRange, 0);
   }
 }

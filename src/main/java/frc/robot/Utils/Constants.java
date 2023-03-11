@@ -48,7 +48,7 @@ public static final class DriveConstants{
   public static final double JERK_COLLISION_THRESHOLD = 5.0;
 
   //Drive parameters 
-  public static final double MAX_SPEED_MPS = 4;
+  public static final double MAX_SPEED_MPS = 4.5;
   public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
 
   //chassis config
@@ -102,7 +102,7 @@ public static final class NeoMotorConstants {
 
     //Calculations for drive motor conversion factors and feed forwards
     public static final double DRIVE_MOTOR_FREE_SPEED_RPS = NeoMotorConstants.NEO_FREE_SPEED / 60;
-    public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(2.85);
+    public static final double WHEEL_DIAMETER_METERS = Units.inchesToMeters(3.0);
     public static final double WHEEL_CIRCUMFRENCE_METERS = WHEEL_DIAMETER_METERS * Math.PI;
     public static final double DRIVE_MOTOR_REDUCTION = (45.0 * 22) / (DRIVE_MOTOR_TEETH * 15);
     public static final double DRIVE_WHEEL_FREE_SPEED_RPS = (DRIVE_MOTOR_FREE_SPEED_RPS * WHEEL_CIRCUMFRENCE_METERS) / DRIVE_MOTOR_REDUCTION;
@@ -170,6 +170,7 @@ public static class ArmConstants{
   public static final int RIGHT_MOTOR_ID = 32;
 
   public static final double ANGLE_CHECKTOLERANCE_DEGREES = 4.5;
+  public static final double ANGLE_RAMPDISTANCE_DEGREES = 30.0;
 
   public static final double PID_kP = 0.03;
   public static final double PID_kI = 0.00000001;
@@ -180,6 +181,10 @@ public static class ArmConstants{
   public static final double ANGLE_CUBE_INSURANCE = 10.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
+
+  public static final double SPEED_FULL_PERCENTOUTPUT = 0.35;
+  public static final double SPEED_RAMPDOWNRATE_PERCENTPERDEGREE = 0.5;
+  public static final double SPEED_DAMPEN_PERCENTOUTPUT = 0.2;
 
   public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
   public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE - ANGLE_MID_OFFSET;

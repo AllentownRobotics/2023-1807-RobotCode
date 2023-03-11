@@ -21,8 +21,8 @@ public class AutoAlignNodes extends SequentialCommandGroup {
         offset,
         controller.getLeftX(), 
         controller.getLeftY()), 
-      3.0,
-      3.0, 
+      2.0,
+      1.5, 
       drive, 
       limelight.getLocalOdometryInstance()).getCommand());
   }

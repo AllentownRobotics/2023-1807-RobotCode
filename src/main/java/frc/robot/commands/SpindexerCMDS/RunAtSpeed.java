@@ -35,8 +35,6 @@ public class RunAtSpeed extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     spindexer.spindex(0.0);
-    spindexer.zeroEncoder();
-    spindexer.setDesiredRotation(0.0);
   }
 
   // Returns true when the command should end.

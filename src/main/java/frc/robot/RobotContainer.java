@@ -72,13 +72,12 @@ public class RobotContainer {
 
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
+  //Trigger dampenArmTrigger = new Trigger(arm::shouldDampen);
   
   Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
 
   Trigger collisionTrigger = new Trigger(() -> drive.getJerkMagnitude() >= DriveConstants.JERK_COLLISION_THRESHOLD);
 
-  SlewRateLimiter strafe = new SlewRateLimiter(5);
-  SlewRateLimiter translate = new SlewRateLimiter(5);
   boolean fieldOriented = true;
   
   //auto chooser
@@ -105,6 +104,10 @@ public class RobotContainer {
 
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
+
+    /*dampenArmTrigger.whileTrue(Commands.runOnce(() -> arm.rampDown())).onFalse(
+      Commands.runOnce(() -> arm.pidController.setOutputRange(
+        -ArmConstants.SPEED_FULL_PERCENTOUTPUT, ArmConstants.SPEED_FULL_PERCENTOUTPUT)))*/;
 
     collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
 

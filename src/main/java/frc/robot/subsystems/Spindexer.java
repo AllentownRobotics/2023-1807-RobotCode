@@ -47,7 +47,7 @@ public class Spindexer extends SubsystemBase {
 
   @Override
   public void periodic() {
-    pidController.setReference(desriedRotations, ControlType.kPosition);
+    //pidController.setReference(desriedRotations, ControlType.kPosition);
   }
 
   /**
@@ -82,8 +82,8 @@ public class Spindexer extends SubsystemBase {
    * Sets the desired rotations for the spindexer to spin
    * @param rotations the desired rotations to spin
    */
-  public void setDesiredRotation(double rotations) {
+  /*public void setDesiredRotation(double rotations) {
     desriedRotations = rotations;
-  }
+  }*/
 }
  

@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
+
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,6 +25,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveTrain extends SubsystemBase {
   // Create MAXSwerveModules
+
+  private SlewRateLimiter strafe = new SlewRateLimiter(4.5 * 1.75 * 2.0);
+  private SlewRateLimiter translate = new SlewRateLimiter(4.5 * 1.75 * 2.0);
+
   private final SwerveModule m_frontLeft = new SwerveModule(
       DriveConstants.FL_DRIVE_ID,
       DriveConstants.FL_TURN_ID,
@@ -70,7 +76,7 @@ public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveSubsystem. */
   public DriveTrain() {
     lastOdometryReset = 0.0;
-    SmartDashboard.putData("Alliance Odometry", odometryField);
+    //SmartDashboard.putData("Alliance Odometry", odometryField);
   }
 
   @Override
@@ -85,7 +91,7 @@ public class DriveTrain extends SubsystemBase {
             m_rearRight.getPosition()
         });
 
-    odometryField.setRobotPose(m_odometry.getPoseMeters());
+    //odometryField.setRobotPose(m_odometry.getPoseMeters());
   }
 
   /**
@@ -151,11 +157,10 @@ public class DriveTrain extends SubsystemBase {
     xSpeed *= DriveConstants.MAX_SPEED_MPS;
     ySpeed *= DriveConstants.MAX_SPEED_MPS;
     rot *= DriveConstants.MAX_ANGLE_SPEED;
-    
 
     var swerveModuleStates = DriveConstants.DRIVE_KINEMATICS.toSwerveModuleStates(
         fieldRelative
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_gyro.getRotation2d())
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(strafe.calculate(xSpeed), translate.calculate(ySpeed), rot, m_gyro.getRotation2d())
             : new ChassisSpeeds(xSpeed, ySpeed, rot));
     SwerveDriveKinematics.desaturateWheelSpeeds(
         swerveModuleStates, DriveConstants.MAX_SPEED_MPS);

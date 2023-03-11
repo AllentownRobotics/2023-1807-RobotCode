@@ -223,9 +223,9 @@ public class Limelight extends SubsystemBase {
 
   public PathPlannerTrajectory generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
     Rotation2d heading = new Rotation2d(xVel, yVel);
-    Translation2d targetNodePosition = new Translation2d(offset, -0.75);
+    Translation2d targetNodePosition = new Translation2d(offset, 1);
     return PathPlanner.generatePath(
-      new PathConstraints(3, 3),
+      new PathConstraints(2, 1.5),
       new PathPoint(localTargetSpaceOdometry.getPoseMeters().getTranslation(), heading, robotOrientation),
       new PathPoint(targetNodePosition, heading, new Rotation2d(Math.PI))
     );
