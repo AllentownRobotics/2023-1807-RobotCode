@@ -22,6 +22,7 @@ WristState wristState = WristState.WristOut;
 ClawState clawState = ClawState.Closed;
 
 boolean manualWristControlAllowed = true;
+boolean allowAutoGrab = false;
 
 public Claw() {
 }
@@ -80,12 +81,28 @@ public void toggleWristState(){
   wristState = WristState.WristOut;
 }
 
+/**
+ * Sets whether or not the wrist should be in the user provided state or be down to prevent breaking extension limit
+ * @param allowed Whether or not the wrist should listen to manual control
+ */
 public void setManualWristControlAllowed(boolean allowed){
   manualWristControlAllowed = allowed;
 }
 
+/**
+ * Checks if the wirst is currently authorized to follow user control. Returns true if so and false otherwise
+ * @return Whether or not the wirst is currently authorized to follow user control
+ */
 public boolean isManualWristControlAuthorized(){
   return manualWristControlAllowed;
+}
+
+public void setAutoGrabAllowed(boolean allowed){
+  allowAutoGrab = allowed;
+}
+
+public boolean isAutoGrabAllowed(){
+  return allowAutoGrab;
 }
 
 @Override

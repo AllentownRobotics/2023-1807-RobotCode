@@ -5,6 +5,8 @@
 package frc.robot;
 
 
+import java.util.HashMap;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -17,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.PlacementType;
@@ -24,6 +27,8 @@ import frc.robot.Utils.Enums.PlacementType;
 import frc.robot.commands.AprilTagOdometryHandler;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
+import frc.robot.commands.ArmCMDS.AutoPlace;
+import frc.robot.commands.ArmCMDS.GroundPickup;
 import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
@@ -56,7 +61,7 @@ import frc.robot.subsystems.Spindexer;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  //subsystems 
+  //Subsystems 
   public DriveTrain drive = new DriveTrain();
   public Claw claw = new Claw();
   public Arm arm = new Arm(claw);
@@ -65,25 +70,30 @@ public class RobotContainer {
   public static LED light = new LED();
   public Limelight limelight = new Limelight(this);
   
-
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
   CommandXboxController opController = new CommandXboxController(ControllerConstants.OP_CONTROLLER);
 
+  //Triggers
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
-  //Trigger dampenArmTrigger = new Trigger(arm::shouldDampen);
+  Trigger dampenArmTrigger = new Trigger(arm::shouldDampen);
   
   Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
 
   Trigger collisionTrigger = new Trigger(() -> drive.getJerkMagnitude() >= DriveConstants.JERK_COLLISION_THRESHOLD);
+
+  //Commands HashMap
+  HashMap<String, Command> commandsMap = new HashMap<>();
 
   boolean fieldOriented = true;
   
   //auto chooser
   private SendableChooser<Command> chooser = new SendableChooser<Command>();
   
-  public RobotContainer() {    
+  public RobotContainer() {
+    populateCommandMap();
+
     comp.setDefaultCommand(new CompressCMD());
     drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
     
@@ -102,8 +112,8 @@ public class RobotContainer {
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    /*dampenArmTrigger.whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped)).onFalse(
-      Commands.runOnce(() -> arm.undoDampen()));*/
+    dampenArmTrigger.whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped)).onFalse(
+      Commands.runOnce(() -> arm.undoDampen()));
 
     collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
 
@@ -173,13 +183,13 @@ public class RobotContainer {
     opController.back().onTrue(new WantCube(light));
 
     // Right Nodes
-    /*driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
+    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
 
     // Left Nodes
     driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10), driveController));
     
     // Cube Nodes
-    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));*/
+    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));
 
     driveController.povUp().onTrue(limelight.TapeTracking());
     driveController.povDown().onTrue(limelight.April2DTracking());
@@ -198,5 +208,13 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     return chooser.getSelected();
+  }
+
+  public void populateCommandMap(){
+    commandsMap.put("resetArm", new ResetArm(this));
+    commandsMap.put("autoScoreHighCone", new AutoPlace(arm, claw, ArmConstants.ANGLE_CONE_HIGH));
+    commandsMap.put("autoScoreHighCube", new AutoPlace(arm, claw, ArmConstants.ANGLE_CUBE_HIGH));
+    commandsMap.put("pickUpFromGround", new GroundPickup(this));
+    commandsMap.put("autoLevel", new AutoLevel(drive));
   }
 }

@@ -184,6 +184,7 @@ public class DriveTrain extends SubsystemBase {
     m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
     m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
   }
+  
   /**
    * Sets the swerve ModuleStates.
    *
@@ -325,8 +326,6 @@ public class DriveTrain extends SubsystemBase {
     return Math.sqrt((xJerk * xJerk) + (yJerk * yJerk));
   }
 
-
-
   public CommandBase driveDistance(double meters, double direction) {
     return Commands.sequence(
 
@@ -348,7 +347,6 @@ public class DriveTrain extends SubsystemBase {
     );
   }
 
-
   public CommandBase zeroModules() {
 
     return new ParallelCommandGroup(
@@ -358,5 +356,4 @@ public class DriveTrain extends SubsystemBase {
         new RunCommand(() -> m_rearRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(0)))
     ));
   }
-
 }

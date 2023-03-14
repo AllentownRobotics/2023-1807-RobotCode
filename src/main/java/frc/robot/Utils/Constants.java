@@ -20,12 +20,11 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
- 
+
 public static class ControllerConstants{ 
     public static final int DRIVE_CONTROLLER = 1;
     public static final int OP_CONTROLLER = 0; 
     public static final double OP_CONTROLLER_THRESHOLD_SPINDEXER = 0.08;
-    public static final int OP_CONTROLLER_AXISID_LEFTSTICK_Y = 1;
 
 
 }
@@ -56,7 +55,8 @@ public static final class DriveConstants{
   public static final double WHEEL_BASE = Units.inchesToMeters(26);
 
   /**
-   * Follows Unified order
+   * Positions of each swerve module.
+   * Follows global order ()
    */
   public static final Translation2d[] MODULE_POSITIONS = {
     new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2),
@@ -74,27 +74,39 @@ public static final class DriveConstants{
 
   //SPARK CAN IDS
   /*driving motor ids */
+  /**Drive motor ID for the Front-Left module*/
   public static final int FL_DRIVE_ID = 1;
+  /**Drive motor ID for the Back-Left module*/
   public static final int BL_DRIVE_ID = 5;
+  /**Drive motor ID for the Front-Right module*/
   public static final int FR_DRIVE_ID = 3;
+  /**Drive motor ID for the Back-Right module*/
   public static final int BR_DRIVE_ID = 7; 
 
   /*turning motors ids */
-  public static final int FL_TURN_ID = 2; 
+  /**Turning motor ID for the Front-Left module*/
+  public static final int FL_TURN_ID = 2;
+  /**Turning motor ID for the Back-Left module*/ 
   public static final int BL_TURN_ID = 6; 
+  /**Turning motor ID for the Front-Right module*/
   public static final int FR_TURN_ID = 4; 
+  /**Turning motor ID for the Back-Right module*/
   public static final int BR_TURN_ID = 8;
 
   public static final boolean GYRO_REVERSED = false;
-
-
 }
 
+/**
+ * Constants for a NEO motor. Contains process variables
+ */
 public static final class NeoMotorConstants {
     public static final double NEO_FREE_SPEED = 5676;
   }
 
-  public static final class ModuleConstants{
+/**
+ * Constants for all swerve modules. Contains process variables
+ */
+public static final class ModuleConstants{
     /*pinion gear teeth */    
     public static final int DRIVE_MOTOR_TEETH = 14;  
 
@@ -141,7 +153,9 @@ public static final class NeoMotorConstants {
     public static final int TURN_MOTOR_CURRENT_LIMIT = 20; // amps
 }
 
-//Auto Constnts 
+/**
+ * Constants for use by the robot autonomously. Contains speeds and other process variables
+ */
 public static class AutoContsants{
     
    public static final double AUTO_MAX_SPEED_MPS = 2;
@@ -157,6 +171,9 @@ public static class AutoContsants{
       MAX_ANGULAR_SPEED_RPS, MAX_ANGULAR_SPEED_RPS_SQUARED);        
 }
 
+/**
+ * Constants for the arm subsystem. Contains IDs and other process variables
+ */
 public static class ArmConstants{
   public static final boolean USE_LEFT_ENCODER = true;
 
@@ -178,7 +195,7 @@ public static class ArmConstants{
   public static final double PID_kFF = 0.0005;
   public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.0;
   public static final double ANGLE_CONE_INSURANCE = 20.0;
-  public static final double ANGLE_CUBE_INSURANCE = 10.0;
+  public static final double ANGLE_CUBE_INSURANCE = 7.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
@@ -219,6 +236,10 @@ public static class ArmConstants{
   }
 
 }
+
+/**
+ * Constants for the claw subsystem. Contains IDs and other process variables
+ */
 public static class ClawConstants{
   public static final int WRIST_ID = GlobalConstants.PNEUMATICS_ID;
   public static final int WRIST_CHANNEL_FORWARD = 0;
@@ -232,6 +253,9 @@ public static class ClawConstants{
   public static final double ANGLE_WRIST_EXCLUSIONZONE_MAX = 229.523 + ArmConstants.ANGLE_OFFSET_FROM_ZERO;
 }
 
+/**
+ * Constants for the spindexer subsystem. Contains IDs and other process variables
+ */
 public static class SpindexerConstants{
   public static final int SPINDEXER_MOTOR_ID = 11;
   public static final double SPINDEXER_MOTOR_MAXOUTPUT = 0.25;
@@ -244,7 +268,11 @@ public static class SpindexerConstants{
   public static final double SPINDEXER_FF = 0.0;
 
  }
- public static class ColorConstants {
+
+/**
+ * Constants for colors. Contiains RGB values for various match elements
+ */
+public static class ColorConstants {
 
   public static final int CONE_R = 255;
   public static final int CONE_G = 80;
@@ -263,6 +291,10 @@ public static class SpindexerConstants{
   public static final int BLUE_TEAM_B = 128;
 
 }
+
+/**
+ * Constants for the LED susbsystem. Contains IDs for various LED animations
+ */
 public static class AnimNumberConstants {
 
   public static final int IDLE_ANIM_NUMBER = 0;

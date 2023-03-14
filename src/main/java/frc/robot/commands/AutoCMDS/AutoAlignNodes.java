@@ -4,8 +4,6 @@
 
 package frc.robot.commands.AutoCMDS;
 
-import com.pathplanner.lib.commands.PPSwerveControllerCommand;
-
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;

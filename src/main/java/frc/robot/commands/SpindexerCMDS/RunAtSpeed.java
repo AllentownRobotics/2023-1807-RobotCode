@@ -6,6 +6,7 @@ package frc.robot.commands.SpindexerCMDS;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Spindexer;
 
@@ -28,7 +29,7 @@ public class RunAtSpeed extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    spindexer.spindex(inputSupplier.getAsDouble());
+    spindexer.spindex(MathUtil.applyDeadband(inputSupplier.getAsDouble(), 0.08));
   }
 
   // Called once the command ends or is interrupted.

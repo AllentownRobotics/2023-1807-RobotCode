@@ -5,7 +5,6 @@
 package frc.robot.commands.ArmCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Utils.Enums.ClawState;
@@ -20,8 +19,8 @@ import frc.robot.subsystems.Claw;
 public class AutoPlace extends SequentialCommandGroup {
    /**
    * Sequential command group which moved the arm to the desired angle then places the currently held game piece.
-   * NOTE: this commands does not reset the arm to its reset position
-   * To achieve this call {@link frc.robot.commands.Arm.ResetArm} after this command
+   * NOTE: this command does not reset the arm to its reset position.
+   * To achieve this call a {@code ResetArm} command after this command.
    * Ends 0.1 seconds (100 ms) after the game piece is placed
    * @param arm Arm subsystem
    * @param claw Claw subsystem
@@ -29,7 +28,7 @@ public class AutoPlace extends SequentialCommandGroup {
    */
   public AutoPlace(Arm arm, Claw claw, double angle) {
     addCommands(new SetArmAngle(arm, angle), 
-                new ParallelRaceGroup(Commands.waitUntil(arm::atSetPoint), new WaitCommand(3.25)),
+                Commands.waitUntil(arm::atSetPoint).withTimeout(3.25),
                 new WaitCommand(0.25),
                 new SetClawState(claw, ClawState.Open),
                 new WaitCommand(0.1));
