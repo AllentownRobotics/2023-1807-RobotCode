@@ -183,8 +183,8 @@ public static class ArmConstants{
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
   public static final double SPEED_FULL_PERCENTOUTPUT = 0.35;
-  public static final double SPEED_RAMPDOWNRATE_PERCENTPERDEGREE = 0.5;
-  public static final double SPEED_DAMPEN_PERCENTOUTPUT = 0.2;
+  public static final double SPEED_RAMPDOWNRATE_PERCENTPERDEGREE = 0.75;
+  public static final double SPEED_DAMPEN_PERCENTOUTPUT = SPEED_FULL_PERCENTOUTPUT - (SPEED_RAMPDOWNRATE_PERCENTPERDEGREE * ANGLE_RAMPDISTANCE_DEGREES) / 100.0;
 
   public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
   public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE - ANGLE_MID_OFFSET;

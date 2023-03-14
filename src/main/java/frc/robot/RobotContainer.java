@@ -6,7 +6,6 @@ package frc.robot;
 
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -21,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.PlacementType;
+
 import frc.robot.commands.AprilTagOdometryHandler;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
@@ -83,11 +83,7 @@ public class RobotContainer {
   //auto chooser
   private SendableChooser<Command> chooser = new SendableChooser<Command>();
   
-  public RobotContainer() {
-
-    limelight.initLocalOdometry(drive);
-    limelight.April2DTracking();
-    
+  public RobotContainer() {    
     comp.setDefaultCommand(new CompressCMD());
     drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
     
@@ -102,12 +98,12 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
 
+    // Non Controller based trigger bindings
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    /*dampenArmTrigger.whileTrue(Commands.runOnce(() -> arm.rampDown())).onFalse(
-      Commands.runOnce(() -> arm.pidController.setOutputRange(
-        -ArmConstants.SPEED_FULL_PERCENTOUTPUT, ArmConstants.SPEED_FULL_PERCENTOUTPUT)))*/;
+    /*dampenArmTrigger.whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped)).onFalse(
+      Commands.runOnce(() -> arm.undoDampen()));*/
 
     collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
 
@@ -150,7 +146,7 @@ public class RobotContainer {
     
     // MANUAL CONTROL
     armManualControl.whileTrue(Commands.repeatingSequence(
-      Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle() + (5 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).withInterruptBehavior(
+      Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle() + (10 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).withInterruptBehavior(
         InterruptionBehavior.kCancelIncoming)).onFalse(Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle())));
 
     
@@ -176,27 +172,22 @@ public class RobotContainer {
     opController.start().onTrue(new WantCone(light));
     opController.back().onTrue(new WantCube(light));
 
-    //driveController.leftStick().whileTrue(new AutoLevel(drive));
-
     // Right Nodes
-    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
+    /*driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
 
     // Left Nodes
     driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10), driveController));
     
     // Cube Nodes
-    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));
+    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));*/
 
+    driveController.povUp().onTrue(limelight.TapeTracking());
+    driveController.povDown().onTrue(limelight.April2DTracking());
 
-    driveController.povUp().whileTrue(drive.driveDistance(1,0));
     // 
-    driveController.leftBumper().whileTrue(new FollowPath(limelight.generateSubstationTrajectory(drive.getPose(), 
-        driveController.getLeftX(),
-        driveController.getLeftY()), 
-      4.0,
-      3.0,
-      drive,
-      limelight.getLocalOdometryInstance()).getCommand());
+    driveController.leftBumper().whileTrue(Commands.runOnce(() -> limelight.generateSubstationTrajectory(drive.getPose(),
+         driveController.getLeftX(), driveController.getLeftY())).andThen(
+      new FollowPath(limelight.getStoredTrajectory(), 4.0, 3.0, drive, limelight.getLocalOdometryInstance()).getCommand()));
   }
 
   /**

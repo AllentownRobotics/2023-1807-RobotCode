@@ -52,30 +52,31 @@ public class Limelight extends SubsystemBase {
 
   RobotContainer rc;
 
+  PathPlannerTrajectory storedTrajectory = new PathPlannerTrajectory();
+
   private SwerveDriveOdometry localTargetSpaceOdometry;
 
   private Field2d localOdometryField = new Field2d();
 
-  /** Creates a new ExampleSubsystem. */
+  /** 
+   * Creates a new Limelight subsystem.
+   * Recommended to call {@code initLocalOdometry()} immediatly after constructing a new Limelight
+   */
   public Limelight(RobotContainer rc) {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
     SmartDashboard.putData("Target Odometry", localOdometryField);
 
+    localTargetSpaceOdometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, 
+    rc.drive.getHeading(),
+    rc.drive.getModulePositions());
+
+    table.getEntry("pipeline").setDouble(April2DPipeline);
+    currentPipeline = April2DPipeline;
+
     this.rc = rc;
   }
 
-  public void initLocalOdometry(DriveTrain drive){
-    localTargetSpaceOdometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, 
-    drive.getHeading(),
-    drive.getModulePositions());
-  }
-
-  /**
-   * Example command factory method.
-   *
-   * @return a command
-   */
   public CommandBase LightOn() {
     return runOnce(
         () -> {
@@ -203,6 +204,10 @@ public class Limelight extends SubsystemBase {
 
   }
 
+  /**
+   * Gets the robot's pose relative to the in-view apriltag
+   * @return The robot's pose relative to the in-view apriltag
+   */
   public Pose2d robotPoseTargetSpace(){
     double[] values = april3DCordsBotPoseTargetSpace();
     try{
@@ -213,33 +218,56 @@ public class Limelight extends SubsystemBase {
     }
   }
 
+  /**
+   * Resets the local target space odometry to the current robot pose in target space
+   * @param gyroAngle Current heading of the robot
+   * @param modulePositions Positions of the swerve modules
+   */
   public void resetLocalOdometryPosition(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions){
     localTargetSpaceOdometry.resetPosition(gyroAngle, modulePositions, robotPoseTargetSpace());
   }
 
+  /**
+   * Checks whether the limelight has a valid target in view. Returns true if so and false otherwise
+   * @return Whether or not the limelight has a valid target in view
+   */
   public boolean targetAquired() {
     return tv;
   }
 
-  public PathPlannerTrajectory generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
+  /**
+   * Generates a trajectory to the node with the specified offset and stores it. 
+   * NOTE: This function does not return the trajectory.
+   * Can be retrieved using {@code getStoredTrajectory()}
+   */
+  public void generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
     Rotation2d heading = new Rotation2d(xVel, yVel);
     Translation2d targetNodePosition = new Translation2d(offset, 1);
-    return PathPlanner.generatePath(
-      new PathConstraints(2, 1.5),
+    storedTrajectory = PathPlanner.generatePath(
+      new PathConstraints(2, -0.5),
       new PathPoint(localTargetSpaceOdometry.getPoseMeters().getTranslation(), heading, robotOrientation),
       new PathPoint(targetNodePosition, heading, new Rotation2d(Math.PI))
     );
   }
 
-  public PathPlannerTrajectory generateSubstationTrajectory(Pose2d robotPose, double xVel, double yVel){
+  /**
+   * Generates a trajectory to the substation and stores it.
+   * NOTE: This function does not return the trajectory.
+   * Can be retrieved using {@code getStoredTrajectory()}
+   */
+  public void generateSubstationTrajectory(Pose2d robotPose, double xVel, double yVel){
     Rotation2d heading = new Rotation2d(xVel, yVel);
-    return PathPlanner.generatePath(
+    storedTrajectory = PathPlanner.generatePath(
       new PathConstraints(4, 3),
       new PathPoint(robotPose.getTranslation(), heading, robotPose.getRotation()),
       new PathPoint(FieldConstants.SINGLESUBSTATION_ALLIANCERELATIVE, heading, new Rotation2d(Math.PI / 2.0))
     );
   }
 
+  /**
+   * Gets the robot's pose relative to the robot's alliance.
+   * @return The robot's pose relative to the robot's alliance
+   */
   public Pose2d robotPoseAllianceSpace(){
     String entryName = DriverStation.getAlliance().equals(Alliance.Blue) ? "botpose_wpiblue" : "botpose_wpired";
     double[] values = table.getEntry(entryName).getDoubleArray(new double[6]);
@@ -247,24 +275,33 @@ public class Limelight extends SubsystemBase {
     return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
   }
 
+  /**
+   * Gets the local target space odometry
+   * @return the instance of the local target space odometry
+   */
   public SwerveDriveOdometry getLocalOdometryInstance(){
     return localTargetSpaceOdometry;
   }
 
+  /**
+   * Checks whether or not the current in-view apriltag is a node tag. Returns true if so and false otherwise
+   * @return Whether the in-view apriltag is a node tag
+   */
   public boolean isTargetNodeTag(){
     if (!tv){
       return false;
     }
 
     double id = table.getEntry("tid").getDouble(0);
-    if (id >= 8.0 && id <= 6.0){
-      return true;
-    }
-    if (id <= 3.0 && id >= 1.0){
-      return true;
-    }
+    return (id >= 8.0 && id <= 6.0) || (id <= 3.0 && id >= 1.0);
+  }
 
-    return false;
+  /**
+   * Gets the stored trajectory to the nodes/substation
+   * @return The stored trajectory
+   */
+  public PathPlannerTrajectory getStoredTrajectory(){
+    return storedTrajectory;
   }
 
   @Override
@@ -287,18 +324,23 @@ public class Limelight extends SubsystemBase {
         tv = true;
       } else {tv = false;}
 
+
+
+      double[] values = april3DCordsBotPoseTargetSpace();
+
+
       /*SmartDashboard.putNumber("X", x);
       SmartDashboard.putNumber("Y", y);
 
       SmartDashboard.putBoolean("Target Aquired", tv);
-  
-      SmartDashboard.putNumber("Target Spec X", RoboRelPos[0]);
-      SmartDashboard.putNumber("Target Spec Y", RoboRelPos[1]);
-      SmartDashboard.putNumber("Target Spec Z", RoboRelPos[2]);
-      SmartDashboard.putNumber("Target Spec Roll", RoboRelPos[3]);
-      SmartDashboard.putNumber("Target Spec Pitch", RoboRelPos[4]);
-      SmartDashboard.putNumber("Target Spec Yaw", RoboRelPos[5]);
-
+  */
+      SmartDashboard.putNumber("Target Spec X", values[0]);
+      SmartDashboard.putNumber("Target Spec Y", values[1]);
+      SmartDashboard.putNumber("Target Spec Z", values[2]);
+      SmartDashboard.putNumber("Target Spec Roll", values[3]);
+      SmartDashboard.putNumber("Target Spec Pitch", values[4]);
+      SmartDashboard.putNumber("Target Spec Yaw", values[5]);
+/* 
       SmartDashboard.putNumber("Pipeline", currentPipeline);*/
     } catch (Exception e) {}
 

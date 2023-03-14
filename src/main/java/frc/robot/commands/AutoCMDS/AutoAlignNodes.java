@@ -4,6 +4,8 @@
 
 package frc.robot.commands.AutoCMDS;
 
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -14,16 +16,14 @@ import frc.robot.subsystems.Limelight;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class AutoAlignNodes extends SequentialCommandGroup {
+  FollowPath pathFollower;
   /** Creates a new AutoAlignNodes. */
   public AutoAlignNodes(DriveTrain drive, Limelight limelight, double offset, CommandXboxController controller) {
-    addCommands(Commands.waitUntil(limelight::isTargetNodeTag), new FollowPath(
-      limelight.generateNodeTrajectory(drive.getHeading(), 
-        offset,
-        controller.getLeftX(), 
-        controller.getLeftY()), 
-      2.0,
-      1.5, 
-      drive, 
-      limelight.getLocalOdometryInstance()).getCommand());
+    pathFollower = new FollowPath("ConeHighEngage", 0, 0, drive);
+    addCommands(Commands.waitUntil(limelight::isTargetNodeTag),
+    Commands.runOnce(() -> limelight.resetLocalOdometryPosition(drive.getHeading(), drive.getModulePositions())),
+      Commands.runOnce(() -> limelight.generateNodeTrajectory(drive.getHeading(), offset, controller.getLeftX(), controller.getLeftY())), 
+      Commands.runOnce(() -> pathFollower = new FollowPath(limelight.getStoredTrajectory(), 2.0, 1.5, drive, limelight.getLocalOdometryInstance())),
+      pathFollower.getCommand());
   }
 }

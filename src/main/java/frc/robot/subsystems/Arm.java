@@ -32,15 +32,15 @@ public class Arm extends SubsystemBase {
 
   AbsoluteEncoder encoder;
 
-  public SparkMaxPIDController pidController;
+  SparkMaxPIDController pidController;
+
+  PWMSparkMax motor = new PWMSparkMax(0);
 
   double desiredAngle;
 
   PlacementType placeType;
 
   Claw claw;
-
-  PWMSparkMax motor = new PWMSparkMax(0);
 
   Mechanism2d armMechanism = new Mechanism2d(2 * Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES) + Units.inchesToMeters(23) + 1.0, 
                                               Units.inchesToMeters(ArmConstants.HEIGHT_OFFSET_FROM_GROUND_INCHES));
@@ -288,6 +288,10 @@ public class Arm extends SubsystemBase {
     rightMotor.setIdleMode(idleMode);
   }
   
+  /**
+   * Checks whether or not the PID should be dampened. Returns true if so and false otherwise
+   * @return Whether or not the PID should be dampened
+   */
   public boolean shouldDampen(){
     double encoderVelocity = encoder.getVelocity();
     double checkDirection = -1.0 * (encoderVelocity / Math.abs(encoderVelocity));
@@ -298,11 +302,30 @@ public class Arm extends SubsystemBase {
     return error >= 0;
   }
 
+  /**
+   * Checks whether or not the PID is fully damped. Returns trus if so and false otherwise.
+   * @return Whether or not the PID is fully dampened
+   */
+  public boolean fullDamped(){
+    return pidController.getOutputMax() <= ArmConstants.SPEED_DAMPEN_PERCENTOUTPUT;
+  }
+
+  /**
+   * Sets the PID's output range back to full
+   */
+  public void undoDampen(){
+    pidController.setOutputRange(-0.35, 0.35, 0);
+  }
+
+  /**
+   * Lowers the PID's output range to give the illusion of a smooth ramp down.
+   * Should be called recursively while the PID should be dampened
+   */
   public void rampDown(){
     double error = Math.abs(encoder.getPosition() - desiredAngle);
 
     double correctedError = ArmConstants.ANGLE_RAMPDISTANCE_DEGREES - error;
-    double speedOffsetFromMax = correctedError * ArmConstants.SPEED_RAMPDOWNRATE_PERCENTPERDEGREE;
+    double speedOffsetFromMax = (correctedError * ArmConstants.SPEED_RAMPDOWNRATE_PERCENTPERDEGREE) / 100.0;
     double newPercentRange = ArmConstants.SPEED_FULL_PERCENTOUTPUT - speedOffsetFromMax;
 
     pidController.setOutputRange(-newPercentRange, newPercentRange, 0);

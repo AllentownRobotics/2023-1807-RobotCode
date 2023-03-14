@@ -145,7 +145,7 @@ public void resetEncoders() {
 
 
 public void DriveDistance(double meters) {
-  drivePIDController.setReference(driveEncoder.getPosition() + meters, CANSparkMax.ControlType.kPosition);
+  drivePIDController.setReference(meters, CANSparkMax.ControlType.kPosition);
 }
 
 public void rotateModule (double angleDegrees) {

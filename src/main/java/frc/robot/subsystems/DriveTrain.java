@@ -25,8 +25,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 public class DriveTrain extends SubsystemBase {
   // Create MAXSwerveModules
@@ -81,7 +81,7 @@ public class DriveTrain extends SubsystemBase {
   /** Creates a new DriveSubsystem. */
   public DriveTrain() {
     lastOdometryReset = 0.0;
-    //SmartDashboard.putData("Alliance Odometry", odometryField);
+    SmartDashboard.putData("Alliance Odometry", odometryField);
   }
 
   @Override
@@ -329,26 +329,34 @@ public class DriveTrain extends SubsystemBase {
 
   public CommandBase driveDistance(double meters, double direction) {
     return Commands.sequence(
-      new ParallelCommandGroup(
+
         /* 
         new InstantCommand(() -> m_frontLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
         new InstantCommand(() -> m_frontRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
         new InstantCommand(() -> m_rearLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction)))),
         new InstantCommand(() -> m_rearRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(direction))))
         */
-        new InstantCommand(() -> m_frontLeft.rotateModule(0)),
-        new InstantCommand(() -> m_frontRight.rotateModule(0)),
-        new InstantCommand(() -> m_rearLeft.rotateModule(0)),
-        new InstantCommand(() -> m_rearRight.rotateModule(0))
-      ),
-      new WaitCommand(1),
+        
+        new InstantCommand(() -> resetEncoders())
+      ,
       new ParallelCommandGroup(
-        new InstantCommand(() -> m_frontLeft.DriveDistance(meters)),
-        new InstantCommand(() -> m_frontRight.DriveDistance(meters)),
-        new InstantCommand(() -> m_rearLeft.DriveDistance(meters)),
-        new InstantCommand(() -> m_rearRight.DriveDistance(meters))
+        new RunCommand(() -> m_frontLeft.DriveDistance(meters)),
+        new RunCommand(() -> m_frontRight.DriveDistance(meters)),
+        new RunCommand(() -> m_rearLeft.DriveDistance(meters)),
+        new RunCommand(() -> m_rearRight.DriveDistance(meters))
       )
     );
+  }
+
+
+  public CommandBase zeroModules() {
+
+    return new ParallelCommandGroup(
+        new RunCommand(() -> m_frontLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(0)))),
+        new RunCommand(() -> m_frontRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(0)))),
+        new RunCommand(() -> m_rearLeft.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(0)))),
+        new RunCommand(() -> m_rearRight.setDesiredStateNoOpt(new SwerveModuleState(0, Rotation2d.fromDegrees(0)))
+    ));
   }
 
 }
