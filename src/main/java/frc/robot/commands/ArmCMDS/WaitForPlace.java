@@ -21,7 +21,6 @@ public class WaitForPlace extends ParallelDeadlineGroup {
    */
   public WaitForPlace(Arm arm, SetArmAngle angles) {
     super(Commands.waitUntil(() -> !arm.getHolding()));
-
-    addCommands(Commands.repeatingSequence(angles));
+    addCommands(Commands.repeatingSequence(angles).withInterruptBehavior(InterruptionBehavior.kCancelSelf));
   }
 }

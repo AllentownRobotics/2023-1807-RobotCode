@@ -35,7 +35,7 @@ public class FollowPath {
 
     public PPSwerveControllerCommand getCommand()
     {
-        var thetaController = new PIDController(AutoContsants.P_THETA_CONTROLLER, 0, 0);
+        PIDController thetaController = new PIDController(AutoContsants.P_THETA_CONTROLLER, 0, 0);
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         PPSwerveControllerCommand swerveControllerCommand = new PPSwerveControllerCommand(

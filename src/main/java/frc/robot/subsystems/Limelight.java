@@ -211,7 +211,7 @@ public class Limelight extends SubsystemBase {
   public Pose2d robotPoseTargetSpace(){
     double[] values = april3DCordsBotPoseTargetSpace();
     try{
-      return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
+      return new Pose2d(new Translation2d(values[0], values[2]), new Rotation2d(values[4]));
     }
     catch (Exception e){
       return new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
@@ -241,10 +241,10 @@ public class Limelight extends SubsystemBase {
    * Can be retrieved using {@code getStoredTrajectory()}
    */
   public void generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
-    Rotation2d heading = new Rotation2d(xVel, yVel);
-    Translation2d targetNodePosition = new Translation2d(offset, 1);
+    Rotation2d heading = new Rotation2d();
+    Translation2d targetNodePosition = new Translation2d(offset, -1);
     storedTrajectory = PathPlanner.generatePath(
-      new PathConstraints(2, -0.5),
+      new PathConstraints(2, 1),
       new PathPoint(localTargetSpaceOdometry.getPoseMeters().getTranslation(), heading, robotOrientation),
       new PathPoint(targetNodePosition, heading, new Rotation2d(Math.PI))
     );
@@ -272,7 +272,7 @@ public class Limelight extends SubsystemBase {
     String entryName = DriverStation.getAlliance().equals(Alliance.Blue) ? "botpose_wpiblue" : "botpose_wpired";
     double[] values = table.getEntry(entryName).getDoubleArray(new double[6]);
 
-    return new Pose2d(new Translation2d(values[0], values[1]), new Rotation2d(values[4]));
+    return new Pose2d(new Translation2d(values[0], values[2]), new Rotation2d(values[4]));
   }
 
   /**
@@ -324,22 +324,11 @@ public class Limelight extends SubsystemBase {
         tv = true;
       } else {tv = false;}
 
-
-
-      double[] values = april3DCordsBotPoseTargetSpace();
-
-
       /*SmartDashboard.putNumber("X", x);
       SmartDashboard.putNumber("Y", y);
 
       SmartDashboard.putBoolean("Target Aquired", tv);
   */
-      SmartDashboard.putNumber("Target Spec X", values[0]);
-      SmartDashboard.putNumber("Target Spec Y", values[1]);
-      SmartDashboard.putNumber("Target Spec Z", values[2]);
-      SmartDashboard.putNumber("Target Spec Roll", values[3]);
-      SmartDashboard.putNumber("Target Spec Pitch", values[4]);
-      SmartDashboard.putNumber("Target Spec Yaw", values[5]);
 /* 
       SmartDashboard.putNumber("Pipeline", currentPipeline);*/
     } catch (Exception e) {}

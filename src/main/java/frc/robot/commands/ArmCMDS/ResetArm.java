@@ -27,6 +27,6 @@ public class ResetArm extends SequentialCommandGroup {
                 Commands.waitUntil(rc.arm::atSetPoint),  
                 new ParallelCommandGroup(Commands.run(() -> rc.arm.setDesiredAngle(rc.arm.getAngle() - 10.0), rc.arm).until(rc.arm::atReset), 
                                           new WristToStandBy(rc.claw)),
-                new SetArmAngle(rc.arm, 3.0));
+                new SetArmAngle(rc.arm, 12.0));
   }
 }

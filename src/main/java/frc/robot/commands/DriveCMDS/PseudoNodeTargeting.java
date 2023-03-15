@@ -38,7 +38,7 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
             //new RunCommand(() -> m_drive.drive(kDrivingPID.calculate(Limelight.y, yTarget), 0, 0, false)).until(() -> kDrivingPID.atSetpoint())
             new TurnTarget(m_drive),
             new RunCommand(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(controller.getLeftY(), 0.3)), kStrafingPID.calculate(Limelight.x, 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
-            , m_drive)
+            , m_drive).until(() -> Math.abs(Limelight.x) <= 3.5)
             //new ForwardCubeTarget(m_drive)
             
         );

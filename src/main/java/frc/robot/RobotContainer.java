@@ -7,6 +7,10 @@ package frc.robot;
 
 import java.util.HashMap;
 
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,12 +20,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ArmConstants;
+import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
+import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.PlacementType;
 
 import frc.robot.commands.AprilTagOdometryHandler;
@@ -30,14 +35,13 @@ import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.ArmCMDS.GroundPickup;
 import frc.robot.commands.ArmCMDS.ResetArm;
+import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoAlignNodes;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.AutoCMDS.FollowPath;
-import frc.robot.commands.AutoCMDS.Autos.ConeHighEngage;
-import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngage;
-import frc.robot.commands.AutoCMDS.Autos.ConeHighLeaveEngageLeft;
+import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
@@ -76,8 +80,8 @@ public class RobotContainer {
 
   //Triggers
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
+  Trigger autoGrabTrigger = new Trigger(claw::inGrabDistance);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
-  Trigger dampenArmTrigger = new Trigger(arm::shouldDampen);
   
   Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
 
@@ -88,6 +92,8 @@ public class RobotContainer {
 
   boolean fieldOriented = true;
   
+  SwerveAutoBuilder autoBuilder = generateAutoBuilder();
+
   //auto chooser
   private SendableChooser<Command> chooser = new SendableChooser<Command>();
   
@@ -99,9 +105,9 @@ public class RobotContainer {
     
     drive.resetEncoders();
     
-    chooser.setDefaultOption("Mid", new ConeHighLeaveEngage(drive, arm, claw, this));
-    chooser.addOption("Right", new ConeHighEngage(drive, arm, claw, this));
-    chooser.addOption("Left", new ConeHighLeaveEngageLeft(drive, arm, claw, this));
+    chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0))); // Cone High Leave Engage
+    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
+    chooser.addOption("Loading Zone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -112,8 +118,9 @@ public class RobotContainer {
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    dampenArmTrigger.whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped)).onFalse(
-      Commands.runOnce(() -> arm.undoDampen()));
+    autoGrabTrigger.and(claw::isAutoGrabAllowed).onTrue(new SetClawState(claw, ClawState.Closed));
+
+    //dampenArmTrigger.and(DriverStation::isTeleop).whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped));
 
     collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
 
@@ -155,13 +162,15 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(Commands.repeatingSequence(
-      Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle() + (10 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).withInterruptBehavior(
-        InterruptionBehavior.kCancelIncoming)).onFalse(Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle())));
+    armManualControl.whileTrue(Commands.runOnce(() -> arm.setManualSpeedUsage(true)).andThen(
+      Commands.run(() -> arm.setManualSpeed(-10.0 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).onFalse(
+      Commands.runOnce(() -> arm.setManualSpeedUsage(false)));
 
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
+
+    opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(!claw.isAutoGrabAllowed())));
 
     // USE CUBE OR CONE
     opController.leftBumper().whileTrue(Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cube))).onFalse(
@@ -210,11 +219,34 @@ public class RobotContainer {
     return chooser.getSelected();
   }
 
-  public void populateCommandMap(){
+  /**
+   * Populates the command hashmap for use with the autoBuilder
+   */
+  private void populateCommandMap(){
     commandsMap.put("resetArm", new ResetArm(this));
     commandsMap.put("autoScoreHighCone", new AutoPlace(arm, claw, ArmConstants.ANGLE_CONE_HIGH));
     commandsMap.put("autoScoreHighCube", new AutoPlace(arm, claw, ArmConstants.ANGLE_CUBE_HIGH));
     commandsMap.put("pickUpFromGround", new GroundPickup(this));
+    commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController).withTimeout(1.5));
     commandsMap.put("autoLevel", new AutoLevel(drive));
+    commandsMap.put("enableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(true)));
+    commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
+    commandsMap.put("bringArmIn", new SetArmAngle(arm, 35.0));
+  }
+
+  /**
+   * Generates an auto builder
+   */
+  private SwerveAutoBuilder generateAutoBuilder(){
+    return new SwerveAutoBuilder(
+      drive::getPose, 
+      drive::resetOdometry, 
+      DriveConstants.DRIVE_KINEMATICS,
+      new PIDConstants(AutoContsants.PX_CONTROLLER, 0, 0),
+      new PIDConstants(AutoContsants.P_THETA_CONTROLLER, 0, 0),
+      drive::setModuleStates,
+      commandsMap, 
+      true,
+      drive);
   }
 }

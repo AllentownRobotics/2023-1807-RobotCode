@@ -186,10 +186,10 @@ public static class ArmConstants{
 
   public static final int RIGHT_MOTOR_ID = 32;
 
-  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 4.5;
+  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 3;
   public static final double ANGLE_RAMPDISTANCE_DEGREES = 30.0;
 
-  public static final double PID_kP = 0.03;
+  public static final double PID_kP = 0.012;
   public static final double PID_kI = 0.00000001;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0005;
@@ -199,7 +199,7 @@ public static class ArmConstants{
   public static final double ANGLE_MID_OFFSET = 15.0;
   public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
-  public static final double SPEED_FULL_PERCENTOUTPUT = 0.35;
+  public static final double SPEED_FULL_PERCENTOUTPUT = 0.3;
   public static final double SPEED_RAMPDOWNRATE_PERCENTPERDEGREE = 0.75;
   public static final double SPEED_DAMPEN_PERCENTOUTPUT = SPEED_FULL_PERCENTOUTPUT - (SPEED_RAMPDOWNRATE_PERCENTPERDEGREE * ANGLE_RAMPDISTANCE_DEGREES) / 100.0;
 
@@ -248,6 +248,9 @@ public static class ClawConstants{
   public static final int CLAW_ID = GlobalConstants.PNEUMATICS_ID;
   public static final int CLAW_CHANNEL_FORWARD = 4;
   public static final int CLAW_CHANNEL_BACKWARD = 1;
+
+  public static final double DISTANCE_LIMIT_UPPER_MILLIMETERS = 60.0;
+  public static final double DISTANCE_LIMIT_LOWER_MILLIMETERS = 0.0;
 
   public static final double ANGLE_WRIST_EXCLUSIONZONE_MIN = 206.595;
   public static final double ANGLE_WRIST_EXCLUSIONZONE_MAX = 229.523 + ArmConstants.ANGLE_OFFSET_FROM_ZERO;

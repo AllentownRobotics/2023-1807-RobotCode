@@ -12,14 +12,9 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
 import com.revrobotics.SparkMaxPIDController;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Utils.FauxTrapezoidProfile;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ClawConstants;
 import frc.robot.Utils.Enums.ClawState;
@@ -34,29 +29,15 @@ public class Arm extends SubsystemBase {
 
   SparkMaxPIDController pidController;
 
-  PWMSparkMax motor = new PWMSparkMax(0);
-
-  double desiredAngle;
-
   PlacementType placeType;
+
+  FauxTrapezoidProfile profile = new FauxTrapezoidProfile(210.0, 7.0, 1, 1.25);
 
   Claw claw;
 
-  Mechanism2d armMechanism = new Mechanism2d(2 * Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES) + Units.inchesToMeters(23) + 1.0, 
-                                              Units.inchesToMeters(ArmConstants.HEIGHT_OFFSET_FROM_GROUND_INCHES));
-  MechanismRoot2d armRoot = armMechanism.getRoot("Arm", 
-                                            Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES) + Units.inchesToMeters(23) + 0.5, 
-                                            0.0);
+  boolean useManualSpeed;
 
-  MechanismLigament2d armUprights = armRoot.append(new MechanismLigament2d("Uprights", 
-                                    Units.inchesToMeters(ArmConstants.HEIGHT_OFFSET_FROM_GROUND_INCHES),
-                                    90.0, 6, new Color8Bit(255, 255, 255)));
-  MechanismLigament2d upperArm = armUprights.append(new MechanismLigament2d("UpperArm", 
-                                    Units.inchesToMeters(ArmConstants.ARM_LENGTH_INCHES),
-                                    90.0 - ArmConstants.ANGLE_OFFSET_FROM_VERTICAL_DEGREES, 6, new Color8Bit(255, 255, 0)));
-  MechanismLigament2d foreArm = upperArm.append(new MechanismLigament2d("Forearm",
-                                    Units.inchesToMeters(23),
-                                    180.0 - ArmConstants.ANGLE_OFFSET_FROM_ZERO, 6, new Color8Bit(255, 0, 255)));
+  double manualDesiredSpeed;
 
   public Arm(Claw claw) {
     leftMotor.restoreFactoryDefaults();
@@ -75,7 +56,7 @@ public class Arm extends SubsystemBase {
     pidController.setI(ArmConstants.PID_kI, 0);
     pidController.setD(ArmConstants.PID_kD, 0);
     pidController.setFF(ArmConstants.PID_kFF, 0);
-    pidController.setOutputRange(-0.35, 0.35, 0);
+    pidController.setOutputRange(-ArmConstants.SPEED_FULL_PERCENTOUTPUT, ArmConstants.SPEED_FULL_PERCENTOUTPUT, 0);
     pidController.setPositionPIDWrappingEnabled(false);
 
     leftMotor.setInverted(false);
@@ -95,24 +76,22 @@ public class Arm extends SubsystemBase {
 
     this.claw = claw;
 
-    desiredAngle = 0.0;
+    profile.setGoal(0.0);
 
     placeType = PlacementType.Cone;
+
+    useManualSpeed = false;
   }
 
   @Override
   public void periodic() {
-    pidController.setReference(desiredAngle, ControlType.kPosition, 0);
-
-    double armAbsAngle = ArmConstants.ANGLE_OFFSET_FROM_VERTICAL_DEGREES + encoder.getPosition() - ArmConstants.ANGLE_OFFSET_FROM_ZERO;
-    upperArm.setAngle(armAbsAngle - 90.0);
-    foreArm.setAngle(180.0 - armAbsAngle);
-
+    double desiredVelocity = useManualSpeed ? manualDesiredSpeed : profile.calculate(encoder.getPosition());
+    pidController.setReference(desiredVelocity, ControlType.kVelocity, 0);
+    
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
-    SmartDashboard.putNumber("Set Point", desiredAngle);
-
-    SmartDashboard.putNumber("Percent Range", pidController.getOutputMax(0));
+    SmartDashboard.putNumber("Set Point", profile.getGoal());
+    SmartDashboard.putNumber("Calculated Velocity", desiredVelocity);
   }
 
   /**
@@ -128,7 +107,7 @@ public class Arm extends SubsystemBase {
    * @return the desired angle of the arm
    */
   public double getDesiredAngle(){
-    return desiredAngle;
+    return profile.getGoal();
   }
 
   /**
@@ -136,15 +115,7 @@ public class Arm extends SubsystemBase {
    * @param angle The desired angle of the arm
    */
   public void setDesiredAngle(double angle) {
-    desiredAngle = angle;
-  }
-
-  /**
-   * Sets the desired angle to the current angle shifted by the given number of degrees
-   * @param degrees Amount to change the current angle by
-   */
-  public void rotateBy(double degrees){
-    desiredAngle = encoder.getPosition() + degrees;
+    profile.setGoal(angle);
   }
 
   /**
@@ -196,10 +167,8 @@ public class Arm extends SubsystemBase {
    * @return If the arm is at the desired angle
    */
   public boolean atSetPoint(){
-    if (Math.abs(encoder.getPosition() - desiredAngle) <= ArmConstants.ANGLE_CHECKTOLERANCE_DEGREES){
-      return true;
-    }
-    return false;
+    double error = Math.abs(profile.getGoal() - encoder.getPosition());
+    return error <= ArmConstants.ANGLE_CHECKTOLERANCE_DEGREES;
   }
 
   /**
@@ -209,7 +178,7 @@ public class Arm extends SubsystemBase {
    */
   public boolean atReset(){
     if (encoder.getPosition() <= 13.0){
-      desiredAngle = 0.0;
+      profile.setGoal(0.0);
       return true;
     }
     return false;
@@ -222,7 +191,7 @@ public class Arm extends SubsystemBase {
    */
   public boolean atBumpers(){
     if (encoder.getPosition() >= 290.0){
-      desiredAngle = 300.0;
+      profile.setGoal(300.0);
       return true;
     }
     return false;
@@ -244,8 +213,16 @@ public class Arm extends SubsystemBase {
    * Sets the motors to run at the given percent speed
    * @param percentSpeed the speed for the motors to run at
    */
-  public void runAtSpeed(double percentSpeed){
-    leftMotor.set(percentSpeed);
+  public void setManualSpeed(double angularVelocity){
+    manualDesiredSpeed = angularVelocity;
+  }
+
+  /**
+   * 
+   * @param use
+   */
+  public void setManualSpeedUsage(boolean use){
+    useManualSpeed = use;
   }
 
   /**
@@ -286,48 +263,5 @@ public class Arm extends SubsystemBase {
   public void setBrakes(IdleMode idleMode){
     leftMotor.setIdleMode(idleMode);
     rightMotor.setIdleMode(idleMode);
-  }
-  
-  /**
-   * Checks whether or not the PID should be dampened. Returns true if so and false otherwise
-   * @return Whether or not the PID should be dampened
-   */
-  public boolean shouldDampen(){
-    double encoderVelocity = encoder.getVelocity();
-    double checkDirection = -1.0 * (encoderVelocity / Math.abs(encoderVelocity));
-    double rampAngle = desiredAngle + (checkDirection * ArmConstants.ANGLE_RAMPDISTANCE_DEGREES);
-    
-    double error = checkDirection * (rampAngle - encoder.getPosition());
-
-    return error >= 0;
-  }
-
-  /**
-   * Checks whether or not the PID is fully damped. Returns trus if so and false otherwise.
-   * @return Whether or not the PID is fully dampened
-   */
-  public boolean fullDamped(){
-    return pidController.getOutputMax() <= ArmConstants.SPEED_DAMPEN_PERCENTOUTPUT;
-  }
-
-  /**
-   * Sets the PID's output range back to full
-   */
-  public void undoDampen(){
-    pidController.setOutputRange(-0.35, 0.35, 0);
-  }
-
-  /**
-   * Lowers the PID's output range to give the illusion of a smooth ramp down.
-   * Should be called recursively while the PID should be dampened
-   */
-  public void rampDown(){
-    double error = Math.abs(encoder.getPosition() - desiredAngle);
-
-    double correctedError = ArmConstants.ANGLE_RAMPDISTANCE_DEGREES - error;
-    double speedOffsetFromMax = (correctedError * ArmConstants.SPEED_RAMPDOWNRATE_PERCENTPERDEGREE) / 100.0;
-    double newPercentRange = ArmConstants.SPEED_FULL_PERCENTOUTPUT - speedOffsetFromMax;
-
-    pidController.setOutputRange(-newPercentRange, newPercentRange, 0);
   }
 }

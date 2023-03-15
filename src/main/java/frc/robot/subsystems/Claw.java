@@ -4,27 +4,39 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.Rev2mDistanceSensor;
+import com.revrobotics.Rev2mDistanceSensor.Port;
+import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
+import com.revrobotics.Rev2mDistanceSensor.Unit;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase; 
 import frc.robot.Utils.Constants.ClawConstants;
 import frc.robot.Utils.Enums.ClawState;
+import frc.robot.Utils.Enums.DistanceState;
 import frc.robot.Utils.Enums.WristState;
 
 public class Claw extends SubsystemBase {
   DoubleSolenoid wristPiston = new DoubleSolenoid(ClawConstants.WRIST_ID, PneumaticsModuleType.REVPH, 
   ClawConstants.WRIST_CHANNEL_FORWARD, ClawConstants.WRIST_CHANNEL_BACKWARD);
-DoubleSolenoid clawPiston = new DoubleSolenoid(ClawConstants.CLAW_ID, PneumaticsModuleType.REVPH, 
+  DoubleSolenoid clawPiston = new DoubleSolenoid(ClawConstants.CLAW_ID, PneumaticsModuleType.REVPH, 
   ClawConstants.CLAW_CHANNEL_FORWARD, ClawConstants.CLAW_CHANNEL_BACKWARD);
 
-WristState wristState = WristState.WristOut;
-ClawState clawState = ClawState.Closed;
+  Rev2mDistanceSensor sensor = new Rev2mDistanceSensor(Port.kMXP, Unit.kMillimeters, RangeProfile.kHighAccuracy);
 
-boolean manualWristControlAllowed = true;
-boolean allowAutoGrab = false;
+  WristState wristState = WristState.WristOut;
+  ClawState clawState = ClawState.Closed;
+
+  boolean manualWristControlAllowed = true;
+  boolean allowAutoGrab = false;
 
 public Claw() {
+  sensor.setEnabled(true);
+  sensor.setAutomaticMode(true);
+  sensor.setMeasurementPeriod(0.2);
 }
 
 /**
@@ -97,6 +109,21 @@ public boolean isManualWristControlAuthorized(){
   return manualWristControlAllowed;
 }
 
+public double getTOFDistanceMillimeters(){
+  return sensor.getRange();
+}
+
+public DistanceState getCurrentDistanceState(){
+  boolean belowUpperBound = sensor.getRange() <= ClawConstants.DISTANCE_LIMIT_UPPER_MILLIMETERS;
+  boolean aboveLowerBound = sensor.getRange() >= ClawConstants.DISTANCE_LIMIT_LOWER_MILLIMETERS;
+
+  return DistanceState.fromBools(aboveLowerBound, belowUpperBound);
+}
+
+public boolean inGrabDistance(){
+  return getCurrentDistanceState().equals(DistanceState.Grabbable);
+}
+
 public void setAutoGrabAllowed(boolean allowed){
   allowAutoGrab = allowed;
 }
@@ -107,6 +134,12 @@ public boolean isAutoGrabAllowed(){
 
 @Override
 public void periodic() {
+  SmartDashboard.putBoolean("Valid Range", sensor.isRangeValid());
+  if (true){
+    SmartDashboard.putNumber("TOF distance", sensor.getRange());
+  }
+  SmartDashboard.putBoolean("Auto Grab", allowAutoGrab);
+
   if (manualWristControlAllowed){
     wristPiston.set(wristState.equals(WristState.WristOut) ? Value.kReverse : Value.kForward);
   }
