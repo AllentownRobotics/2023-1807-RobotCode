@@ -37,7 +37,8 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-
+import frc.robot.commands.LEDCMDS.BalancedAnim;
+import frc.robot.commands.LEDCMDS.EndgameAnim;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
@@ -95,6 +96,7 @@ public class RobotContainer {
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
+    
     // Configure the trigger bindings
     configureBindings();
    
@@ -141,6 +143,10 @@ public class RobotContainer {
     opController.x().onTrue(new ToggleClaw(claw));
 
     opController.b().onTrue(new ToggleWrist(claw));
+
+    opController.start().and(opController.back()::getAsBoolean).onTrue(Commands.repeatingSequence(
+      new EndgameAnim(light), Commands.repeatingSequence(new BalancedAnim(light)).until(
+        () -> !light.isBalanced())));
 
     // SPINDEXER FORWARD
     opController.rightTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(

@@ -32,12 +32,6 @@ public class LightCMD extends InstantCommand {
       break;
       case AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER: LED.CubeTransportAnim();
       break;
-      case AnimNumberConstants.CONE_SCORE_ANIM_NUMBER: LED.ConeScoreAnim(); 
-      break;
-      case AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER: LED.CubeScoreAnim();
-      break;
-      case AnimNumberConstants.ENDGAME_ANIM_NUMBER: LED.EndGameAnim();
-      break;
       case AnimNumberConstants.RESET_ANIM_NUMBER: LED.NoAnim();
       break;
     }

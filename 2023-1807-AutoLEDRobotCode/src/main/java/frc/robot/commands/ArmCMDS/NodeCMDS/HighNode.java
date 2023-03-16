@@ -14,6 +14,7 @@ import frc.robot.commands.LightCMD;
 import frc.robot.commands.ArmCMDS.WaitForPlace;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
+import frc.robot.commands.LEDCMDS.ScoringAnim;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.LED;
@@ -32,7 +33,7 @@ public class HighNode extends SequentialCommandGroup {
   public HighNode(Arm arm, Claw claw, CommandXboxController controller, LED light) {
     addCommands(new SetWristState(claw, WristState.WristOut),
                 new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH), controller),
-                Commands.runOnce(() -> light.TranslateReqAndTransport()),
-                Commands.runOnce(() -> new LightCMD(LED.animNumber)));
+                Commands.runOnce(() -> light.TranslateReqAndTransport()), 
+                Commands.runOnce(() -> new ScoringAnim(light)));
   }
 }

@@ -25,10 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class LED extends SubsystemBase {
   static CANdle candle;
   CANdleConfiguration config;
-  StrobeAnimation coneStrobeAnim;
-  static ColorFlowAnimation coneFlowAnim;
-  StrobeAnimation cubeStrobeAnim;
-  static ColorFlowAnimation cubeFlowAnim;
+  static ColorFlowAnimation flowAnim;
   static SingleFadeAnimation idleFadeAnim;
   static LarsonAnimation coneLarsonAnim;
   static LarsonAnimation cubeLarsonAnim;
@@ -39,6 +36,10 @@ public class LED extends SubsystemBase {
   public static int TEAM_R;
   public static int TEAM_G;
   public static int TEAM_B;
+
+  public int GAMEPIECE_R;
+  public int GAMEPIECE_G;
+  public int GAMEPIECE_B;
 
   public static Timer timer;
 
@@ -83,23 +84,19 @@ public class LED extends SubsystemBase {
     // establishing animations
     idleFadeAnim = new SingleFadeAnimation
     (TEAM_R, TEAM_G, TEAM_B, 
-    0, .15, 68, 0);
+    0, .25, 38, 0);
 
-    coneFlowAnim = new ColorFlowAnimation
-    (ColorConstants.CONE_R, ColorConstants.CONE_G, ColorConstants.CONE_B,
-    128, .25, 68, direction, 0);
+    flowAnim = new ColorFlowAnimation
+    (GAMEPIECE_R, GAMEPIECE_G, GAMEPIECE_B,
+    128, .6, 38, direction, 0);
 
     coneLarsonAnim = new LarsonAnimation
     (ColorConstants.CONE_R, ColorConstants.CONE_G, ColorConstants.CONE_B, 
-    128, .1, 68, bounce, 15, 0);
-
-    cubeFlowAnim = new ColorFlowAnimation
-    (ColorConstants.CUBE_R, ColorConstants.CUBE_G, ColorConstants.CUBE_B, 
-    128, .25, 68, direction, 0);
+    128, .1, 38, bounce, 15, 0);
 
     cubeLarsonAnim = new LarsonAnimation
     (ColorConstants.CUBE_R, ColorConstants.CUBE_G, ColorConstants.CUBE_B, 
-    128, .1, 68, bounce, 15, 0);
+    128, .1, 38, bounce, 15, 0);
 
 
     timer = new Timer();
@@ -108,6 +105,10 @@ public class LED extends SubsystemBase {
     
     candle.setLEDs(0, 0, 0);
   }
+
+  public void setAllianceColor() {
+    candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
+    }
 
   public static void setAnimNumber(int animNumber) {
     LED.animNumber = animNumber;
@@ -133,81 +134,34 @@ public class LED extends SubsystemBase {
     candle.animate(cubeLarsonAnim, 2);
   }
 
-  public static void ConeScoreAnim() {
-    
-    timer.start();
-    candle.animate(coneFlowAnim, 3);
-  
-    Timer.delay(2);
-    for (int i = 0; i < 3; i++) {
-
-    candle.setLEDs(ColorConstants.CONE_R, ColorConstants.CONE_G, ColorConstants.CONE_B);
-
-    Timer.delay(.1);
-    candle.setLEDs(0, 0, 0);
-
-    Timer.delay(.1);
-    }
-
-    candle.setLEDs(0, 0, 0);
-    setAnimNumber(AnimNumberConstants.IDLE_ANIM_NUMBER);
-  
-        timer.stop();
-        timer.reset();
+  public void ScoringAnimInit() {
+    candle.animate(flowAnim, 3);
   }
 
-  public static void CubeScoreAnim() {
-    timer.start();
-candle.animate(cubeFlowAnim, 4);
 
-Timer.delay(2);
-
-for (int i = 0; i < 3; i++) {
-
-  candle.setLEDs(ColorConstants.CUBE_R, ColorConstants.CUBE_G, ColorConstants.CUBE_B);
-
-  Timer.delay(.1);
-  candle.setLEDs(0, 0, 0);
-
-  Timer.delay(.1);
-  }
-
-Timer.delay(.8);
-setAnimNumber(AnimNumberConstants.IDLE_ANIM_NUMBER);
-
-timer.stop();
-    timer.reset();
-}
   // always changes brightness to the correct value
-public static void EndGameAnim() {
-  while (true) {
-  SetEndgameBright();
-  candle.configBrightnessScalar(endgameBright);
-  candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
-
-  while (tilt < 2.5) {
-    timer.start();
-
-    candle.setLEDs(TEAM_R, TEAM_G, TEAM_B);
-
-    Timer.delay(.5);
-
-    candle.setLEDs(0, 0, 0);
-
-    Timer.delay(.5);
-  }
-  }
+public void NotBalancedAnim() {
+    candle.configBrightnessScalar(CalculateEndgameBrightness());
 }
 
-public static double SetEndgameBright() {
+public boolean isBalanced(){
+  return CalculateTilt() <= 2.5;
+}
+
+public void setLEDs(int r, int g, int b) {
+  candle.setLEDs(r, g, b);
+}
+public double CalculateTilt() {
+  return (Math.sqrt((Math.pow(pigeon.getRoll(), 2)) + Math.pow(pigeon.getPitch(), 2)));
+}
+public static double CalculateEndgameBrightness() {
 
   // use the pythagorean theorem to account for pitch and roll in one variable
   tilt = (Math.sqrt((Math.pow(pigeon.getRoll(), 2)) + Math.pow(pigeon.getPitch(), 2)));
   
   while (true) {
     // function to set the brightness (logistic function I picked, you can pick your own)
-    endgameBright = (-1 / (1 + (50 * Math.pow(Math.E, -.7 * tilt)))) + 1 ;
-  return endgameBright;
+  return (-1 / (1 + (50 * Math.pow(Math.E, -.7 * tilt)))) + 1 ;
   }
 }
 
@@ -226,15 +180,27 @@ public static double SetEndgameBright() {
   public void TranslateReqAndTransport() {
     if (animNumber == AnimNumberConstants.CONE_REQ_ANIM_NUMBER) {
       animNumber = AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER;
+      GAMEPIECE_R = ColorConstants.CONE_R;
+      GAMEPIECE_G = ColorConstants.CONE_G;
+      GAMEPIECE_B = ColorConstants.CONE_B;
 
     } else if (animNumber == AnimNumberConstants.CUBE_REQ_ANIM_NUMBER) {
       animNumber = AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER;
+      GAMEPIECE_R = ColorConstants.CUBE_R;
+      GAMEPIECE_G = ColorConstants.CUBE_G;
+      GAMEPIECE_B = ColorConstants.CUBE_B;
 
     } else if (animNumber == AnimNumberConstants.CONE_TRANSPORT_ANIM_NUMBER) {
       animNumber = AnimNumberConstants.CONE_SCORE_ANIM_NUMBER;
+      GAMEPIECE_R = ColorConstants.CONE_R;
+      GAMEPIECE_G = ColorConstants.CONE_G;
+      GAMEPIECE_B = ColorConstants.CONE_B;
 
     } else if (animNumber == AnimNumberConstants.CUBE_TRANSPORT_ANIM_NUMBER) {
       animNumber = AnimNumberConstants.CUBE_SCORE_ANIM_NUMBER;
+      GAMEPIECE_R = ColorConstants.CUBE_R;
+      GAMEPIECE_G = ColorConstants.CUBE_G;
+      GAMEPIECE_B = ColorConstants.CUBE_B;
     }
   }
 
