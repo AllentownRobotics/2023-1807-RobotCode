@@ -17,7 +17,7 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "autoScoreConeHigh"
+          "autoScoreHighCone"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "after",
@@ -71,7 +71,7 @@
         "names": [],
         "executionBehavior": "parallel",
         "waitBehavior": "minimum",
-        "waitTime": 3.0
+        "waitTime": 2.5
       }
     },
     {

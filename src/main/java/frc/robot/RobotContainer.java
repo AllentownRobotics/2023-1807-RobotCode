@@ -13,7 +13,6 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,7 +28,6 @@ import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.PlacementType;
 
-import frc.robot.commands.AprilTagOdometryHandler;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.AutoPlace;
@@ -40,7 +38,6 @@ import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoAlignNodes;
 import frc.robot.commands.AutoCMDS.AutoLevel;
-import frc.robot.commands.AutoCMDS.FollowPath;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
@@ -82,10 +79,6 @@ public class RobotContainer {
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
   Trigger autoGrabTrigger = new Trigger(claw::inGrabDistance);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
-  
-  Trigger visionTargetAcquired = new Trigger(limelight::targetAquired);
-
-  Trigger collisionTrigger = new Trigger(() -> drive.getJerkMagnitude() >= DriveConstants.JERK_COLLISION_THRESHOLD);
 
   //Commands HashMap
   HashMap<String, Command> commandsMap = new HashMap<>();
@@ -119,13 +112,6 @@ public class RobotContainer {
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
     autoGrabTrigger.and(claw::isAutoGrabAllowed).onTrue(new SetClawState(claw, ClawState.Closed));
-
-    //dampenArmTrigger.and(DriverStation::isTeleop).whileTrue(Commands.repeatingSequence(Commands.runOnce(() -> arm.rampDown())).until(arm::fullDamped));
-
-    collisionTrigger.onTrue(Commands.runOnce(()-> drive.collided = true));
-
-    // Odometry Sanity Check
-    visionTargetAcquired.and(DriverStation::isTeleop).whileTrue(new AprilTagOdometryHandler(drive, limelight));
   }
 
   /**
@@ -192,21 +178,16 @@ public class RobotContainer {
     opController.back().onTrue(new WantCube(light));
 
     // Right Nodes
-    driveController.povRight().whileTrue(new AutoAlignNodes(drive, limelight, -Units.inchesToMeters(10), driveController));
+    driveController.povRight().whileTrue(new AutoAlignNodes(drive, -Units.inchesToMeters(10), Units.inchesToMeters(31)));
 
     // Left Nodes
-    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, limelight, Units.inchesToMeters(10), driveController));
+    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, Units.inchesToMeters(10), Units.inchesToMeters(31)));
     
     // Cube Nodes
-    driveController.povDown().whileTrue(new AutoAlignNodes(drive, limelight, 0, driveController));
+    driveController.povDown().whileTrue(new AutoAlignNodes(drive, 0.0, Units.inchesToMeters(31)));
 
     driveController.povUp().onTrue(limelight.TapeTracking());
     driveController.povDown().onTrue(limelight.April2DTracking());
-
-    // 
-    driveController.leftBumper().whileTrue(Commands.runOnce(() -> limelight.generateSubstationTrajectory(drive.getPose(),
-         driveController.getLeftX(), driveController.getLeftY())).andThen(
-      new FollowPath(limelight.getStoredTrajectory(), 4.0, 3.0, drive, limelight.getLocalOdometryInstance()).getCommand()));
   }
 
   /**

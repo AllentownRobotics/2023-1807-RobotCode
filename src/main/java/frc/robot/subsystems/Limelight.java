@@ -4,32 +4,21 @@
 
 package frc.robot.subsystems;
 
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
-import com.pathplanner.lib.PathPoint;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
-import frc.robot.Utils.Constants.DriveConstants;
-import frc.robot.Utils.Constants.FieldConstants;
 
 public class Limelight extends SubsystemBase {
-  public NetworkTable table;
+  public static NetworkTable table;
 
   public static double x;
   public static double y;
@@ -50,14 +39,6 @@ public class Limelight extends SubsystemBase {
 
   public static double currentPipeline;
 
-  RobotContainer rc;
-
-  PathPlannerTrajectory storedTrajectory = new PathPlannerTrajectory();
-
-  private SwerveDriveOdometry localTargetSpaceOdometry;
-
-  private Field2d localOdometryField = new Field2d();
-
   /** 
    * Creates a new Limelight subsystem.
    * Recommended to call {@code initLocalOdometry()} immediatly after constructing a new Limelight
@@ -65,16 +46,9 @@ public class Limelight extends SubsystemBase {
   public Limelight(RobotContainer rc) {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
-    SmartDashboard.putData("Target Odometry", localOdometryField);
-
-    localTargetSpaceOdometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, 
-    rc.drive.getHeading(),
-    rc.drive.getModulePositions());
 
     table.getEntry("pipeline").setDouble(April2DPipeline);
     currentPipeline = April2DPipeline;
-
-    this.rc = rc;
   }
 
   public CommandBase LightOn() {
@@ -197,6 +171,10 @@ public class Limelight extends SubsystemBase {
     return table.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
   }
 
+  public static double[] targetPoseRobotSpace(){
+    return table.getEntry("targetpose_robotspace").getDoubleArray(new double[6]);
+  }
+
   public boolean trackingApril() {
     if (table.getEntry("pipeline").getDouble(0.0) == 0) {
       return true;
@@ -219,49 +197,11 @@ public class Limelight extends SubsystemBase {
   }
 
   /**
-   * Resets the local target space odometry to the current robot pose in target space
-   * @param gyroAngle Current heading of the robot
-   * @param modulePositions Positions of the swerve modules
-   */
-  public void resetLocalOdometryPosition(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions){
-    localTargetSpaceOdometry.resetPosition(gyroAngle, modulePositions, robotPoseTargetSpace());
-  }
-
-  /**
    * Checks whether the limelight has a valid target in view. Returns true if so and false otherwise
    * @return Whether or not the limelight has a valid target in view
    */
   public boolean targetAquired() {
     return tv;
-  }
-
-  /**
-   * Generates a trajectory to the node with the specified offset and stores it. 
-   * NOTE: This function does not return the trajectory.
-   * Can be retrieved using {@code getStoredTrajectory()}
-   */
-  public void generateNodeTrajectory(Rotation2d robotOrientation, double offset, double xVel, double yVel){
-    Rotation2d heading = new Rotation2d();
-    Translation2d targetNodePosition = new Translation2d(offset, -1);
-    storedTrajectory = PathPlanner.generatePath(
-      new PathConstraints(2, 1),
-      new PathPoint(localTargetSpaceOdometry.getPoseMeters().getTranslation(), heading, robotOrientation),
-      new PathPoint(targetNodePosition, heading, new Rotation2d(Math.PI))
-    );
-  }
-
-  /**
-   * Generates a trajectory to the substation and stores it.
-   * NOTE: This function does not return the trajectory.
-   * Can be retrieved using {@code getStoredTrajectory()}
-   */
-  public void generateSubstationTrajectory(Pose2d robotPose, double xVel, double yVel){
-    Rotation2d heading = new Rotation2d(xVel, yVel);
-    storedTrajectory = PathPlanner.generatePath(
-      new PathConstraints(4, 3),
-      new PathPoint(robotPose.getTranslation(), heading, robotPose.getRotation()),
-      new PathPoint(FieldConstants.SINGLESUBSTATION_ALLIANCERELATIVE, heading, new Rotation2d(Math.PI / 2.0))
-    );
   }
 
   /**
@@ -276,14 +216,6 @@ public class Limelight extends SubsystemBase {
   }
 
   /**
-   * Gets the local target space odometry
-   * @return the instance of the local target space odometry
-   */
-  public SwerveDriveOdometry getLocalOdometryInstance(){
-    return localTargetSpaceOdometry;
-  }
-
-  /**
    * Checks whether or not the current in-view apriltag is a node tag. Returns true if so and false otherwise
    * @return Whether the in-view apriltag is a node tag
    */
@@ -293,15 +225,7 @@ public class Limelight extends SubsystemBase {
     }
 
     double id = table.getEntry("tid").getDouble(0);
-    return (id >= 8.0 && id <= 6.0) || (id <= 3.0 && id >= 1.0);
-  }
-
-  /**
-   * Gets the stored trajectory to the nodes/substation
-   * @return The stored trajectory
-   */
-  public PathPlannerTrajectory getStoredTrajectory(){
-    return storedTrajectory;
+    return (id <= 8.0 && id >= 6.0) || (id <= 3.0 && id >= 1.0);
   }
 
   @Override
@@ -324,17 +248,7 @@ public class Limelight extends SubsystemBase {
         tv = true;
       } else {tv = false;}
 
-      /*SmartDashboard.putNumber("X", x);
-      SmartDashboard.putNumber("Y", y);
-
-      SmartDashboard.putBoolean("Target Aquired", tv);
-  */
-/* 
-      SmartDashboard.putNumber("Pipeline", currentPipeline);*/
     } catch (Exception e) {}
-
-    localTargetSpaceOdometry.update(rc.drive.getHeading(), rc.drive.getModulePositions());
-    localOdometryField.setRobotPose(localTargetSpaceOdometry.getPoseMeters());
   }
 
 }

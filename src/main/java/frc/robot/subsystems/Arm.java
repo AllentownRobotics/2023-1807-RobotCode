@@ -217,10 +217,7 @@ public class Arm extends SubsystemBase {
     manualDesiredSpeed = angularVelocity;
   }
 
-  /**
-   * 
-   * @param use
-   */
+
   public void setManualSpeedUsage(boolean use){
     useManualSpeed = use;
   }
