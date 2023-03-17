@@ -14,7 +14,6 @@ import com.revrobotics.SparkMaxPIDController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Utils.FauxTrapezoidProfile;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ClawConstants;
 import frc.robot.Utils.Enums.ClawState;
@@ -29,15 +28,11 @@ public class Arm extends SubsystemBase {
 
   SparkMaxPIDController pidController;
 
+  double desiredAngle;
+
   PlacementType placeType;
 
-  FauxTrapezoidProfile profile = new FauxTrapezoidProfile(210.0, 7.0, 1, 1.25);
-
   Claw claw;
-
-  boolean useManualSpeed;
-
-  double manualDesiredSpeed;
 
   public Arm(Claw claw) {
     leftMotor.restoreFactoryDefaults();
@@ -46,17 +41,17 @@ public class Arm extends SubsystemBase {
     encoder = ArmConstants.USE_LEFT_ENCODER ? leftMotor.getAbsoluteEncoder(Type.kDutyCycle) : rightMotor.getAbsoluteEncoder(Type.kDutyCycle); 
     encoder.setInverted(!ArmConstants.USE_LEFT_ENCODER);
     encoder.setPositionConversionFactor(360.0);
-    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor());
+    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor() / 60.0);
     
     pidController = leftMotor.getPIDController();
     pidController.setFeedbackDevice(encoder);
 
-    // Set PID values
-    pidController.setP(ArmConstants.PID_kP, 0);
-    pidController.setI(ArmConstants.PID_kI, 0);
-    pidController.setD(ArmConstants.PID_kD, 0);
-    pidController.setFF(ArmConstants.PID_kFF, 0);
-    pidController.setOutputRange(-ArmConstants.SPEED_FULL_PERCENTOUTPUT, ArmConstants.SPEED_FULL_PERCENTOUTPUT, 0);
+    // Set PID values from SysID
+    pidController.setP(ArmConstants.PID_kP);
+    pidController.setI(ArmConstants.PID_kI);
+    pidController.setD(ArmConstants.PID_kD);
+    pidController.setFF(ArmConstants.PID_kFF);
+    pidController.setOutputRange(-0.3, 0.3);
     pidController.setPositionPIDWrappingEnabled(false);
 
     leftMotor.setInverted(false);
@@ -76,22 +71,17 @@ public class Arm extends SubsystemBase {
 
     this.claw = claw;
 
-    profile.setGoal(0.0);
+    desiredAngle = 0.0;
 
     placeType = PlacementType.Cone;
-
-    useManualSpeed = false;
   }
 
   @Override
   public void periodic() {
-    double desiredVelocity = useManualSpeed ? manualDesiredSpeed : profile.calculate(encoder.getPosition());
-    pidController.setReference(desiredVelocity, ControlType.kVelocity, 0);
-    
+    pidController.setReference(desiredAngle, ControlType.kPosition);
+
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
-    SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
-    SmartDashboard.putNumber("Set Point", profile.getGoal());
-    SmartDashboard.putNumber("Calculated Velocity", desiredVelocity);
+    SmartDashboard.putNumber("Set Point", desiredAngle);
   }
 
   /**
@@ -107,7 +97,7 @@ public class Arm extends SubsystemBase {
    * @return the desired angle of the arm
    */
   public double getDesiredAngle(){
-    return profile.getGoal();
+    return desiredAngle;
   }
 
   /**
@@ -115,7 +105,15 @@ public class Arm extends SubsystemBase {
    * @param angle The desired angle of the arm
    */
   public void setDesiredAngle(double angle) {
-    profile.setGoal(angle);
+    desiredAngle = angle;
+  }
+
+  /**
+   * Sets the desired angle to the current angle shifted by the given number of degrees
+   * @param degrees Amount to change the current angle by
+   */
+  public void rotateBy(double degrees){
+    desiredAngle = encoder.getPosition() + degrees;
   }
 
   /**
@@ -153,12 +151,15 @@ public class Arm extends SubsystemBase {
   }
 
   /**
-   * Returns true if the claw is currently closed and false if it is currently open
+   * Returns false of the claw is currently closed and true if it is currently open
    * Best used as a boolean supplier for a {@code waitUntil} command
-   * @return Truth state of the statment "the claw is closed"
+   * @return Inverse of the claws current state
    */
-  public boolean getHolding(){
-    return claw.getClawState().equals(ClawState.Open);
+  public boolean getNOTHolding(){
+    if (claw.clawState.equals(ClawState.Open)){
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -167,8 +168,10 @@ public class Arm extends SubsystemBase {
    * @return If the arm is at the desired angle
    */
   public boolean atSetPoint(){
-    double error = Math.abs(profile.getGoal() - encoder.getPosition());
-    return error <= ArmConstants.ANGLE_CHECKTOLERANCE_DEGREES;
+    if (Math.abs(encoder.getPosition() - desiredAngle) <= 4.5){
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -177,8 +180,8 @@ public class Arm extends SubsystemBase {
    * @return If the arm is at the desired reset angle
    */
   public boolean atReset(){
-    if (encoder.getPosition() <= 13.0){
-      profile.setGoal(0.0);
+    if (encoder.getPosition() <= 15.0){
+      desiredAngle = 14.2;
       return true;
     }
     return false;
@@ -191,7 +194,7 @@ public class Arm extends SubsystemBase {
    */
   public boolean atBumpers(){
     if (encoder.getPosition() >= 290.0){
-      profile.setGoal(300.0);
+      desiredAngle = 300.0;
       return true;
     }
     return false;
@@ -213,52 +216,12 @@ public class Arm extends SubsystemBase {
    * Sets the motors to run at the given percent speed
    * @param percentSpeed the speed for the motors to run at
    */
-  public void setManualSpeed(double angularVelocity){
-    manualDesiredSpeed = angularVelocity;
+  public void runAtSpeed(double percentSpeed){
+    leftMotor.set(percentSpeed);
   }
 
-
-  public void setManualSpeedUsage(boolean use){
-    useManualSpeed = use;
-  }
-
-  /**
-   * Puts all PID values on SmartDashboard
-   */
-  public void putPIDValues(){
-    SmartDashboard.putNumber("P", pidController.getP(0));
-    SmartDashboard.putNumber("I", pidController.getI(0));
-    SmartDashboard.putNumber("D", pidController.getD(0));
-    SmartDashboard.putNumber("FF", pidController.getFF(0));
-    SmartDashboard.putNumber("Min percent", pidController.getOutputMin(0));
-    SmartDashboard.putNumber("Max percent", pidController.getOutputMax(0));
-    SmartDashboard.putNumber("MaxAcceleration", pidController.getSmartMotionMaxAccel(0));
-    SmartDashboard.putNumber("MaxVelocity", pidController.getSmartMotionMaxVelocity(0));
-    SmartDashboard.putNumber("MinVelocity", pidController.getSmartMotionMinOutputVelocity(0));
-    SmartDashboard.putNumber("MinError", pidController.getSmartMotionAllowedClosedLoopError(0));
-  }
-
-  /**
-   * Sets all PID values to SmartDashboard values
-   */
-  public void reassignPIDValues(){
-    pidController.setP(SmartDashboard.getNumber("P", ArmConstants.PID_kP), 0);
-    pidController.setI(SmartDashboard.getNumber("I", ArmConstants.PID_kI), 0);
-    pidController.setD(SmartDashboard.getNumber("D", ArmConstants.PID_kD), 0);
-    pidController.setFF(SmartDashboard.getNumber("FF", ArmConstants.PID_kFF), 0);
-    pidController.setOutputRange(SmartDashboard.getNumber("Min percent", -0.35), SmartDashboard.getNumber("Max percent", 0.35), 0);
-    pidController.setSmartMotionMaxAccel(SmartDashboard.getNumber("MaxAcceleration", 0.0), 0);
-    pidController.setSmartMotionMaxVelocity(SmartDashboard.getNumber("MaxVelocity", 0.0), 0);
-    pidController.setSmartMotionMinOutputVelocity(SmartDashboard.getNumber("MinVelocity", 0.0), 0);
-    pidController.setSmartMotionAllowedClosedLoopError(SmartDashboard.getNumber("MinError", 0.0), 0);
-  }
-
-  /**
-   * Sets the idle mode on the arm motors to the given idle mode
-   * @param idleMode The idle mode for the arm motors to change to
-   */
-  public void setBrakes(IdleMode idleMode){
-    leftMotor.setIdleMode(idleMode);
-    rightMotor.setIdleMode(idleMode);
+  public void setBrakes(IdleMode mode){
+    leftMotor.setIdleMode(mode);
+    rightMotor.setIdleMode(mode);
   }
 }

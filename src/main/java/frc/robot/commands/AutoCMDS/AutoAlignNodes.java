@@ -5,8 +5,11 @@
 package frc.robot.commands.AutoCMDS;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Limelight;
 
@@ -15,6 +18,7 @@ public class AutoAlignNodes extends CommandBase {
   ProfiledPIDController translationController;
   ProfiledPIDController strafeController;
 
+  SwerveDriveOdometry localOdometry;
   DriveTrain drive;
 
   double horizontalPosition;
@@ -26,25 +30,30 @@ public class AutoAlignNodes extends CommandBase {
     this.horizontalPosition = horizontalPosition;
     this.backPosition = backPosition;
 
+    localOdometry = new SwerveDriveOdometry(DriveConstants.DRIVE_KINEMATICS, drive.getHeading(), drive.getModulePositions());
+
     initPIDs();
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    double[] coords = Limelight.april3DCordsBotPoseTargetSpace();
+    Pose2d resetPose = new Pose2d(coords[0], coords[2], drive.getHeading());
+    localOdometry.resetPosition(drive.getHeading(), drive.getModulePositions(), resetPose);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double[] coords = Limelight.targetPoseRobotSpace();
+    localOdometry.update(drive.getHeading(), drive.getModulePositions());
 
     double rotationSpeed = rotationController.calculate(drive.getHeadingDegrees());
-    double translateSpeed = translationController.calculate(coords[2]);
-    double strafeSpeed = strafeController.calculate(coords[0]);
+    double translateSpeed = translationController.calculate(localOdometry.getPoseMeters().getY());
+    double strafeSpeed = strafeController.calculate(localOdometry.getPoseMeters().getX());
 
     drive.driveFromComponentSpeeds(translateSpeed, strafeSpeed, rotationSpeed);
   }
-
 
   @Override
   public void end(boolean interrupted) {}
@@ -61,11 +70,11 @@ public class AutoAlignNodes extends CommandBase {
     rotationController.setGoal(new TrapezoidProfile.State(0.0, 0.0));
     rotationController.setTolerance(2.0);
 
-    translationController = new ProfiledPIDController(1.0, 0, 0, new TrapezoidProfile.Constraints(2.0, 1.5));
+    translationController = new ProfiledPIDController(1.0, 0, 0, new TrapezoidProfile.Constraints(2.0, 3.0));
     translationController.setGoal(new TrapezoidProfile.State(backPosition, 0.0));
     translationController.setTolerance(0.05);
 
-    strafeController = new ProfiledPIDController(1.0, 0, 0, new TrapezoidProfile.Constraints(2.0, 1.5));
+    strafeController = new ProfiledPIDController(1.0, 0, 0, new TrapezoidProfile.Constraints(2.0, 3.0));
     strafeController.setGoal(new TrapezoidProfile.State(horizontalPosition, 0.0));
     strafeController.setTolerance(0.05);
   }

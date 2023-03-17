@@ -62,7 +62,7 @@ public static final class DriveConstants{
     new Translation2d(WHEEL_BASE / 2, TRACK_WIDTH / 2),
     new Translation2d(WHEEL_BASE / 2, -TRACK_WIDTH / 2),
     new Translation2d(-WHEEL_BASE / 2, TRACK_WIDTH / 2),
-    new Translation2d(-WHEEL_BASE /2, -TRACK_WIDTH /2)};
+    new Translation2d(-WHEEL_BASE /2, -TRACK_WIDTH / 2)};
 
   public static final SwerveDriveKinematics DRIVE_KINEMATICS = new SwerveDriveKinematics(MODULE_POSITIONS);
 
@@ -189,7 +189,7 @@ public static class ArmConstants{
   public static final double ANGLE_CHECKTOLERANCE_DEGREES = 3;
   public static final double ANGLE_RAMPDISTANCE_DEGREES = 30.0;
 
-  public static final double PID_kP = 0.012;
+  public static final double PID_kP = 0.03;
   public static final double PID_kI = 0.00000001;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0005;

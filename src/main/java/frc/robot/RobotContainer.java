@@ -11,14 +11,13 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ArmConstants;
@@ -36,7 +35,6 @@ import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
-import frc.robot.commands.AutoCMDS.AutoAlignNodes;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
@@ -69,7 +67,7 @@ public class RobotContainer {
   public static Compress comp = new Compress();
   public static Spindexer spindexer = new Spindexer();
   public static LED light = new LED();
-  public Limelight limelight = new Limelight(this);
+  public Limelight limelight = new Limelight();
   
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
@@ -99,8 +97,8 @@ public class RobotContainer {
     drive.resetEncoders();
     
     chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0))); // Cone High Leave Engage
-    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
-    chooser.addOption("Loading Zone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
+    chooser.addOption("Right", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
+    chooser.addOption("Left", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -148,10 +146,8 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(Commands.runOnce(() -> arm.setManualSpeedUsage(true)).andThen(
-      Commands.run(() -> arm.setManualSpeed(-10.0 * MathUtil.applyDeadband(opController.getLeftY(), 0.15))))).onFalse(
-      Commands.runOnce(() -> arm.setManualSpeedUsage(false)));
-
+    armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
+                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle()))));
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
@@ -177,14 +173,6 @@ public class RobotContainer {
     opController.start().onTrue(new WantCone(light));
     opController.back().onTrue(new WantCube(light));
 
-    // Right Nodes
-    driveController.povRight().whileTrue(new AutoAlignNodes(drive, -Units.inchesToMeters(10), Units.inchesToMeters(31)));
-
-    // Left Nodes
-    driveController.povLeft().whileTrue(new AutoAlignNodes(drive, Units.inchesToMeters(10), Units.inchesToMeters(31)));
-    
-    // Cube Nodes
-    driveController.povDown().whileTrue(new AutoAlignNodes(drive, 0.0, Units.inchesToMeters(31)));
 
     driveController.povUp().onTrue(limelight.TapeTracking());
     driveController.povDown().onTrue(limelight.April2DTracking());
@@ -227,7 +215,7 @@ public class RobotContainer {
       new PIDConstants(AutoContsants.P_THETA_CONTROLLER, 0, 0),
       drive::setModuleStates,
       commandsMap, 
-      true,
+      false,
       drive);
   }
 }

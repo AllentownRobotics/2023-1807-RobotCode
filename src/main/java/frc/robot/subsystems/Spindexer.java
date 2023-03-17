@@ -15,6 +15,7 @@ import frc.robot.Utils.Constants.SpindexerConstants;
 
 public class Spindexer extends SubsystemBase {
   CANSparkMax motor = new CANSparkMax(SpindexerConstants.SPINDEXER_MOTOR_ID, MotorType.kBrushless);
+  CANSparkMax roller = new CANSparkMax(33, MotorType.kBrushless);
 
   RelativeEncoder encoder;
 
@@ -42,6 +43,8 @@ public class Spindexer extends SubsystemBase {
     motor.burnFlash();
 
     desriedRotations = 0.0;
+
+    roller.follow(motor, false);
   }
 
   @Override

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
 
 public class Limelight extends SubsystemBase {
   public static NetworkTable table;
@@ -43,7 +42,7 @@ public class Limelight extends SubsystemBase {
    * Creates a new Limelight subsystem.
    * Recommended to call {@code initLocalOdometry()} immediatly after constructing a new Limelight
    */
-  public Limelight(RobotContainer rc) {
+  public Limelight() {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
 
@@ -77,7 +76,7 @@ public class Limelight extends SubsystemBase {
         });
   }
 
-  public CommandBase setApril2DPipe() {
+  public CommandBase  setApril2DPipe() {
     // Inline construction of command goes here.
     // Subsystem::RunOnce implicitly requires `this` subsystem.
     return runOnce(
@@ -167,7 +166,7 @@ public class Limelight extends SubsystemBase {
      else {return 0;}
   }
 
-  public double[] april3DCordsBotPoseTargetSpace() {
+  public static double[] april3DCordsBotPoseTargetSpace() {
     return table.getEntry("botpose_targetspace").getDoubleArray(new double[6]);
   }
 
@@ -219,7 +218,7 @@ public class Limelight extends SubsystemBase {
    * Checks whether or not the current in-view apriltag is a node tag. Returns true if so and false otherwise
    * @return Whether the in-view apriltag is a node tag
    */
-  public boolean isTargetNodeTag(){
+  public static boolean isTargetNodeTag(){
     if (!tv){
       return false;
     }
