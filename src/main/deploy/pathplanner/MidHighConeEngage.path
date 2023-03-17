@@ -71,7 +71,7 @@
         "names": [],
         "executionBehavior": "parallel",
         "waitBehavior": "minimum",
-        "waitTime": 0.75
+        "waitTime": 0.5
       }
     },
     {

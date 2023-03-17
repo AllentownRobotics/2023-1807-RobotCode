@@ -9,9 +9,10 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
 public class AutoLevel extends CommandBase {
+   boolean shouldSlow = false; 
 
   private DriveTrain s_Swerve;
-  PIDController kLevelingPID = new PIDController(0.03, 0.00, 0.00);
+  PIDController kLevelingPID = new PIDController(0.045, 0.00, 0.00);
   public AutoLevel(DriveTrain s_Swerve) {
       this.s_Swerve = s_Swerve;
       addRequirements(s_Swerve);
@@ -21,7 +22,12 @@ public class AutoLevel extends CommandBase {
 
   @Override
   public void execute() {
-      s_Swerve.levelSet(-kLevelingPID.calculate(s_Swerve.getRoll(), 0));
+    if(Math.abs(s_Swerve.getRoll()) <= 2.5){
+        shouldSlow = true;
+    }
+    double speed = -kLevelingPID.calculate(s_Swerve.getRoll(), 0);
+    speed *= shouldSlow ? 0.5 : 1.0;
+      s_Swerve.levelSet(speed);
   }
 
   @Override
