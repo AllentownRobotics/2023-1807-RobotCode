@@ -17,6 +17,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Utils.ConversionLambda;
 import frc.robot.Utils.FauxTrapezoidProfile;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ClawConstants;
@@ -71,8 +72,11 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     FeedForwardFeeder profileOutput = profile.calculate(encoder.getPosition());
-    double pidOutput = pidController.calculate(encoder.getVelocity(), desiredAngle);
-    double ffOutput = feedforward.calculate(, pidOutput, pidOutput)
+    double pidOutput = pidController.calculate(encoder.getVelocity(), profileOutput.velocity);
+    profileOutput.convert(ConversionLambda.degreesToRadians);
+    double ffOutput = feedforward.calculate(profileOutput.position, profileOutput.velocity, profileOutput.acceleration);
+
+    voltageMotorControl(pidOutput + ffOutput);
 
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Set Point", desiredAngle);

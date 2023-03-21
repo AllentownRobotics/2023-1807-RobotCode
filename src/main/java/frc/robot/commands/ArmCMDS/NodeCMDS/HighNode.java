@@ -26,6 +26,6 @@ public class HighNode extends SequentialCommandGroup {
    */
   public HighNode(Arm arm, Claw claw) {
     addCommands(new SetWristState(claw, WristState.WristOut),
-                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH, ArmConstants.ANGLE_CUBE_HIGH)));
+                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH)));
   }
 }

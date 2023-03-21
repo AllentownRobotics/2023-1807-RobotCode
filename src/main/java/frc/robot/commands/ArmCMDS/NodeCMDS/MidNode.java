@@ -26,6 +26,6 @@ public class MidNode extends SequentialCommandGroup {
    */
   public MidNode(Arm arm, Claw claw) {
     addCommands(new SetWristState(claw, WristState.WristDown),
-                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID, ArmConstants.ANGLE_CUBE_MID)));
+                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID)));
   }
 }
