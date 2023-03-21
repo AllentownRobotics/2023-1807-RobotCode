@@ -5,7 +5,6 @@
 package frc.robot.commands.ArmCMDS.LowLevelCMDS;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Utils.Enums.PlacementType;
 import frc.robot.subsystems.Arm;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -14,8 +13,7 @@ import frc.robot.subsystems.Arm;
 public class SetArmAngle extends InstantCommand {
   Arm arm;
 
-  double coneAngle;
-  double cubeAngle;
+  double angle;
 
   /**
    * Instant command which sets the arms desired angle then instantly ends.
@@ -23,33 +21,18 @@ public class SetArmAngle extends InstantCommand {
    * To achieve this use a {@code Commands.waitUntil} command 
    * passing in arm's {@code atSetPoint()} as a boolean supplier Ex. {@code Commands.waitUntil(arm::atSetPoint)}
    * @param arm Arm subsystem
-   * @param coneAngle Angle for the arm to go to if a cone placement is desired
-   * @param cubeAngle Angle for the arm to go to if a cube placement is desired
+   * @param uniAngle Angle for the arm to go to
    */
-  public SetArmAngle(Arm arm, double coneAngle, double cubeAngle) {
+  public SetArmAngle(Arm arm, double angle){
     addRequirements(arm);
 
     this.arm = arm;
-    this.coneAngle = coneAngle;
-    this.cubeAngle = cubeAngle;
-  }
-
-  /**
-   * Instant command which sets the arms desired angle then instantly ends.
-   * NOTE: This command does not wait for the arm to be at the desired angle before ending
-   * To achieve this use a {@code Commands.waitUntil} command 
-   * passing in arm's {@code atSetPoint()} as a boolean supplier Ex. {@code Commands.waitUntil(arm::atSetPoint)}
-   * @param arm Arm subsystem
-   * @param uniAngle Angle for the arm to go to regardless of the desired placement type
-   */
-  public SetArmAngle(Arm arm, double uniAngle){
-    this(arm, uniAngle, uniAngle);
+    this.angle = angle;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    double angle = arm.getPlaceType().equals(PlacementType.Cone) ? coneAngle : cubeAngle;
     arm.setDesiredAngle(angle);
   }
 }

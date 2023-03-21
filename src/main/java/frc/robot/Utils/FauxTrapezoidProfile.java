@@ -1,5 +1,6 @@
 package frc.robot.Utils;
 
+import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -28,16 +29,18 @@ public class FauxTrapezoidProfile {
     }
 
     /**
-     * Calculates the appropriate velocity for the mechanism to move at
+     * Calculates the appropriate feedforward goals for the mechanism to use
      * @param position Current position of mechanism
-     * @return The calculated velocity
+     * @return The calculated feedforward goals
      */
-    public double calculate(double position){
+    public FeedForwardFeeder calculate(double position){
         double error = goal - position;
         DoubleSupplier calculator = error < 0.0 ? () -> calcNegError(error) : () -> calcPosError(error);
 
+        double velocity = Math.abs(error) <= errorTolerance ? 0.0 : calculator.getAsDouble();
 
-        return Math.abs(error) <= errorTolerance ? 0.0 : calculator.getAsDouble();
+        double acceleration = velocity == maxVelocity || velocity == minVelocity ? 0.0 : -deccelRate * Math.signum(error);
+        return new FeedForwardFeeder(goal, velocity, acceleration);
     }
 
     private double calcNegError(double error){
@@ -74,5 +77,21 @@ public class FauxTrapezoidProfile {
 
     public void setMinVelocity(double minVelocity){
         this.minVelocity = minVelocity;
+    }
+
+    public class FeedForwardFeeder{
+        public double position;
+        public double velocity;
+        public double acceleration;
+
+        public FeedForwardFeeder(double position, double velocity, double acceleration){
+            this.position = position;
+            this.velocity = velocity;
+            this.acceleration = acceleration;
+        }
+
+        public void convert(DoubleConsumer conversionFunction){
+            position = 
+        }
     }
 }

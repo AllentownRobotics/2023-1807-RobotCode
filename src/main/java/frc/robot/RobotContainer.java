@@ -25,7 +25,6 @@ import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.ClawState;
-import frc.robot.Utils.Enums.PlacementType;
 
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
@@ -146,17 +145,13 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
-                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getAngle()))));
+    /*armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
+                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));*/
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
 
     opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(!claw.isAutoGrabAllowed())));
-
-    // USE CUBE OR CONE
-    opController.leftBumper().whileTrue(Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cube))).onFalse(
-                                            Commands.runOnce(() -> arm.setPlaceType(PlacementType.Cone)));
 
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
@@ -172,7 +167,6 @@ public class RobotContainer {
 
     opController.start().onTrue(new WantCone(light));
     opController.back().onTrue(new WantCube(light));
-
 
     driveController.povUp().onTrue(limelight.TapeTracking());
     driveController.povDown().onTrue(limelight.April2DTracking());
