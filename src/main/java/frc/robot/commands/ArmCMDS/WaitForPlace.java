@@ -6,6 +6,7 @@ package frc.robot.commands.ArmCMDS;
 
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import frc.robot.Utils.Enums.ClawState;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.subsystems.Arm;
 
@@ -13,14 +14,13 @@ import frc.robot.subsystems.Arm;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class WaitForPlace extends ParallelDeadlineGroup {
-
   /**
    * Parallel deadline group which rotates the arm to its placement position and waits for the operator to place
-   * the currently held game piece. Allows for the operator to switch between cube and cone placement angles.
+   * the currently held game piece.
    * Ends once the operator places the piece
    */
   public WaitForPlace(Arm arm, SetArmAngle angles) {
-    super(Commands.waitUntil(arm::getNOTHolding));
+    super(Commands.waitUntil(() -> arm.getClawSubsystem().getClawState().equals(ClawState.Open)));
     addCommands(Commands.repeatingSequence(angles).withInterruptBehavior(InterruptionBehavior.kCancelSelf));
   }
 }

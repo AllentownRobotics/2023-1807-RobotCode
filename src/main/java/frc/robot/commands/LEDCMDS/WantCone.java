@@ -6,21 +6,25 @@ package frc.robot.commands.LEDCMDS;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Limelight;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class WantCone extends InstantCommand {
   LED ledSubsystem;
-  public WantCone(LED led) {
+  Limelight limelight;
+  public WantCone(LED led, Limelight limelight) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(led);
     ledSubsystem = led;
+    this.limelight = limelight;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    limelight.TapeTracking().schedule();;
     ledSubsystem.SetColor(255,255,0);
   }
 }

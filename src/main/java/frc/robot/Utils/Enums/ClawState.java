@@ -8,5 +8,4 @@ package frc.robot.Utils.Enums;
 public enum ClawState {
     Open,
     Closed;
-
 }

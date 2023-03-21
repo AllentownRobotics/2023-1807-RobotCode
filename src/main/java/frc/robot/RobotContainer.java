@@ -165,8 +165,8 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
-    opController.start().onTrue(new WantCone(light));
-    opController.back().onTrue(new WantCube(light));
+    opController.start().onTrue(new WantCone(light, limelight));
+    opController.back().onTrue(new WantCube(light, limelight));
 
     driveController.povUp().onTrue(limelight.TapeTracking());
     driveController.povDown().onTrue(limelight.April2DTracking());

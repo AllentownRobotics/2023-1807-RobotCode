@@ -189,10 +189,10 @@ public static class ArmConstants{
   public static final double ANGLE_CHECKTOLERANCE_DEGREES = 3;
   public static final double ANGLE_RAMPDISTANCE_DEGREES = 30.0;
 
-  public static final double PID_kP = 0.03;
-  public static final double PID_kI = 0.00000001;
+  public static final double PID_kP = 0.001 * 1.4;
+  public static final double PID_kI = 0.0;
   public static final double PID_kD = 0.0;
-  public static final double PID_kFF = 0.0005;
+  public static final double PID_kFF = 0.0;
   public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.0;
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 7.0;

@@ -1,10 +1,6 @@
 package frc.robot.Utils;
 
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
-
-import edu.wpi.first.math.util.Units;
 
 /**
  * Custom trapezoid profile with a ramp down on only one side
@@ -96,6 +92,10 @@ public class FauxTrapezoidProfile {
             this.acceleration = acceleration;
         }
 
+        /**
+         * Applies a conversion to the contained values
+         * @param conversionFunction the conversion to apply
+         */
         public void convert(ConversionLambda conversionFunction){
            position = conversionFunction.convert(position);
            velocity = conversionFunction.convert(velocity);
