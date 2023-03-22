@@ -193,7 +193,7 @@ public static class ArmConstants{
   public static final double PID_kI = 0.0;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0;
-  public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.0;
+  public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.1;
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 7.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
