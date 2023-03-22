@@ -32,14 +32,13 @@ public class FauxTrapezoidProfile {
      * @param position Current position of mechanism
      * @return The calculated feedforward goals
      */
-    public FeedForwardFeeder calculate(double position){
+    public double calculate(double position){
         double error = goal - position;
         DoubleSupplier calculator = error < 0.0 ? () -> calcNegError(error) : () -> calcPosError(error);
 
         double velocity = Math.abs(error) <= errorTolerance ? 0.0 : calculator.getAsDouble();
 
-        double acceleration = velocity == maxVelocity || velocity == minVelocity ? 0.0 : -deccelRate * Math.signum(error);
-        return new FeedForwardFeeder(goal, velocity, acceleration);
+        return velocity;
     }
 
     private double calcNegError(double error){

@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.FauxTrapezoidProfile;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.ClawConstants;
-import frc.robot.Utils.FauxTrapezoidProfile.FeedForwardFeeder;
 
 public class Arm extends SubsystemBase {
   CANSparkMax leftMotor = new CANSparkMax(ArmConstants.LEFT_MOTOR_ID, MotorType.kBrushless);
@@ -26,14 +25,12 @@ public class Arm extends SubsystemBase {
   AbsoluteEncoder encoder;
 
   SparkMaxPIDController pidController;
-  //PIDController pidController = new PIDController(ArmConstants.PID_kP, ArmConstants.PID_kI, ArmConstants.PID_kD);
   FauxTrapezoidProfile profile = new FauxTrapezoidProfile(210.0, 3.0 * 1.4, 1.0, 2.5);
-  //ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0);
 
   Claw claw;
 
   double desiredAngle;
-  double manualPercent;
+  double manualSpeed;
   boolean automaticControl;
 
   public Arm(Claw claw) {
@@ -71,25 +68,17 @@ public class Arm extends SubsystemBase {
 
     profile.setGoal(0.0);
 
-    manualPercent = 0.0;
+    manualSpeed = 0.0;
 
     automaticControl = true;
   }
 
   @Override
   public void periodic() {
-    FeedForwardFeeder profileOutput = profile.calculate(encoder.getPosition());
-    if (automaticControl){
-      //double pidOutput = pidController.calculate(encoder.getVelocity(), profileOutput.velocity);
-      //double ffOutput = feedforward.calculate(profileOutput.position, profileOutput.velocity, profileOutput.acceleration);
+    double profileOutput = profile.calculate(encoder.getPosition());
+    pidController.setReference(automaticControl ? profileOutput : manualSpeed, ControlType.kVelocity, 0);
 
-      pidController.setReference(profileOutput.velocity, ControlType.kVelocity, 0);
-    }
-    else{
-      leftMotor.set(manualPercent);
-    }
-
-    SmartDashboard.putNumber("Calculated Velocity", profileOutput.velocity);
+    SmartDashboard.putNumber("Calculated Velocity", profileOutput);
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
@@ -132,13 +121,17 @@ public class Arm extends SubsystemBase {
     leftMotor.set(percentOutput);
   }
 
-  public void voltageMotorControl(double volts){
-    leftMotor.setVoltage(volts);
-  }
-
   public void setBrakes(IdleMode mode){
     leftMotor.setIdleMode(mode);
     rightMotor.setIdleMode(mode);
+  }
+
+  public void setManualSpeed(double angularSpeed){
+    manualSpeed = angularSpeed;
+  }
+
+  public void setAutomaticMode(boolean useAuto){
+    automaticControl = useAuto;
   }
 
   /**

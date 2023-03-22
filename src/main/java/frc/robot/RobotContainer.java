@@ -11,13 +11,13 @@ import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Utils.Constants.ArmConstants;
@@ -75,7 +75,7 @@ public class RobotContainer {
   //Triggers
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
   Trigger autoGrabTrigger = new Trigger(claw::inGrabDistance);
-  Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.15);
+  Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.1);
 
   //Commands HashMap
   HashMap<String, Command> commandsMap = new HashMap<>();
@@ -96,8 +96,8 @@ public class RobotContainer {
     drive.resetEncoders();
     
     chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0))); // Cone High Leave Engage
-    chooser.addOption("Right", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
-    chooser.addOption("Left", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
+    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
+    chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -145,8 +145,9 @@ public class RobotContainer {
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
-    /*armManualControl.whileTrue(Commands.run(() -> arm.runAtSpeed(opController.getLeftY() * 0.25), arm).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
-                                                          (Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));*/
+    armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
+      Commands.run(() -> arm.setManualSpeed(25.0 * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2)))).onFalse(
+      Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
