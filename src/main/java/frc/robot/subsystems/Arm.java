@@ -40,7 +40,7 @@ public class Arm extends SubsystemBase {
     encoder = ArmConstants.USE_LEFT_ENCODER ? leftMotor.getAbsoluteEncoder(Type.kDutyCycle) : rightMotor.getAbsoluteEncoder(Type.kDutyCycle); 
     encoder.setInverted(!ArmConstants.USE_LEFT_ENCODER);
     encoder.setPositionConversionFactor(360.0);
-    encoder.setVelocityConversionFactor(encoder.getPositionConversionFactor() / 60.0);
+    encoder.setVelocityConversionFactor(360.0);
 
     leftMotor.setInverted(false);
 

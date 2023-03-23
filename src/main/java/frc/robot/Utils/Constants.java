@@ -25,9 +25,8 @@ public static class ControllerConstants{
     public static final int DRIVE_CONTROLLER = 1;
     public static final int OP_CONTROLLER = 0; 
     public static final double OP_CONTROLLER_THRESHOLD_SPINDEXER = 0.08;
-
-
 }
+
 public static class GlobalConstants{
   //Pneumatics
 public static final int PNEUMATICS_ID = 14;
@@ -271,6 +270,12 @@ public static class SpindexerConstants{
   public static final double SPINDEXER_FF = 0.0;
 
  }
+
+public static class CollectorConstants{
+  public static int FLIP_MOTOR_ID = 0;
+  public static int ROLLER_LEFT_MOTOR_ID = 0;
+  public static int ROLLER_RIGHT_MOTOR_ID = 0;
+}
 
 /**
  * Constants for colors. Contiains RGB values for various match elements

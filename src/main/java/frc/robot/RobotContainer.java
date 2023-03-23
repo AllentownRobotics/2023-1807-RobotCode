@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -95,9 +96,9 @@ public class RobotContainer {
     
     drive.resetEncoders();
     
-    chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0))); // Cone High Leave Engage
-    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0))); // Cone High Engage, 3, 3
-    chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0))); // Cone High Leave Engage Left, 3, 3
+    chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0)));
+    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
+    chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -133,7 +134,8 @@ public class RobotContainer {
             drive));
 
 
-    driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController));
+    driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController, opController)).onFalse(
+      Commands.runOnce(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.0)));
 
     // HIGH PLACEMENT
     opController.povUp().onTrue(new HighNode(arm, claw));
@@ -146,7 +148,7 @@ public class RobotContainer {
     
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
-      Commands.run(() -> arm.setManualSpeed(25.0 * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2)))).onFalse(
+      Commands.run(() -> arm.setManualSpeed(Math.signum(opController.getLeftY()) * 50.0 * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2)))).onFalse(
       Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
@@ -168,9 +170,6 @@ public class RobotContainer {
 
     opController.start().onTrue(new WantCone(light, limelight));
     opController.back().onTrue(new WantCube(light, limelight));
-
-    driveController.povUp().onTrue(limelight.TapeTracking());
-    driveController.povDown().onTrue(limelight.April2DTracking());
   }
 
   /**
@@ -191,7 +190,7 @@ public class RobotContainer {
     commandsMap.put("autoScoreHighCone", new AutoPlace(arm, claw, ArmConstants.ANGLE_CONE_HIGH));
     commandsMap.put("autoScoreHighCube", new AutoPlace(arm, claw, ArmConstants.ANGLE_CUBE_HIGH));
     commandsMap.put("pickUpFromGround", new GroundPickup(this));
-    commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController).withTimeout(1.5));
+    commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController, opController).withTimeout(1.5));
     commandsMap.put("autoLevel", new AutoLevel(drive));
     commandsMap.put("enableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(true)));
     commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
