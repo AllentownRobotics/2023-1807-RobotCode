@@ -42,6 +42,7 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
+import frc.robot.commands.LightCMDS.EndgameLeveling;
 import frc.robot.commands.LightCMDS.SetAnimation;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
@@ -135,6 +136,7 @@ public class RobotContainer {
             drive));
 
 
+    // TARGETING
     driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController, opController)).onFalse(
       Commands.runOnce(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.0)));
 
@@ -161,6 +163,7 @@ public class RobotContainer {
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
 
+    // WRIST TOGGLE
     opController.b().onTrue(new ToggleWrist(claw));
 
     // SPINDEXER FORWARD
@@ -175,7 +178,7 @@ public class RobotContainer {
     // CUBE REQUEST
     opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
 
-    opController.start().and(opController.back()).onTrue(new SetAnimation(LightAnimation.endgame));
+    opController.start().and(opController.back()).onTrue(new EndgameLeveling());
   }
 
   /**

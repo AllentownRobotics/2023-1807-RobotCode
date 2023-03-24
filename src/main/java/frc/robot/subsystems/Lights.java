@@ -21,9 +21,9 @@ public class Lights extends SubsystemBase {
 
   DoubleSupplier tiltSupplier;
 
-  static Lights instance = null;
-
   public LightAnimation currentAnimation = LightAnimation.nullAnim;
+
+  static Lights instance = null;
 
   public Lights() {
     CANdleConfiguration config = new CANdleConfiguration();
@@ -72,7 +72,7 @@ public class Lights extends SubsystemBase {
   public double calculateBrightness(){
     double tilt = tiltSupplier.getAsDouble();
 
-    return -2.0 * Math.abs((1 / (1 + Math.exp(-tilt))) - 0.5) + 1.0;
+    return Math.min(1.0, -2.0 * Math.abs((1.6 / (1 + Math.exp(-tilt / 3.17))) - 0.8) + 1.6);
   }
 
   /**
