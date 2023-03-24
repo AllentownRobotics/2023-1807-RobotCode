@@ -42,7 +42,7 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-import frc.robot.commands.LightCMDS.SetAnimationNumber;
+import frc.robot.commands.LightCMDS.SetAnimation;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
@@ -150,7 +150,7 @@ public class RobotContainer {
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
       Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * Math.signum(opController.getLeftY()) * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2.0)))).onFalse(
-      Commands.runOnce(() -> arm.setAutomaticMode(true)));
+      Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this).andThen(
@@ -169,9 +169,9 @@ public class RobotContainer {
                        new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
     // CONE REQUEST
-    opController.start().onTrue(new SetAnimationNumber(LightAnimation.coneRequest));
+    opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(limelight.LightOn()).andThen(limelight.setLimePipe()));
     // CUBE REQUEST
-    opController.back().onTrue(new SetAnimationNumber(LightAnimation.cubeRequest));
+    opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
   }
 
   /**
@@ -212,7 +212,7 @@ public class RobotContainer {
       new PIDConstants(AutoContsants.P_THETA_CONTROLLER, 0, 0),
       drive::setModuleStates,
       commandsMap, 
-      false,
+      true,
       drive);
   }
 }

@@ -17,20 +17,4 @@ public interface LightAnimation {
     public static LightAnimation cubeScore = (candle) -> candle.animate(ANIM_SCORE_CUBE, 3);
     public static LightAnimation endgame = (candle) -> candle.configBrightnessScalar(Lights.getInstance().calculateBrightness());
     public static LightAnimation nullAnim = (candle) -> candle.setLEDs(0, 0, 0);
-
-    /**
-     * Size: {@code 8},
-     * High Level Order: {@code Cone, Cube, Endgame, Null},
-     * Low Level: {@code Request, Transport, Score}
-     */
-    public static LightAnimation[] allAnims = new LightAnimation[] {
-        coneRequest,
-        coneTransport,
-        coneScore,
-        cubeRequest,
-        cubeTransport,
-        cubeScore,
-        endgame,
-        nullAnim
-    };
 }

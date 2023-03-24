@@ -8,13 +8,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Utils.LightAnimation;
 import frc.robot.subsystems.Lights;
 
-public class SetAnimationNumber extends InstantCommand {
+public class SetAnimation extends InstantCommand {
   public LightAnimation animation;
 
   /**
    * See {@code LightAnimation} class for ID key
    */
-  public SetAnimationNumber(LightAnimation animation) {
+  public SetAnimation(LightAnimation animation) {
     this.animation = animation;
   }
 
