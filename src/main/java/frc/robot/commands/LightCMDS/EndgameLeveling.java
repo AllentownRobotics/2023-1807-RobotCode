@@ -10,6 +10,11 @@ import frc.robot.subsystems.Lights;
 
 public class EndgameLeveling extends CommandBase {
   Lights lights;
+
+  /**
+   * Command which clears all current animations then starts the endgame leveling animation.
+   * Runs until interrupted
+   */
   public EndgameLeveling() {
     lights = Lights.getInstance();
     addRequirements(lights);

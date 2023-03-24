@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Constants.GlobalConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -59,9 +60,18 @@ public class DriveTrain extends SubsystemBase {
       });
 
   private static DriveTrain instance = null;
-  /** Creates a new DriveSubsystem. */
+
+  /**
+   * Creates a new DriveTrain. 
+   * NOTE: This method should not be manually called. Instead,
+   * use the singleton instance by calling the static method {@link DriveTrain#getInstance()} 
+   */
   public DriveTrain() {}
 
+  /**
+   * Gets the singleton instance of the drivetrain. If no instance exists one is automatically created.
+   * @return The singleton instance of the drivetrain
+   */
   public static DriveTrain getInstance(){
     if (instance == null){
       instance = new DriveTrain();
@@ -80,6 +90,8 @@ public class DriveTrain extends SubsystemBase {
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+
+    SmartDashboard.putNumber("Heading", m_gyro.getRotation2d().getDegrees());
   }
 
   /**
@@ -269,6 +281,10 @@ public class DriveTrain extends SubsystemBase {
     return m_gyro.getRate() * (DriveConstants.GYRO_REVERSED ? -1.0 : 1.0);
   }
 
+  /**
+   * Calculates the absolute tilt of the robot
+   * @return The tilt of the robot
+   */
   public double getTilt(){
       return (Math.sqrt((Math.pow(m_gyro.getRoll(), 2)) + Math.pow(m_gyro.getPitch(), 2)));
   }

@@ -35,6 +35,11 @@ public class Arm extends SubsystemBase {
 
   static Arm instance;
 
+  /**
+   * Creates a new Arm. 
+   * NOTE: This method should not be manually called. Instead,
+   * use the singleton instance by calling the static method {@link Arm#getInstance()} 
+   */
   public Arm() {
     leftMotor.restoreFactoryDefaults();
     rightMotor.restoreFactoryDefaults();
@@ -77,6 +82,10 @@ public class Arm extends SubsystemBase {
     automaticControl = true;
   }
 
+  /**
+   * Gets the singleton instance of the arm. If no instance exists one is automatically created.
+   * @return The singleton instance of the arm
+   */
   public static Arm getInstance(){
     if (instance == null){
       instance = new Arm();
@@ -113,35 +122,59 @@ public class Arm extends SubsystemBase {
     return desiredAngle - encoder.getPosition();
   }
 
+  /**
+   * Checks if the arm is currently at the desired setpoint and returns accordingly
+   * @return Whether or not the arm is at the setpoint
+   */
   public boolean atSetPoint(){
     return Math.abs(getPositionalError()) <= ArmConstants.ANGLE_CHECKTOLERANCE_DEGREES;
   }
 
+  /**
+   * The current angle of the arm in degrees
+   * @return Current angle of the arm in degrees
+   */
   public double getArmAngle(){
     return encoder.getPosition();
   }
 
+  /**
+   * Checks if the arm is within the wrist exclusion zone and returns accordingly
+   * @return Whether or not the arm is in the exclusion zone
+   */
   public boolean isWristAllowedOut(){
     return !(encoder.getPosition() >= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MIN && encoder.getPosition() <= ClawConstants.ANGLE_WRIST_EXCLUSIONZONE_MAX);
   }
 
-  public boolean atReset(){
-    return encoder.getPosition() <= 15.0;
-  }
-
+  /**
+   * Open loop control of the motors on the arm
+   * @param percentOutput Percent for the motors to run at
+   */
   public void openLoopMotorControl(double percentOutput){
     leftMotor.set(percentOutput);
   }
 
+  /**
+   * Sets the brake idle mode of the arm motors
+   * @param mode Idle mode for the motors to change to
+   */
   public void setBrakes(IdleMode mode){
     leftMotor.setIdleMode(mode);
     rightMotor.setIdleMode(mode);
   }
 
+  /**
+   * Sets the manual speed of the arm
+   * @param angularSpeed The speed for the arm to move at
+   */
   public void setManualSpeed(double angularSpeed){
     manualSpeed = angularSpeed;
   }
 
+  /**
+   * Sets whether or not the arm should obey automatic control
+   * @param useAuto Whether or not the arm should obey automatic control
+   */
   public void setAutomaticMode(boolean useAuto){
     automaticControl = useAuto;
   }

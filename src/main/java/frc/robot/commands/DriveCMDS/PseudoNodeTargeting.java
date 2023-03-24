@@ -18,19 +18,20 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
     
     private PIDController kDrivingPID = new PIDController(0.02, 0, 0);
 
-
     private SlewRateLimiter translate = new SlewRateLimiter(5);
 
     private LinearFilter filter = LinearFilter.movingAverage(5); 
 
+    /**
+     * Sequential command group which rotates the robot to face the alliance wall, then strafe the robot
+     * to align with the primary in-view limelight target. Runs until interrupted
+     */
     public PseudoNodeTargeting(DriveTrain m_drive, CommandXboxController driveController, CommandXboxController opController) {
         kturningPID.enableContinuousInput(-180, 180);
         kturningPID.setTolerance(1);
         kStrafingPID.setTolerance(0.5);
         kDrivingPID.setTolerance(0.5);
         
-        
-
         addRequirements(m_drive);
 
         addCommands(

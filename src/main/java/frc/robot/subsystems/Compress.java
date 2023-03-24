@@ -15,10 +15,19 @@ public class Compress extends SubsystemBase {
   
   static Compress instance = null;
 
+  /**
+   * Creates a new Compress. 
+   * NOTE: This method should not be manually called. Instead,
+   * use the singleton instance by calling the static method {@link Compress#getInstance()} 
+   */
   public Compress() {
     comp = new Compressor(GlobalConstants.PNEUMATICS_ID, PneumaticsModuleType.REVPH);
   }
 
+  /**
+   * Gets the singleton instance of the compress. If no instance exists one is automatically created.
+   * @return The singleton instance of the compress
+   */
   public static Compress getInstance(){
     if (instance == null){
       instance = new Compress();
@@ -26,8 +35,10 @@ public class Compress extends SubsystemBase {
     return instance;
   }
 
-  public void run()
-  {
+  /**
+   * Handles compressing when too low and stopping at the desired pressure, usually 120 PSI.
+   */
+  public void run(){
     SmartDashboard.putNumber("Pressure Switch Value", comp.getPressure());
     comp.enableAnalog(60,120);
   }

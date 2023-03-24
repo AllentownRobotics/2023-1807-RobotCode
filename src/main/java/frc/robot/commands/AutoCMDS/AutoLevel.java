@@ -13,6 +13,11 @@ public class AutoLevel extends CommandBase {
 
   private DriveTrain s_Swerve;
   PIDController kLevelingPID = new PIDController(0.045, 0.00, 0.00);
+
+  /**
+   * Command which controls the robot to automatically level on the charge station.
+   * Runs until interrupted
+   */
   public AutoLevel() {
       s_Swerve = DriveTrain.getInstance();
       addRequirements(s_Swerve);
@@ -22,6 +27,7 @@ public class AutoLevel extends CommandBase {
 
   @Override
   public void initialize(){
+    shouldSlow = false;
     kLevelingPID.reset();
   }
 

@@ -25,6 +25,11 @@ public class Lights extends SubsystemBase {
 
   static Lights instance = null;
 
+  /**
+   * Creates a new Lights. 
+   * NOTE: This method should not be manually called. Instead,
+   * use the singleton instance by calling the static method {@link Lights#getInstance()} 
+   */
   public Lights() {
     CANdleConfiguration config = new CANdleConfiguration();
     config.stripType = LEDStripType.RGB;
@@ -34,6 +39,10 @@ public class Lights extends SubsystemBase {
     setAnimation(LightAnimation.nullAnim);
   }
 
+  /**
+   * Gets the singleton instance of the lights. If no instance exists one is automatically created.
+   * @return The singleton instance of the lights
+   */
   public static Lights getInstance(){
     if (instance == null){
       instance = new Lights();
@@ -42,13 +51,12 @@ public class Lights extends SubsystemBase {
   }
 
   /**
-   * Sets the animation on the lights using the provided animation ID.
-   * See {@code LightAnimation} class for ID key
-   * @param animNumber New animation ID
+   * Sets the animation on the lights using the provided animation
+   * @param animation New animation
    */
   public void setAnimation(LightAnimation animation){
     currentAnimation = animation;
-
+    
     animation.run(candle);
     
     if (animation == LightAnimation.endgame){

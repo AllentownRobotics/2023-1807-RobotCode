@@ -9,18 +9,23 @@ import frc.robot.Utils.LightAnimation;
 import frc.robot.subsystems.Lights;
 
 public class SetAnimation extends InstantCommand {
-  public LightAnimation animation;
+  LightAnimation animation;
+  
+  Lights lights;
 
   /**
-   * See {@code LightAnimation} class for ID key
+   * Instant command which cancels all current animations and starts the provided one, then instantly ends
    */
   public SetAnimation(LightAnimation animation) {
     this.animation = animation;
+    this.lights = Lights.getInstance();
+    addRequirements(lights);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Lights.getInstance().setAnimation(animation);
+    lights.setAnimation(LightAnimation.nullAnim);
+    lights.setAnimation(animation);
   }
 }

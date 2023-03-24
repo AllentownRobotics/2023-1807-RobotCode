@@ -126,7 +126,7 @@ public class RobotContainer {
   private void configureBindings() {
     driveController.x().whileTrue(new AutoLevel());
 
-       driveController.rightBumper() 
+    driveController.rightBumper() 
         .whileTrue(new RunCommand(
             () -> drive.setX(),
             drive));
@@ -178,7 +178,12 @@ public class RobotContainer {
     // CUBE REQUEST
     opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
 
-    opController.start().and(opController.back()).onTrue(new EndgameLeveling());
+    opController.start().and(opController.back()).onTrue(Commands.waitSeconds(0.1).andThen(
+      new SetAnimation(LightAnimation.nullAnim)).andThen(
+      new EndgameLeveling()));
+
+    opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(true))).onFalse(
+      Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
   }
 
   /**

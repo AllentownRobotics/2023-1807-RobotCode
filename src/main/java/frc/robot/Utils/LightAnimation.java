@@ -6,7 +6,16 @@ import frc.robot.subsystems.Lights;
 
 import static frc.robot.Utils.Constants.LightsConstants.*;
 
+/**
+ * Interface which serves as a lambda wrapper for all light animations.
+ * To create custom animations create an arrow function which takes in a CANdle object. 
+ * To use, simply call {@link LightAnimation#run(CANdle)}
+ */
 public interface LightAnimation {
+    /**
+     * Runs the animation
+     * @param candle the CANdle object for the lights to run off of
+     */
     void run(CANdle candle);
 
     public static LightAnimation coneRequest = (candle) -> candle.setLEDs(COLOR_CONE[0], COLOR_CONE[1], COLOR_CONE[2]);

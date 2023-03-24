@@ -40,9 +40,10 @@ public class Limelight extends SubsystemBase {
 
   static Limelight instance = null;
 
-  /** 
-   * Creates a new Limelight subsystem.
-   * Recommended to call {@code initLocalOdometry()} immediatly after constructing a new Limelight
+  /**
+   * Creates a new Limelight. 
+   * NOTE: This method should not be manually called. Instead,
+   * use the singleton instance by calling the static method {@link Limelight#getInstance()} 
    */
   public Limelight() {
     table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -52,6 +53,10 @@ public class Limelight extends SubsystemBase {
     currentPipeline = April2DPipeline;
   }
 
+  /**
+   * Gets the singleton instance of the limelight. If no instance exists one is automatically created.
+   * @return The singleton instance of the limelight
+   */
   public static Limelight getInstance(){
     if (instance == null){
       instance = new Limelight();

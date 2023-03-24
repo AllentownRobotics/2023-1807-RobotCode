@@ -28,9 +28,9 @@ public class FauxTrapezoidProfile {
     }
 
     /**
-     * Calculates the appropriate feedforward goals for the mechanism to use
+     * Calculates the appropriate velocity for the mechanism to use
      * @param position Current position of mechanism
-     * @return The calculated feedforward goals
+     * @return The calculated velocity
      */
     public double calculate(double position){
         double error = goal - position;
@@ -50,13 +50,17 @@ public class FauxTrapezoidProfile {
     }
 
     /**
-     * Sets the desired end state of the profile
+     * Sets the desired positional end state of the profile
      * @param goal Desired end state
      */
     public void setGoal(double goal){
         this.goal = goal;
     }
 
+    /**
+     * Gets the current goal of the profile
+     * @return The current goal of the profile
+     */
     public double getGoal(){
         return goal;
     }
