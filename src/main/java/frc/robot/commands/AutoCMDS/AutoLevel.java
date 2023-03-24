@@ -13,11 +13,16 @@ public class AutoLevel extends CommandBase {
 
   private DriveTrain s_Swerve;
   PIDController kLevelingPID = new PIDController(0.045, 0.00, 0.00);
-  public AutoLevel(DriveTrain s_Swerve) {
-      this.s_Swerve = s_Swerve;
+  public AutoLevel() {
+      s_Swerve = DriveTrain.getInstance();
       addRequirements(s_Swerve);
       kLevelingPID.setIntegratorRange(-3, 3);
       //kLevelingPID.setTolerance(0.5);
+  }
+
+  @Override
+  public void initialize(){
+    kLevelingPID.reset();
   }
 
   @Override

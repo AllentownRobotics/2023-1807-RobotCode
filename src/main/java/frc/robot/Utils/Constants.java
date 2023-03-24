@@ -4,6 +4,10 @@
 
 package frc.robot.Utils;
 
+import com.ctre.phoenix.led.ColorFlowAnimation;
+import com.ctre.phoenix.led.LarsonAnimation;
+import com.ctre.phoenix.led.ColorFlowAnimation.Direction;
+import com.ctre.phoenix.led.LarsonAnimation.BounceMode;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.geometry.Translation2d;
@@ -185,22 +189,18 @@ public static class ArmConstants{
 
   public static final int RIGHT_MOTOR_ID = 32;
 
-  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 3;
-  public static final double ANGLE_RAMPDISTANCE_DEGREES = 30.0;
+  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 6.0;
 
   public static final double PID_kP = 0.001 * 1.4;
   public static final double PID_kI = 0.0;
   public static final double PID_kD = 0.0;
   public static final double PID_kFF = 0.0;
-  public static final double MAX_SPEED_LINEAR_METERSPERSECOND = 2.1;
   public static final double ANGLE_CONE_INSURANCE = 20.0;
   public static final double ANGLE_CUBE_INSURANCE = 7.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
-  public static final double ANGLE_MANUAL_INPUT_MODIFIER = 15.0;
 
-  public static final double SPEED_FULL_PERCENTOUTPUT = 0.3;
-  public static final double SPEED_RAMPDOWNRATE_PERCENTPERDEGREE = 0.75;
-  public static final double SPEED_DAMPEN_PERCENTOUTPUT = SPEED_FULL_PERCENTOUTPUT - (SPEED_RAMPDOWNRATE_PERCENTPERDEGREE * ANGLE_RAMPDISTANCE_DEGREES) / 100.0;
+  public static final double MANUAL_SPEED_MAX_DEGREESPERSECOND = 50.0;
+  public static final boolean MANUAL_INVERT = false;
 
   public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;
   public static final double ANGLE_CONE_MID = 224.367 - ANGLE_CONE_INSURANCE - ANGLE_MID_OFFSET;
@@ -281,23 +281,26 @@ public static class CollectorConstants{
  * Constants for colors. Contiains RGB values for various match elements
  */
 public static class ColorConstants {
+}
 
-  public static final int CONE_R = 255;
-  public static final int CONE_G = 80;
-  public static final int CONE_B = 0;
+public static class LightsConstants{
+  public static final int[] COLOR_CONE = new int[] {255, 80, 0};
+  public static final int[] COLOR_CUBE = new int[] {190, 20, 220};
+
+  public static final int[] COLOR_ALLIANCE_RED = new int[] {128, 0, 0};
+  public static final int[] COLOR_ALLIANCE_BLUE = new int[] {0, 0, 128};
+
+  public static final LarsonAnimation ANIM_TRANSPORT_CONE = new LarsonAnimation(COLOR_CONE[0], COLOR_CONE[1], COLOR_CONE[2], 
+    128, 0.1, 38, BounceMode.Front, 15, 0);
+  public static final LarsonAnimation ANIM_TRANSPORT_CUBE = new LarsonAnimation(COLOR_CUBE[0], COLOR_CUBE[1], COLOR_CUBE[2], 
+    128, 0.1, 38, BounceMode.Front, 15, 0);
+
+  public static final ColorFlowAnimation ANIM_SCORE_CONE = new ColorFlowAnimation(COLOR_CONE[0], COLOR_CONE[1], COLOR_CONE[2],
+    128, 0.6, 38, Direction.Forward, 0);
+  public static final ColorFlowAnimation ANIM_SCORE_CUBE = new ColorFlowAnimation(COLOR_CUBE[0], COLOR_CUBE[1], COLOR_CUBE[2],
+    128, 0.6, 38, Direction.Forward, 0);
+
   
-  public static final int CUBE_R = 190;
-  public static final int CUBE_G = 20;
-  public static final int CUBE_B = 220;
-
-  public static final int RED_TEAM_R = 128;
-  public static final int RED_TEAM_G = 0;
-  public static final int RED_TEAM_B = 0;
-
-  public static final int BLUE_TEAM_R = 0;
-  public static final int BLUE_TEAM_G = 0;
-  public static final int BLUE_TEAM_B = 128;
-
 }
 
 /**
@@ -317,6 +320,6 @@ public static class AnimNumberConstants {
   public static final int CUBE_SCORE_ANIM_NUMBER = 6;
 
   public static final int ENDGAME_ANIM_NUMBER = 7;
-  public static final int RESET_ANIM_NUMBER = 8;
+  public static final int NULL_ANIM_NUMBER = 8;
 }
 }

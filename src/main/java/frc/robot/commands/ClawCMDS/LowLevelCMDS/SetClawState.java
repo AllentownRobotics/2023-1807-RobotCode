@@ -21,8 +21,8 @@ public class SetClawState extends InstantCommand {
    * @param claw Claw subsystem
    * @param setState State to set the claw to
    */
-  public SetClawState(Claw claw, ClawState setState){
-    this.claw = claw;
+  public SetClawState(ClawState setState){
+    claw = Claw.getInstance();
     this.state = setState;
   }
 

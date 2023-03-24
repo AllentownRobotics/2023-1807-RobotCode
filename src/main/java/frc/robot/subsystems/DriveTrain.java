@@ -58,8 +58,16 @@ public class DriveTrain extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
+  private static DriveTrain instance = null;
   /** Creates a new DriveSubsystem. */
   public DriveTrain() {}
+
+  public static DriveTrain getInstance(){
+    if (instance == null){
+      instance = new DriveTrain();
+    }
+    return instance;
+  }
 
   @Override
   public void periodic() {
@@ -142,6 +150,7 @@ public class DriveTrain extends SubsystemBase {
     m_rearLeft.setDesiredState(swerveModuleStates[2]);
     m_rearRight.setDesiredState(swerveModuleStates[3]);
   }
+
 
   /**
    * Sets the wheels into an X formation to prevent movement.
@@ -258,5 +267,9 @@ public class DriveTrain extends SubsystemBase {
    */
   public double getTurnRate() {
     return m_gyro.getRate() * (DriveConstants.GYRO_REVERSED ? -1.0 : 1.0);
+  }
+
+  public double getTilt(){
+      return (Math.sqrt((Math.pow(m_gyro.getRoll(), 2)) + Math.pow(m_gyro.getPitch(), 2)));
   }
 }

@@ -4,8 +4,6 @@
 
 package frc.robot.commands.ArmCMDS;
 
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
@@ -23,10 +21,6 @@ public class ResetArm extends SequentialCommandGroup {
   public ResetArm(RobotContainer rc) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands(new SetArmAngle(rc.arm, 35.0), 
-                Commands.waitUntil(rc.arm::atSetPoint),  
-                new ParallelCommandGroup(Commands.run(() -> rc.arm.setDesiredAngle(rc.arm.getArmAngle() - 10.0), rc.arm).until(rc.arm::atReset), 
-                                          new WristToStandBy(rc.claw)),
-                new SetArmAngle(rc.arm, 12.0));
+    addCommands(new WristToStandBy(), new SetArmAngle(rc.arm, 12.0));
   }
 }

@@ -7,8 +7,10 @@ package frc.robot.commands.ArmCMDS;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import frc.robot.Utils.Enums.ClawState;
+import frc.robot.Utils.Enums.CycleState;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Lights;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -21,6 +23,7 @@ public class WaitForPlace extends ParallelDeadlineGroup {
    */
   public WaitForPlace(Arm arm, SetArmAngle angles) {
     super(Commands.waitUntil(() -> arm.getClawSubsystem().getClawState().equals(ClawState.Open)));
-    addCommands(Commands.repeatingSequence(angles).withInterruptBehavior(InterruptionBehavior.kCancelSelf));
+    addCommands(Commands.runOnce(() -> Lights.getInstance().transitionToNewCycleState(CycleState.Scoring)).andThen(
+      Commands.repeatingSequence(angles).withInterruptBehavior(InterruptionBehavior.kCancelSelf)));
   }
 }

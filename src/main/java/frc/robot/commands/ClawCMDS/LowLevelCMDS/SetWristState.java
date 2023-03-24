@@ -18,11 +18,10 @@ public class SetWristState extends InstantCommand {
 
   /**
    * Instant command which sets the wrist state then instantly ends
-   * @param claw Claw subsystem
    * @param setState State to set the wrist to
    */
-  public SetWristState(Claw claw, WristState setState) {
-    this.claw = claw;
+  public SetWristState(WristState setState) {
+    claw = Claw.getInstance();
 
     this.state = setState;
   }

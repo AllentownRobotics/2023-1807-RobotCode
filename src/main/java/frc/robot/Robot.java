@@ -4,12 +4,18 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.server.PathPlannerServer;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Utils.Constants.LightsConstants;
+import frc.robot.subsystems.Lights;
+import frc.robot.subsystems.Limelight;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -33,6 +39,7 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
 
     CameraServer.startAutomaticCapture();
+    PathPlannerServer.startServer(5811);
   }
 
   /**
@@ -58,13 +65,16 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    handAllianceColorToLEDs();
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
     m_robotContainer.arm.setBrakes(IdleMode.kBrake);
+    Limelight.getInstance().April2DTracking().schedule();
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -111,4 +121,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  public void handAllianceColorToLEDs(){
+    if (DriverStation.getAlliance().equals(Alliance.Blue)){
+      Lights.allianceColor = LightsConstants.COLOR_ALLIANCE_BLUE;
+    }
+    if (DriverStation.getAlliance().equals(Alliance.Red)){
+      Lights.allianceColor = LightsConstants.COLOR_ALLIANCE_RED;
+    }
+  }
 }

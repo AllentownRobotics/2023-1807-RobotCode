@@ -21,12 +21,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Utils.LightAnimation;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
 import frc.robot.Utils.Enums.ClawState;
-
+import frc.robot.Utils.Enums.CycleState;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.AutoPlace;
@@ -41,15 +42,14 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-import frc.robot.commands.LEDCMDS.WantCone;
-import frc.robot.commands.LEDCMDS.WantCube;
+import frc.robot.commands.LightCMDS.SetAnimationNumber;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Compress;
 import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.LED;
+import frc.robot.subsystems.Lights;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.Spindexer;
 
@@ -61,13 +61,13 @@ import frc.robot.subsystems.Spindexer;
  */
 public class RobotContainer {
   //Subsystems 
-  public DriveTrain drive = new DriveTrain();
-  public Claw claw = new Claw();
-  public Arm arm = new Arm(claw);
-  public static Compress comp = new Compress();
-  public static Spindexer spindexer = new Spindexer();
-  public static LED light = new LED();
-  public Limelight limelight = new Limelight();
+  public DriveTrain drive = DriveTrain.getInstance();
+  public Claw claw = Claw.getInstance();
+  public Arm arm = Arm.getInstance();
+  public Compress comp = Compress.getInstance();
+  public Spindexer spindexer = Spindexer.getInstance();
+  public Lights light = Lights.getInstance();
+  public Limelight limelight = Limelight.getInstance();
   
   //Contollers 
   CommandXboxController driveController = new CommandXboxController(ControllerConstants.DRIVE_CONTROLLER);
@@ -75,7 +75,7 @@ public class RobotContainer {
 
   //Triggers
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
-  Trigger autoGrabTrigger = new Trigger(claw::inGrabDistance);
+  Trigger autoGrabTrigger = new Trigger(claw::shouldAutoClose);
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.1);
 
   //Commands HashMap
@@ -91,14 +91,15 @@ public class RobotContainer {
   public RobotContainer() {
     populateCommandMap();
 
-    comp.setDefaultCommand(new CompressCMD());
-    drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented, drive));
+    comp.setDefaultCommand(new CompressCMD(comp));
+    drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented));
     
     drive.resetEncoders();
     
     chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0)));
     chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
     chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
+    chooser.addOption("2 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeCubeEngage", 4.0, 3.0)));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -109,7 +110,7 @@ public class RobotContainer {
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    autoGrabTrigger.and(claw::isAutoGrabAllowed).onTrue(new SetClawState(claw, ClawState.Closed));
+    autoGrabTrigger.onTrue(new SetClawState(ClawState.Closed));
   }
 
   /**
@@ -122,7 +123,7 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    driveController.x().whileTrue(new AutoLevel(drive));
+    driveController.x().whileTrue(new AutoLevel());
 
        driveController.rightBumper() 
         .whileTrue(new RunCommand(
@@ -148,13 +149,12 @@ public class RobotContainer {
     
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
-      Commands.run(() -> arm.setManualSpeed(Math.signum(opController.getLeftY()) * 50.0 * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2)))).onFalse(
-      Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
+      Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * Math.signum(opController.getLeftY()) * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2.0)))).onFalse(
+      Commands.runOnce(() -> arm.setAutomaticMode(true)));
     
     // INTAKE POSITION
-    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this));
-
-    opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(!claw.isAutoGrabAllowed())));
+    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this).andThen(
+      () -> light.transitionToNewCycleState(CycleState.Transporting)));
 
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
@@ -168,8 +168,10 @@ public class RobotContainer {
     opController.leftTrigger(ControllerConstants.OP_CONTROLLER_THRESHOLD_SPINDEXER).whileTrue(
                        new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
-    opController.start().onTrue(new WantCone(light, limelight));
-    opController.back().onTrue(new WantCube(light, limelight));
+    // CONE REQUEST
+    opController.start().onTrue(new SetAnimationNumber(LightAnimation.coneRequest));
+    // CUBE REQUEST
+    opController.back().onTrue(new SetAnimationNumber(LightAnimation.cubeRequest));
   }
 
   /**
@@ -191,10 +193,11 @@ public class RobotContainer {
     commandsMap.put("autoScoreHighCube", new AutoPlace(arm, claw, ArmConstants.ANGLE_CUBE_HIGH));
     commandsMap.put("pickUpFromGround", new GroundPickup(this));
     commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController, opController).withTimeout(1.5));
-    commandsMap.put("autoLevel", new AutoLevel(drive));
+    commandsMap.put("autoLevel", new AutoLevel());
     commandsMap.put("enableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(true)));
     commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
     commandsMap.put("bringArmIn", new SetArmAngle(arm, 35.0));
+    commandsMap.put("verticalArm", new SetArmAngle(arm, 90.0));
   }
 
   /**

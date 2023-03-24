@@ -17,8 +17,8 @@ public class DriveCMD extends CommandBase {
 
   private CommandXboxController drivecontroller;
 
-  public DriveCMD(CommandXboxController controller, boolean fieldOriented, DriveTrain drive) {
-      this.drive = drive;
+  public DriveCMD(CommandXboxController controller, boolean fieldOriented) {
+      drive = DriveTrain.getInstance();
       addRequirements(drive);
 
       this.fieldOriented = fieldOriented;

@@ -7,11 +7,8 @@ package frc.robot.commands.ArmCMDS;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
-import frc.robot.Utils.Enums.ClawState;
-import frc.robot.Utils.Enums.WristState;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
+import frc.robot.commands.ClawCMDS.WristToStandBy;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -24,7 +21,7 @@ public class GroundPickup extends SequentialCommandGroup {
    * @param rc
    */
   public GroundPickup(RobotContainer rc) {
-    addCommands(Commands.parallel(new SetArmAngle(rc.arm, 260.0), new SetWristState(rc.claw, WristState.WristOut), new SetClawState(rc.claw, ClawState.Closed)),
+    addCommands(Commands.parallel(new SetArmAngle(rc.arm, 300.0), new WristToStandBy()),
       Commands.waitUntil(rc.arm::atSetPoint).withTimeout(2.0));
   }
 }

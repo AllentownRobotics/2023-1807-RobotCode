@@ -9,7 +9,6 @@ import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.WristState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
-import frc.robot.subsystems.Claw;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -18,10 +17,9 @@ public class WristToStandBy extends ParallelCommandGroup {
  /**
    * Parallel command group which runs 2 instant commands in parallel and ends instantly
    * Sets the claw to its idle state with the claw open and the wrist out
-   * @param claw Claw subsystem
    */
-  public WristToStandBy(Claw claw) {
-    addCommands(new SetClawState(claw, ClawState.Open),
-                new SetWristState(claw, WristState.WristOut));
+  public WristToStandBy() {
+    addCommands(new SetClawState(ClawState.Open),
+                new SetWristState(WristState.WristOut));
   }
 }

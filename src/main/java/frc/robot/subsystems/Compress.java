@@ -13,14 +13,19 @@ import frc.robot.Utils.Constants.GlobalConstants;
 public class Compress extends SubsystemBase {
   Compressor comp;
   
+  static Compress instance = null;
+
   public Compress() {
     comp = new Compressor(GlobalConstants.PNEUMATICS_ID, PneumaticsModuleType.REVPH);
   }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public static Compress getInstance(){
+    if (instance == null){
+      instance = new Compress();
+    }
+    return instance;
   }
+
   public void run()
   {
     SmartDashboard.putNumber("Pressure Switch Value", comp.getPressure());

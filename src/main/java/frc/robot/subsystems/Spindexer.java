@@ -23,6 +23,8 @@ public class Spindexer extends SubsystemBase {
 
   double desriedRotations;
   
+  static Spindexer instance = null;
+
   public Spindexer() {
     motor.setIdleMode(IdleMode.kBrake);
 
@@ -45,6 +47,13 @@ public class Spindexer extends SubsystemBase {
     desriedRotations = 0.0;
 
     roller.follow(motor, false);
+  }
+
+  public static Spindexer getInstance(){
+    if (instance == null){
+      instance = new Spindexer();
+    }
+    return instance;
   }
 
   @Override

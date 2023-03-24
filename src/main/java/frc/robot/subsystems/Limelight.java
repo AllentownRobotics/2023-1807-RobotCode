@@ -38,6 +38,8 @@ public class Limelight extends SubsystemBase {
 
   public static double currentPipeline;
 
+  static Limelight instance = null;
+
   /** 
    * Creates a new Limelight subsystem.
    * Recommended to call {@code initLocalOdometry()} immediatly after constructing a new Limelight
@@ -48,6 +50,13 @@ public class Limelight extends SubsystemBase {
 
     table.getEntry("pipeline").setDouble(April2DPipeline);
     currentPipeline = April2DPipeline;
+  }
+
+  public static Limelight getInstance(){
+    if (instance == null){
+      instance = new Limelight();
+    }
+    return instance;
   }
 
   public CommandBase LightOn() {

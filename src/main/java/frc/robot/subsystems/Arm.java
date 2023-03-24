@@ -33,20 +33,24 @@ public class Arm extends SubsystemBase {
   double manualSpeed;
   boolean automaticControl;
 
-  public Arm(Claw claw) {
+  static Arm instance;
+
+  public Arm() {
     leftMotor.restoreFactoryDefaults();
     rightMotor.restoreFactoryDefaults();
 
     encoder = ArmConstants.USE_LEFT_ENCODER ? leftMotor.getAbsoluteEncoder(Type.kDutyCycle) : rightMotor.getAbsoluteEncoder(Type.kDutyCycle); 
     encoder.setInverted(!ArmConstants.USE_LEFT_ENCODER);
     encoder.setPositionConversionFactor(360.0);
-    encoder.setVelocityConversionFactor(360.0);
+    encoder.setVelocityConversionFactor(360.0 / 60.0);
 
     leftMotor.setInverted(false);
 
     rightMotor.follow(leftMotor, true);
 
     pidController = leftMotor.getPIDController();
+    pidController.setFeedbackDevice(encoder);
+
     pidController.setP(ArmConstants.PID_kP, 0);
     pidController.setI(ArmConstants.PID_kI, 0);
     pidController.setD(ArmConstants.PID_kD, 0);
@@ -62,7 +66,7 @@ public class Arm extends SubsystemBase {
     leftMotor.burnFlash();
     rightMotor.burnFlash();
 
-    this.claw = claw;
+    claw = Claw.getInstance();
 
     desiredAngle = 0.0;
 
@@ -71,6 +75,13 @@ public class Arm extends SubsystemBase {
     manualSpeed = 0.0;
 
     automaticControl = true;
+  }
+
+  public static Arm getInstance(){
+    if (instance == null){
+      instance = new Arm();
+    }
+    return instance;
   }
 
   @Override
@@ -82,6 +93,7 @@ public class Arm extends SubsystemBase {
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
     SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
+    SmartDashboard.putBoolean("At Set Point", atSetPoint());
   }
 
   /**
