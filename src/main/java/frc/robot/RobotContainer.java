@@ -139,17 +139,19 @@ public class RobotContainer {
       Commands.runOnce(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.0)));
 
     // HIGH PLACEMENT
-    opController.povUp().onTrue(new HighNode(arm, claw));
+    opController.povUp().onTrue(Commands.runOnce(() -> light.transitionToNewCycleState(CycleState.Scoring)).andThen(
+      new HighNode(arm, claw)));
     
     // MID PLACEMENT
-    opController.povLeft().onTrue(new MidNode(arm, claw));
+    opController.povLeft().onTrue(Commands.runOnce(() -> light.transitionToNewCycleState(CycleState.Scoring)).andThen(
+      new MidNode(arm, claw)));
     
     // ARM RESET
     opController.povDown().onTrue(new ResetArm(this));
     
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
-      Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * Math.signum(opController.getLeftY()) * Math.pow(MathUtil.applyDeadband(opController.getLeftY(), 0.1), 2.0)))).onFalse(
+      Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * Math.signum(opController.getLeftY()) * MathUtil.applyDeadband(opController.getLeftY(), 0.1)))).onFalse(
       Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
@@ -172,6 +174,8 @@ public class RobotContainer {
     opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(limelight.LightOn()).andThen(limelight.setLimePipe()));
     // CUBE REQUEST
     opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
+
+    opController.start().and(opController.back()).onTrue(new SetAnimation(LightAnimation.endgame));
   }
 
   /**
@@ -198,6 +202,7 @@ public class RobotContainer {
     commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
     commandsMap.put("bringArmIn", new SetArmAngle(arm, 35.0));
     commandsMap.put("verticalArm", new SetArmAngle(arm, 90.0));
+    commandsMap.put("premptivePlaceHighCube", new SetArmAngle(arm, ArmConstants.ANGLE_CUBE_HIGH));
   }
 
   /**

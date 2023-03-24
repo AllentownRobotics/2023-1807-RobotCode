@@ -47,10 +47,12 @@ public class Lights extends SubsystemBase {
    * @param animNumber New animation ID
    */
   public void setAnimation(LightAnimation animation){
+    currentAnimation = animation;
+
     animation.run(candle);
     
     if (animation == LightAnimation.endgame){
-      //candle.setLEDs(allianceColor[0], allianceColor[1], allianceColor[2]);
+      candle.setLEDs(allianceColor[0], allianceColor[1], allianceColor[2]);
     }
 
     if (animation == LightAnimation.nullAnim){

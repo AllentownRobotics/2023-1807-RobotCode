@@ -76,29 +76,4 @@ public class FauxTrapezoidProfile {
     public void setMinVelocity(double minVelocity){
         this.minVelocity = minVelocity;
     }
-
-    /**
-     * Container class for the values used by an {@code ArmFeedForward} when calculating
-     */
-    public class FeedForwardFeeder{
-        public double position;
-        public double velocity;
-        public double acceleration;
-
-        public FeedForwardFeeder(double position, double velocity, double acceleration){
-            this.position = position;
-            this.velocity = velocity;
-            this.acceleration = acceleration;
-        }
-
-        /**
-         * Applies a conversion to the contained values
-         * @param conversionFunction the conversion to apply
-         */
-        public void convert(ConversionLambda conversionFunction){
-           position = conversionFunction.convert(position);
-           velocity = conversionFunction.convert(velocity);
-           acceleration = conversionFunction.convert(acceleration);
-        }
-    }
 }
