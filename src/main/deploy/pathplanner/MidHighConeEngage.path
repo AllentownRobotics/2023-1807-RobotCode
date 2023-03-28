@@ -21,7 +21,7 @@
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "after",
-        "waitTime": 0.1
+        "waitTime": 0
       }
     },
     {
@@ -80,7 +80,7 @@
         "y": 2.2
       },
       "prevControl": {
-        "x": 5.731881771291733,
+        "x": 5.731881771291734,
         "y": 2.2
       },
       "nextControl": null,

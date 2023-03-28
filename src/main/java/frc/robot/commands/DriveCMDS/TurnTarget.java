@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class TurnTarget extends CommandBase {
 
     private PIDController kturningPID = new PIDController(0.015, 0, 0.0001);
-    private PIDController kStrafingPID = new PIDController(0.02, 0, 0.000);
-    private PIDController kDrivingPID = new PIDController(0.02, 0, 0);
+    private PIDController kStrafingPID = new PIDController(0.0175, 0, 0.000);
+    private PIDController kDrivingPID = new PIDController(0.0175, 0, 0);
 
     
     

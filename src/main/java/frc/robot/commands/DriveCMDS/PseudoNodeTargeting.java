@@ -14,9 +14,9 @@ import frc.robot.subsystems.Limelight;
 public class PseudoNodeTargeting extends SequentialCommandGroup {
     
     private PIDController kturningPID = new PIDController(0.015, 0, 0.0001);
-    private PIDController kStrafingPID = new PIDController(0.02, 0.000, 0.000);
+    private PIDController kStrafingPID = new PIDController(0.018, 0.000, 0.000);
     
-    private PIDController kDrivingPID = new PIDController(0.02, 0, 0);
+    private PIDController kDrivingPID = new PIDController(0.018, 0, 0);
 
     private SlewRateLimiter translate = new SlewRateLimiter(5);
 
@@ -36,8 +36,13 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
 
         addCommands(
             new TurnTarget(m_drive),
-            Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(filter.calculate(Limelight.x), 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(filter.calculate(Limelight.x), 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
             , m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
+
+            //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband((Limelight.x), .01), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            //, m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
+    
     }
 
 }

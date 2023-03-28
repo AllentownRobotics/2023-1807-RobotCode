@@ -20,7 +20,7 @@ public class Claw extends SubsystemBase {
   DoubleSolenoid clawPiston = new DoubleSolenoid(ClawConstants.CLAW_ID, PneumaticsModuleType.REVPH, 
   ClawConstants.CLAW_CHANNEL_FORWARD, ClawConstants.CLAW_CHANNEL_BACKWARD);
 
-  DigitalInput sensor = new DigitalInput(0);
+  DigitalInput sensor = new DigitalInput(1);
 
   WristState wristState = WristState.WristOut;
   ClawState clawState = ClawState.Closed;
@@ -147,5 +147,7 @@ public class Claw extends SubsystemBase {
     clawPiston.set(clawState.equals(ClawState.Closed) ? Value.kForward : Value.kReverse);
 
     SmartDashboard.putBoolean("Auto Grab", allowAutoGrab);
+    SmartDashboard.putBoolean("Auto Close", shouldAutoClose());
+    SmartDashboard.putBoolean("Sensor In Range", !sensor.get());
   }
 }

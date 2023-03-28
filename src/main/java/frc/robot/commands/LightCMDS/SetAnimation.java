@@ -18,8 +18,7 @@ public class SetAnimation extends InstantCommand {
    */
   public SetAnimation(LightAnimation animation) {
     this.animation = animation;
-    this.lights = Lights.getInstance();
-    addRequirements(lights);
+    lights = Lights.getInstance();
   }
 
   // Called when the command is initially scheduled.

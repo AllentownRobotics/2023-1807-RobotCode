@@ -133,59 +133,6 @@
         "x": 2.482388835344376,
         "y": 3.691055008884867
       },
-      "nextControl": {
-        "x": 2.482388835344376,
-        "y": 3.691055008884867
-      },
-      "holonomicAngle": 180.0,
-      "isReversal": true,
-      "velOverride": null,
-      "isLocked": false,
-      "isStopPoint": true,
-      "stopEvent": {
-        "names": [
-          "autoScoreHighCube",
-          "resetArm"
-        ],
-        "executionBehavior": "sequential",
-        "waitBehavior": "deadline",
-        "waitTime": 4.0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 2.197088937788424,
-        "y": 2.373982516727713
-      },
-      "prevControl": {
-        "x": 1.9147571158391847,
-        "y": 2.635655912680667
-      },
-      "nextControl": {
-        "x": 2.4140256256430326,
-        "y": 2.172919245057587
-      },
-      "holonomicAngle": 180.0,
-      "isReversal": false,
-      "velOverride": null,
-      "isLocked": false,
-      "isStopPoint": false,
-      "stopEvent": {
-        "names": [],
-        "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 3.855624668652989,
-        "y": 2.2439012829344134
-      },
-      "prevControl": {
-        "x": 3.2145843783044388,
-        "y": 2.184589837271336
-      },
       "nextControl": null,
       "holonomicAngle": 180.0,
       "isReversal": false,
@@ -194,7 +141,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "autoLevel"
+          "autoScoreHighCube",
+          "resetArm"
         ],
         "executionBehavior": "sequential",
         "waitBehavior": "none",
@@ -202,31 +150,28 @@
       }
     }
   ],
-  "maxVelocity": 4.0,
-  "maxAcceleration": null,
-  "isReversed": null,
   "markers": [
     {
-      "position": 1.5909090909090906,
+      "position": 0.19,
+      "names": [
+        "pickUpFromGround"
+      ]
+    },
+    {
+      "position": 1.59,
       "names": [
         "enableAutoGrab"
       ]
     },
     {
-      "position": 2.0571428571428108,
+      "position": 2.06,
       "names": [
         "disableAutoGrab",
         "verticalArm"
       ]
     },
     {
-      "position": 0.1870129870130065,
-      "names": [
-        "pickUpFromGround"
-      ]
-    },
-    {
-      "position": 2.6181818181823675,
+      "position": 2.62,
       "names": [
         "premptivePlaceHighCube"
       ]

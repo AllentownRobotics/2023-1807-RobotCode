@@ -189,7 +189,7 @@ public static class ArmConstants{
 
   public static final int RIGHT_MOTOR_ID = 32;
 
-  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 6.0;
+  public static final double ANGLE_CHECKTOLERANCE_DEGREES = 7.0;
 
   public static final double PID_kP = 0.001 * 1.4;
   public static final double PID_kI = 0.0;
@@ -199,7 +199,7 @@ public static class ArmConstants{
   public static final double ANGLE_CUBE_INSURANCE = 7.0;
   public static final double ANGLE_MID_OFFSET = 15.0;
 
-  public static final double MANUAL_SPEED_MAX_DEGREESPERSECOND = 50.0;
+  public static final double MANUAL_SPEED_MAX_DEGREESPERSECOND = 150.0;
   public static final boolean MANUAL_INVERT = false;
 
   public static final double ANGLE_CONE_HIGH = 201.182 - ANGLE_CONE_INSURANCE;

@@ -4,7 +4,7 @@
 
 package frc.robot.commands.ArmCMDS;
 
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.RobotContainer;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.WristToStandBy;
@@ -12,7 +12,7 @@ import frc.robot.commands.ClawCMDS.WristToStandBy;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class ResetArm extends SequentialCommandGroup {
+public class ResetArm extends ParallelCommandGroup {
   /**
    * Sequential command group which sets the arm back to its reset position with the claw in its standby position.
    * Ends after the arm is in the reset position and the claw is in standby position

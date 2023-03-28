@@ -24,10 +24,10 @@ public class Spindexer extends SubsystemBase {
    */
   public Spindexer() {
     motor.setIdleMode(IdleMode.kBrake);
+    roller.setIdleMode(IdleMode.kCoast);
 
     motor.burnFlash();
-
-    roller.follow(motor, false);
+    roller.burnFlash();
   }
 
   /**
@@ -50,6 +50,7 @@ public class Spindexer extends SubsystemBase {
    */
   public void spindex(double direction){
     motor.set(direction * SpindexerConstants.SPINDEXER_MOTOR_MAXOUTPUT);
+    roller.set(Math.abs(direction) * SpindexerConstants.SPINDEXER_MOTOR_MAXOUTPUT);
   }
 }
  

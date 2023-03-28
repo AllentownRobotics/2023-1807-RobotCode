@@ -8,6 +8,7 @@ package frc.robot;
 import java.util.HashMap;
 
 import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
@@ -42,7 +43,6 @@ import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-import frc.robot.commands.LightCMDS.EndgameLeveling;
 import frc.robot.commands.LightCMDS.SetAnimation;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
@@ -101,6 +101,8 @@ public class RobotContainer {
     chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
     chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
     chooser.addOption("2 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeCubeEngage", 4.0, 3.0)));
+    chooser.addOption("2 Piece No Engage", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeCubeNoEngage", 4.0, 3.0)));
+    chooser.addOption("Just place", new AutoPlace(arm, claw, 181.254));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -153,7 +155,7 @@ public class RobotContainer {
     
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
-      Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * Math.signum(opController.getLeftY()) * MathUtil.applyDeadband(opController.getLeftY(), 0.1)))).onFalse(
+      Commands.run(() -> arm.setManualSpeed(ArmConstants.MANUAL_SPEED_MAX_DEGREESPERSECOND * MathUtil.applyDeadband(opController.getLeftY(), 0.1)))).onFalse(
       Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
@@ -177,10 +179,6 @@ public class RobotContainer {
     opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(limelight.LightOn()).andThen(limelight.setLimePipe()));
     // CUBE REQUEST
     opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
-
-    opController.start().and(opController.back()).onTrue(Commands.waitSeconds(0.1).andThen(
-      new SetAnimation(LightAnimation.nullAnim)).andThen(
-      new EndgameLeveling()));
 
     opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
@@ -207,7 +205,7 @@ public class RobotContainer {
     commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController, opController).withTimeout(1.5));
     commandsMap.put("autoLevel", new AutoLevel());
     commandsMap.put("enableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(true)));
-    commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
+    commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)).andThen(new SetClawState(ClawState.Closed)));
     commandsMap.put("bringArmIn", new SetArmAngle(arm, 35.0));
     commandsMap.put("verticalArm", new SetArmAngle(arm, 90.0));
     commandsMap.put("premptivePlaceHighCube", new SetArmAngle(arm, ArmConstants.ANGLE_CUBE_HIGH));
