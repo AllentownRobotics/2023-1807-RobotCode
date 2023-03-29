@@ -37,12 +37,19 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
         addCommands(
             new TurnTarget(m_drive),
             //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(filter.calculate(Limelight.x), 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
-            Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+
+            /*Strafe Only, jitter cut*/ Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), MathUtil.applyDeadband(kStrafingPID.calculate(Limelight.x, 0), 0.01), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+           /*Og*/ //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(Limelight.x, 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            /*Distance Applied (0 for high)*/ //Commands.run(() -> m_drive.drive(kDrivingPID.calculate(Limelight.y, 0), kStrafingPID.calculate(Limelight.x, 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
             , m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
+
+            /*Distance Applied (0 for high), jitter cut*/ //Commands.run(() -> m_drive.drive(MathUtil.applyDeadband(kDrivingPID.calculate(Limelight.y, 0), deadband), MathUtil.applyDeadband(kStrafingPID.calculate(Limelight.x, 0), deadband), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
 
             //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband((Limelight.x), .01), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
             //, m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
     
     }
+
 
 }

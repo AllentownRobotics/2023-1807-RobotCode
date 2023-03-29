@@ -8,6 +8,7 @@ import com.pathplanner.lib.server.PathPlannerServer;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -40,6 +41,8 @@ public class Robot extends TimedRobot {
 
     CameraServer.startAutomaticCapture();
     PathPlannerServer.startServer(5811);
+
+    PortForwarder.add(5801, "limelight.local", 80);
   }
 
   /**
