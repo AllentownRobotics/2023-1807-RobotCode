@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.playingwithfusion.TimeOfFlight;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.Rev2mDistanceSensor;
@@ -37,7 +36,6 @@ public class Collector extends SubsystemBase {
   SparkMaxPIDController wristController;
 
   Rev2mDistanceSensor sensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kDefault);
-  //TimeOfFlight sensor = new TimeOfFlight(19);
 
   DoubleSolenoid piston = new DoubleSolenoid(14, PneumaticsModuleType.REVPH, 2, 6);
 
