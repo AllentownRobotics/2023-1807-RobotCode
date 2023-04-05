@@ -34,7 +34,8 @@ public class TurnLock extends CommandBase {
             MathUtil.applyDeadband(drivecontroller.getLeftY(), 0.3),
             MathUtil.applyDeadband(drivecontroller.getLeftX(), 0.3),
             kturningPID.calculate(s_Swerve.getHeadingDegrees(), rotation),  
-            true);
+            true,
+            false);
     }
 
 }

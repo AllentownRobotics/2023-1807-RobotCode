@@ -26,9 +26,9 @@ public class Compress extends SubsystemBase {
     return instance;
   }
 
-  public void run()
-  {
-    SmartDashboard.putNumber("Pressure Switch Value", comp.getPressure());
+  public void run(){
+    SmartDashboard.putNumber("Pressure", comp.getPressure());
+    SmartDashboard.putBoolean("Compressor Running", comp.isEnabled());
     comp.enableAnalog(60,120);
   }
 }

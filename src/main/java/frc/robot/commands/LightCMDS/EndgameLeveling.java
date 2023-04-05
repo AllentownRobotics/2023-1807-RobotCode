@@ -12,9 +12,13 @@ public class EndgameLeveling extends CommandBase {
   Lights lights;
   public EndgameLeveling() {
     lights = Lights.getInstance();
-    addRequirements(lights);
-    withInterruptBehavior(InterruptionBehavior.kCancelSelf);
   }
+
+  @Override
+  public void initialize(){
+    lights.setAnimation(LightAnimation.nullAnim);
+  }
+
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {

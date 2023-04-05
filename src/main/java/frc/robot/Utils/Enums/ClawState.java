@@ -4,8 +4,12 @@
 
 package frc.robot.Utils.Enums;
 
-/** Add your docs here. */
+/**
+ * States of a claw like mechanism, which can exist in one of 2 states, open or closed
+ */
 public enum ClawState {
+    /** Denotes the claw open*/
     Open,
+    /** Denotes the claw closed*/
     Closed;
 }

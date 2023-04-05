@@ -21,6 +21,6 @@ public class SetAnimation extends InstantCommand {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Lights.getInstance().setAnimation(animation);
+    Lights.getInstance().setAnimation(LightAnimation.nullAnim).setAnimation(animation);
   }
 }

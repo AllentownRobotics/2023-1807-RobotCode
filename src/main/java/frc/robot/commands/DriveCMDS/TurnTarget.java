@@ -34,7 +34,7 @@ public class TurnTarget extends CommandBase {
     public void execute() {
 
 
-        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeadingDegrees(), 0), true);
+        s_Swerve.drive(0, 0, kturningPID.calculate(s_Swerve.getHeadingDegrees(), 0), true, false);
     }
 
 

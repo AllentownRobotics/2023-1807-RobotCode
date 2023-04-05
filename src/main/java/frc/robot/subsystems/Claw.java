@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -18,8 +17,6 @@ public class Claw extends SubsystemBase {
   ClawConstants.WRIST_CHANNEL_FORWARD, ClawConstants.WRIST_CHANNEL_BACKWARD);
   DoubleSolenoid clawPiston = new DoubleSolenoid(ClawConstants.CLAW_ID, PneumaticsModuleType.REVPH, 
   ClawConstants.CLAW_CHANNEL_FORWARD, ClawConstants.CLAW_CHANNEL_BACKWARD);
-
-  DigitalInput sensor = new DigitalInput(0);
 
   WristState wristState = WristState.WristOut;
   ClawState clawState = ClawState.Closed;
@@ -86,7 +83,7 @@ public void toggleClawState(){
  */
 public void toggleWristState(){
   if (wristState.equals(WristState.WristOut)){
-    wristState = WristState.WristDown;
+    wristState = WristState.WristIn;
     return;
   }
   wristState = WristState.WristOut;
@@ -106,14 +103,6 @@ public void setManualWristControlAllowed(boolean allowed){
  */
 public boolean isManualWristControlAuthorized(){
   return manualWristControlAllowed;
-}
-
-public void setAutoGrabAllowed(boolean allowed){
-  allowAutoGrab = allowed;
-}
-
-public boolean shouldAutoClose(){
-  return allowAutoGrab && !sensor.get();
 }
 
 @Override
