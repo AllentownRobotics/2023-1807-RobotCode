@@ -17,7 +17,6 @@ public class EndgameLeveling extends CommandBase {
    */
   public EndgameLeveling() {
     lights = Lights.getInstance();
-    withInterruptBehavior(InterruptionBehavior.kCancelSelf);
   }
 
   @Override

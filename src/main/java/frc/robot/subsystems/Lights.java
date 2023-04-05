@@ -11,8 +11,8 @@ import com.ctre.phoenix.led.CANdleConfiguration;
 import com.ctre.phoenix.led.CANdle.LEDStripType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Utils.LightAnimation;
 import frc.robot.Utils.Enums.CycleState;
+import frc.robot.Utils.LightAnimation;
 
 public class Lights extends SubsystemBase {
   CANdle candle = new CANdle(10);
@@ -54,7 +54,7 @@ public class Lights extends SubsystemBase {
    * Sets the animation on the lights using the provided animation
    * @param animation New animation
    */
-  public void setAnimation(LightAnimation animation){
+  public Lights setAnimation(LightAnimation animation){
     currentAnimation = animation;
     
     animation.run(candle);
@@ -70,6 +70,8 @@ public class Lights extends SubsystemBase {
       candle.clearAnimation(3);
       candle.clearAnimation(4);
     }
+
+    return this;
   }
 
   /**
@@ -88,6 +90,8 @@ public class Lights extends SubsystemBase {
    * @param newState New cycle state to transition to
    */
   public void transitionToNewCycleState(CycleState newState){
+    setAnimation(LightAnimation.nullAnim);
+
     if (newState.equals(CycleState.Transporting)){
       if (currentAnimation == LightAnimation.coneRequest){ 
         setAnimation(LightAnimation.coneTransport);
@@ -111,7 +115,5 @@ public class Lights extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+  public void periodic() {}
 }

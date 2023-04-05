@@ -35,11 +35,9 @@ public class Compress extends SubsystemBase {
     return instance;
   }
 
-  /**
-   * Handles compressing when too low and stopping at the desired pressure, usually 120 PSI.
-   */
   public void run(){
-    SmartDashboard.putNumber("Pressure Switch Value", comp.getPressure());
+    SmartDashboard.putNumber("Pressure", comp.getPressure());
+    SmartDashboard.putBoolean("Compressor Running", comp.isEnabled());
     comp.enableAnalog(60,120);
   }
 }

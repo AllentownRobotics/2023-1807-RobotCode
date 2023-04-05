@@ -25,7 +25,7 @@ public class MidNode extends SequentialCommandGroup {
    * @param controller Operator controller
    */
   public MidNode(Arm arm, Claw claw) {
-    addCommands(new SetWristState(WristState.WristDown),
+    addCommands(new SetWristState(WristState.WristIn),
                 new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_MID)));
   }
 }

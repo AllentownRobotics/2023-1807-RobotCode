@@ -61,6 +61,7 @@ public class Robot extends TimedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
+    CommandScheduler.getInstance().cancelAll();
     m_robotContainer.arm.setBrakes(IdleMode.kCoast);
   }
 
@@ -94,7 +95,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    //m_robotContainer.drive.zeroHeading();
     m_robotContainer.arm.setBrakes(IdleMode.kBrake);
   }
 

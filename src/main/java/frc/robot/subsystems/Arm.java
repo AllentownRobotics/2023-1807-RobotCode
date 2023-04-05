@@ -27,8 +27,6 @@ public class Arm extends SubsystemBase {
   SparkMaxPIDController pidController;
   FauxTrapezoidProfile profile = new FauxTrapezoidProfile(210.0, 3.0 * 1.4, 1.0, 2.5);
 
-  Claw claw;
-
   double desiredAngle;
   double manualSpeed;
   boolean automaticControl;
@@ -60,7 +58,7 @@ public class Arm extends SubsystemBase {
     pidController.setI(ArmConstants.PID_kI, 0);
     pidController.setD(ArmConstants.PID_kD, 0);
     pidController.setFF(ArmConstants.PID_kFF, 0);
-    pidController.setOutputRange(-0.5, 0.5, 0);
+    pidController.setOutputRange(-0.75, 0.75, 0);
 
     leftMotor.setIdleMode(IdleMode.kBrake);
     rightMotor.setIdleMode(IdleMode.kBrake);
@@ -70,8 +68,6 @@ public class Arm extends SubsystemBase {
 
     leftMotor.burnFlash();
     rightMotor.burnFlash();
-
-    claw = Claw.getInstance();
 
     desiredAngle = 0.0;
 
@@ -98,9 +94,7 @@ public class Arm extends SubsystemBase {
     double profileOutput = profile.calculate(encoder.getPosition());
     pidController.setReference(automaticControl ? profileOutput : manualSpeed, ControlType.kVelocity, 0);
 
-    SmartDashboard.putNumber("Calculated Velocity", profileOutput);
     SmartDashboard.putNumber("Arm Angle", encoder.getPosition());
-    SmartDashboard.putNumber("Arm Velocity", encoder.getVelocity());
     SmartDashboard.putNumber("Set Point", desiredAngle);
     SmartDashboard.putBoolean("At Set Point", atSetPoint());
   }
@@ -177,13 +171,5 @@ public class Arm extends SubsystemBase {
    */
   public void setAutomaticMode(boolean useAuto){
     automaticControl = useAuto;
-  }
-
-  /**
-   * Get the Claw subsystem contained within this Arm
-   * @return The contained Claw
-   */
-  public Claw getClawSubsystem(){
-    return claw;
   }
 }

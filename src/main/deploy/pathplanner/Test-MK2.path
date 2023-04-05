@@ -2,44 +2,17 @@
   "waypoints": [
     {
       "anchorPoint": {
-        "x": 1.8406592052511408,
-        "y": 2.2
+        "x": 1.7606529457663247,
+        "y": 4.909235933579781
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.84065920525114,
-        "y": 2.2
+        "x": 3.9521474006976804,
+        "y": 3.553969625924864
       },
       "holonomicAngle": 180.0,
       "isReversal": false,
       "velOverride": null,
-      "isLocked": false,
-      "isStopPoint": false,
-      "stopEvent": {
-        "names": [
-          "autoScoreHighCone"
-        ],
-        "executionBehavior": "sequential",
-        "waitBehavior": "after",
-        "waitTime": 0
-      }
-    },
-    {
-      "anchorPoint": {
-        "x": 3.2,
-        "y": 2.2
-      },
-      "prevControl": {
-        "x": 2.426573667161572,
-        "y": 2.2
-      },
-      "nextControl": {
-        "x": 3.606368752120872,
-        "y": 2.2
-      },
-      "holonomicAngle": 180.0,
-      "isReversal": false,
-      "velOverride": 0.75,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
@@ -51,41 +24,66 @@
     },
     {
       "anchorPoint": {
-        "x": 4.5,
-        "y": 2.1985074759282766
+        "x": 7.131256133015865,
+        "y": 5.3994386406039006
       },
       "prevControl": {
-        "x": 3.5,
-        "y": 2.1985074759282766
+        "x": 6.940484308314863,
+        "y": 7.7416501770522785
       },
       "nextControl": {
-        "x": 5.5,
-        "y": 2.1985074759282766
+        "x": 7.335297672623741,
+        "y": 2.894307451900909
       },
-      "holonomicAngle": 180.0,
+      "holonomicAngle": -90.0,
       "isReversal": false,
-      "velOverride": 0.75,
+      "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
         "names": [],
         "executionBehavior": "parallel",
-        "waitBehavior": "minimum",
-        "waitTime": 0.5
+        "waitBehavior": "none",
+        "waitTime": 0
       }
     },
     {
       "anchorPoint": {
-        "x": 6.66,
-        "y": 2.2032508973740073
+        "x": 4.18283102753256,
+        "y": 4.700178896760672
       },
       "prevControl": {
-        "x": 6.005386092144113,
-        "y": 2.2032508973740073
+        "x": 5.660648011943508,
+        "y": 4.801102983500932
       },
       "nextControl": {
-        "x": 6.005386092144113,
-        "y": 2.2032508973740073
+        "x": 3.0752225460284306,
+        "y": 4.624537341926244
+      },
+      "holonomicAngle": -150.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.7678618091049147,
+        "y": 4.447868679910022
+      },
+      "prevControl": {
+        "x": 2.762684949830333,
+        "y": 4.433450953232842
+      },
+      "nextControl": {
+        "x": 2.762684949830333,
+        "y": 4.433450953232842
       },
       "holonomicAngle": 180.0,
       "isReversal": true,
@@ -101,38 +99,29 @@
     },
     {
       "anchorPoint": {
-        "x": 3.9,
-        "y": 2.2032508973740073
+        "x": 6.886154779503805,
+        "y": 3.5611784892634533
       },
       "prevControl": {
-        "x": 5.431881771291733,
-        "y": 2.2032508973740073
+        "x": 5.163236441580798,
+        "y": 5.687793174147505
       },
       "nextControl": null,
-      "holonomicAngle": 180.0,
+      "holonomicAngle": -45.0,
       "isReversal": false,
       "velOverride": null,
       "isLocked": false,
       "isStopPoint": false,
       "stopEvent": {
-        "names": [
-          "autoLevel"
-        ],
+        "names": [],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
       }
     }
   ],
-  "maxVelocity": 2.0,
-  "maxAcceleration": 2.0,
+  "maxVelocity": 3.0,
+  "maxAcceleration": 3.0,
   "isReversed": null,
-  "markers": [
-    {
-      "position": 0.0,
-      "names": [
-        "resetArm"
-      ]
-    }
-  ]
+  "markers": []
 }

@@ -4,6 +4,8 @@
 
 package frc.robot.commands.DriveCMDS;
 
+import java.util.function.BooleanSupplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -11,13 +13,13 @@ import frc.robot.subsystems.DriveTrain;
 
 public class DriveCMD extends CommandBase {
  
-  private boolean fieldOriented;
+  private BooleanSupplier fieldOriented;
     
   private DriveTrain drive;
 
   private CommandXboxController drivecontroller;
 
-  public DriveCMD(CommandXboxController controller, boolean fieldOriented) {
+  public DriveCMD(CommandXboxController controller, BooleanSupplier fieldOriented) {
       drive = DriveTrain.getInstance();
       addRequirements(drive);
 
@@ -28,9 +30,9 @@ public class DriveCMD extends CommandBase {
   @Override
   public void execute() {
       drive.drive(
-          MathUtil.applyDeadband(drivecontroller.getLeftY(), 0.3),
-          MathUtil.applyDeadband(drivecontroller.getLeftX(), 0.3),
-          MathUtil.applyDeadband(-drivecontroller.getRightX(), 0.3),
-          fieldOriented);
+          MathUtil.applyDeadband(drivecontroller.getLeftY(), 0.1),
+          MathUtil.applyDeadband(drivecontroller.getLeftX(), 0.1),
+          MathUtil.applyDeadband(-drivecontroller.getRightX(), 0.1),
+          fieldOriented.getAsBoolean(), true);
   }
 }

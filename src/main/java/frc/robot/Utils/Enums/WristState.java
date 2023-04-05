@@ -4,8 +4,12 @@
 
 package frc.robot.Utils.Enums;
 
-/** Add your docs here. */
+/**
+ * States of a wrist like mechanism, which can exist in one of 2 states, out or down
+ */
 public enum WristState {
+        /**Denotes wrist rotated out */
         WristOut,
-        WristDown;
+        /**Denotes wrist rotated in */
+        WristIn;
 }

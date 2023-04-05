@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -19,8 +18,6 @@ public class Claw extends SubsystemBase {
   ClawConstants.WRIST_CHANNEL_FORWARD, ClawConstants.WRIST_CHANNEL_BACKWARD);
   DoubleSolenoid clawPiston = new DoubleSolenoid(ClawConstants.CLAW_ID, PneumaticsModuleType.REVPH, 
   ClawConstants.CLAW_CHANNEL_FORWARD, ClawConstants.CLAW_CHANNEL_BACKWARD);
-
-  DigitalInput sensor = new DigitalInput(1);
 
   WristState wristState = WristState.WristOut;
   ClawState clawState = ClawState.Closed;
@@ -91,16 +88,16 @@ public class Claw extends SubsystemBase {
     clawState = ClawState.Open;
   }
 
-  /**
-   * Toggles the current state of the wrist
-   */
-  public void toggleWristState(){
-    if (wristState.equals(WristState.WristOut)){
-      wristState = WristState.WristDown;
-      return;
-    }
-    wristState = WristState.WristOut;
+/**
+ * Toggles the current state of the wrist
+ */
+public void toggleWristState(){
+  if (wristState.equals(WristState.WristOut)){
+    wristState = WristState.WristIn;
+    return;
   }
+  wristState = WristState.WristOut;
+}
 
   /**
    * Sets whether or not the wrist should be in the user provided state or be down to prevent breaking extension limit
@@ -110,30 +107,13 @@ public class Claw extends SubsystemBase {
     manualWristControlAllowed = allowed;
   }
 
-  /**
-   * Checks if the wirst is currently authorized to follow user control. Returns true if so and false otherwise
-   * @return Whether or not the wirst is currently authorized to follow user control
-   */
-  public boolean isManualWristControlAuthorized(){
-    return manualWristControlAllowed;
-  }
-
-  /**
-   * Sets the state of the automatic grab mode. If true the claw will automatically close when a game piece is detected
-   * @param allowed Whether automatic grabbing should be allowed
-   */
-  public void setAutoGrabAllowed(boolean allowed){
-    allowAutoGrab = allowed;
-  }
-
-  /**
-   * Checks if there is a game piece in the grab range and, if allowed, will return true to automatically close.
-   * Set the automatic grab permission using {@link Claw#setAutoGrabAllowed(boolean)}
-   * @return If the claw should automatically close
-   */
-  public boolean shouldAutoClose(){
-    return allowAutoGrab && !sensor.get();
-  }
+/**
+ * Checks if the wirst is currently authorized to follow user control. Returns true if so and false otherwise
+ * @return Whether or not the wirst is currently authorized to follow user control
+ */
+public boolean isManualWristControlAuthorized(){
+  return manualWristControlAllowed;
+}
 
   @Override
   public void periodic() {
@@ -144,10 +124,6 @@ public class Claw extends SubsystemBase {
       wristPiston.set(Value.kForward);
     }
 
-    clawPiston.set(clawState.equals(ClawState.Closed) ? Value.kForward : Value.kReverse);
-
-    SmartDashboard.putBoolean("Auto Grab", allowAutoGrab);
-    SmartDashboard.putBoolean("Auto Close", shouldAutoClose());
-    SmartDashboard.putBoolean("Sensor In Range", !sensor.get());
-  }
+  clawPiston.set(clawState.equals(ClawState.Closed) ? Value.kForward : Value.kReverse);
+}
 }

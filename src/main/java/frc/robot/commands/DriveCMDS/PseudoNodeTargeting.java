@@ -2,7 +2,6 @@ package frc.robot.commands.DriveCMDS;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,8 +19,6 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
 
     private SlewRateLimiter translate = new SlewRateLimiter(5);
 
-    private LinearFilter filter = LinearFilter.movingAverage(5); 
-
     /**
      * Sequential command group which rotates the robot to face the alliance wall, then strafe the robot
      * to align with the primary in-view limelight target. Runs until interrupted
@@ -36,7 +33,6 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
 
         addCommands(
             new TurnTarget(m_drive),
-            //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(filter.calculate(Limelight.x), 0), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
             Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
             , m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
 

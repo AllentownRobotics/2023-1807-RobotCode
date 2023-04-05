@@ -10,6 +10,7 @@ import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.CycleState;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Claw;
 import frc.robot.subsystems.Lights;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -22,7 +23,7 @@ public class WaitForPlace extends ParallelDeadlineGroup {
    * Ends once the operator places the piece
    */
   public WaitForPlace(Arm arm, SetArmAngle angles) {
-    super(Commands.waitUntil(() -> arm.getClawSubsystem().getClawState().equals(ClawState.Open)));
+    super(Commands.waitUntil(() -> Claw.getInstance().getClawState().equals(ClawState.Open)));
     addCommands(Commands.runOnce(() -> Lights.getInstance().transitionToNewCycleState(CycleState.Scoring)).andThen(
       Commands.repeatingSequence(angles).withInterruptBehavior(InterruptionBehavior.kCancelSelf)));
   }

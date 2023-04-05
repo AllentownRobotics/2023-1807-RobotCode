@@ -27,14 +27,14 @@ public class Limelight extends SubsystemBase {
 
   public static boolean tv;
 
-  public double LimePipeline = 1;
-  public double April2DPipeline = 0;
-  public double April3DPipeline = 9;
+  public static double LimePipeline = 1;
+  public static double April2DPipeline = 0;
+  public static double April3DPipeline = 9;
 
-  public double purplePipeline = 2;
-  public double yellowPipeline = 3;
-  public double HumanPlayerAprilTag = 5;
-  public double RightShelfPOI = 8;
+  public static double purplePipeline = 2;
+  public static double yellowPipeline = 3;
+  public static double HumanPlayerAprilTag = 5;
+  public static double RightShelfPOI = 8;
 
   public static double currentPipeline;
 
@@ -239,6 +239,10 @@ public class Limelight extends SubsystemBase {
 
     double id = table.getEntry("tid").getDouble(0);
     return (id <= 8.0 && id >= 6.0) || (id <= 3.0 && id >= 1.0);
+  }
+
+  public void setPipeline(double pipeline){
+    table.getEntry("pipeline").setDouble(pipeline);
   }
 
   @Override

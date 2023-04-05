@@ -34,13 +34,17 @@ import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.AutoPlace;
 import frc.robot.commands.ArmCMDS.GroundPickup;
 import frc.robot.commands.ArmCMDS.ResetArm;
-import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoLevel;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
+import frc.robot.commands.CollectorCMDS.CollectorGrab;
+import frc.robot.commands.CollectorCMDS.CollectorIn;
+import frc.robot.commands.CollectorCMDS.CollectorOut;
+import frc.robot.commands.CollectorCMDS.CollectorSpit;
+import frc.robot.commands.DriveCMDS.ChaseCube;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
 import frc.robot.commands.LightCMDS.SetAnimation;
@@ -48,6 +52,7 @@ import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
+import frc.robot.subsystems.Collector;
 import frc.robot.subsystems.Compress;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Lights;
@@ -67,6 +72,7 @@ public class RobotContainer {
   public Arm arm = Arm.getInstance();
   public Compress comp = Compress.getInstance();
   public Spindexer spindexer = Spindexer.getInstance();
+  public Collector collector = Collector.getInstance();
   public Lights light = Lights.getInstance();
   public Limelight limelight = Limelight.getInstance();
   
@@ -76,8 +82,9 @@ public class RobotContainer {
 
   //Triggers
   Trigger wristFlipTrigger = new Trigger(arm::isWristAllowedOut);
-  Trigger autoGrabTrigger = new Trigger(claw::shouldAutoClose);
+  Trigger autoGrabTrigger = new Trigger(() -> collector.isAutoGrabEnabled() && collector.pieceInRange());
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.1);
+  Trigger collectionRollersControl = new Trigger(() -> Math.abs(opController.getRightY()) >= 0.1);
 
   //Commands HashMap
   HashMap<String, Command> commandsMap = new HashMap<>();
@@ -93,16 +100,15 @@ public class RobotContainer {
     populateCommandMap();
 
     comp.setDefaultCommand(new CompressCMD(comp));
-    drive.setDefaultCommand(new DriveCMD(driveController, fieldOriented));
+    drive.setDefaultCommand(new DriveCMD(driveController, () -> fieldOriented));
     
     drive.resetEncoders();
     
     chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0)));
     chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
     chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
-    chooser.addOption("2 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeCubeEngage", 4.0, 3.0)));
-    chooser.addOption("2 Piece No Engage", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeCubeNoEngage", 4.0, 3.0)));
-    chooser.addOption("Just place", new AutoPlace(arm, claw, 181.254));
+    chooser.addOption("2 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Test Copy", 2.5, 2.5)));
+    chooser.addOption("Ruh-Roh Dont pick me", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Test", 2.5, 2.5)));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -113,7 +119,7 @@ public class RobotContainer {
     wristFlipTrigger.onTrue(Commands.runOnce(() -> claw.setManualWristControlAllowed(true))).onFalse(
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
-    autoGrabTrigger.onTrue(new SetClawState(ClawState.Closed));
+    autoGrabTrigger.onTrue(new CollectorGrab());
   }
 
   /**
@@ -137,6 +143,9 @@ public class RobotContainer {
             () -> drive.zeroHeading(),
             drive));
 
+    driveController.leftStick().onTrue(Commands.runOnce(() -> fieldOriented = !fieldOriented));
+
+    driveController.leftBumper().whileTrue(new ChaseCube(driveController, opController));
 
     // TARGETING
     driveController.leftTrigger().whileTrue(new PseudoNodeTargeting(drive, driveController, opController)).onFalse(
@@ -151,7 +160,7 @@ public class RobotContainer {
       new MidNode(arm, claw)));
     
     // ARM RESET
-    opController.povDown().onTrue(new ResetArm(this));
+    opController.povDown().onTrue(new ResetArm());
     
     // MANUAL CONTROL
     armManualControl.onTrue(Commands.runOnce(() -> arm.setAutomaticMode(false))).whileTrue(
@@ -159,7 +168,7 @@ public class RobotContainer {
       Commands.runOnce(() -> arm.setAutomaticMode(true)).andThen(Commands.runOnce(() -> arm.setDesiredAngle(arm.getArmAngle()))));
     
     // INTAKE POSITION
-    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm(this).andThen(
+    opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm().andThen(
       () -> light.transitionToNewCycleState(CycleState.Transporting)));
 
     // CLAW TOGGLE
@@ -176,12 +185,23 @@ public class RobotContainer {
                        new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
     // CONE REQUEST
-    opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(limelight.LightOn()).andThen(limelight.setLimePipe()));
-    // CUBE REQUEST
-    opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(limelight.LightOff()).andThen(limelight.setApril2DPipe()));
+    opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(
+      limelight.LightOn()).andThen(
+      limelight.setLimePipe()));
 
-    opController.leftBumper().onTrue(Commands.runOnce(() -> claw.setAutoGrabAllowed(true))).onFalse(
-      Commands.runOnce(() -> claw.setAutoGrabAllowed(false)));
+    // CUBE REQUEST
+    opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(
+      limelight.LightOff()).andThen(
+      limelight.setApril2DPipe()));
+
+    opController.leftBumper().onTrue(new CollectorOut()).onFalse(new CollectorIn());
+    
+    opController.y().onTrue(Commands.runOnce(() -> collector.toggleGripState()));
+
+    collectionRollersControl.whileTrue(new CollectorSpit(opController::getRightY));
+
+    opController.a().onTrue(Commands.runOnce(() -> collector.setAutoGrabUsage(true))).onFalse(
+      Commands.runOnce(() -> collector.setAutoGrabUsage(false)));
   }
 
   /**
@@ -198,17 +218,15 @@ public class RobotContainer {
    * Populates the command hashmap for use with the autoBuilder
    */
   private void populateCommandMap(){
-    commandsMap.put("resetArm", new ResetArm(this));
+    commandsMap.put("resetArm", new ResetArm());
     commandsMap.put("autoScoreHighCone", new AutoPlace(arm, claw, ArmConstants.ANGLE_CONE_HIGH));
     commandsMap.put("autoScoreHighCube", new AutoPlace(arm, claw, ArmConstants.ANGLE_CUBE_HIGH));
     commandsMap.put("pickUpFromGround", new GroundPickup(this));
-    commandsMap.put("autoAlign", new PseudoNodeTargeting(drive, driveController, opController).withTimeout(1.5));
     commandsMap.put("autoLevel", new AutoLevel());
-    commandsMap.put("enableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(true)));
-    commandsMap.put("disableAutoGrab", Commands.runOnce(() -> claw.setAutoGrabAllowed(false)).andThen(new SetClawState(ClawState.Closed)));
-    commandsMap.put("bringArmIn", new SetArmAngle(arm, 35.0));
-    commandsMap.put("verticalArm", new SetArmAngle(arm, 90.0));
-    commandsMap.put("premptivePlaceHighCube", new SetArmAngle(arm, ArmConstants.ANGLE_CUBE_HIGH));
+    commandsMap.put("collectOut", new CollectorOut());
+    commandsMap.put("collectIn", new CollectorIn());
+    commandsMap.put("collectGrab", Commands.runOnce(() -> collector.setAutoGrabUsage(true)).andThen(Commands.waitUntil(() -> autoGrabTrigger.getAsBoolean()).andThen(new CollectorGrab())));
+    commandsMap.put("spit", new CollectorSpit(() -> 2.0 / 3.0).withTimeout(1.0));
   }
 
   /**
@@ -221,9 +239,13 @@ public class RobotContainer {
       DriveConstants.DRIVE_KINEMATICS,
       new PIDConstants(AutoContsants.PX_CONTROLLER, 0, 0),
       new PIDConstants(AutoContsants.P_THETA_CONTROLLER, 0, 0),
-      drive::setModuleStates,
+      drive::setModuleStatesNoOptimize,
       commandsMap, 
       true,
       drive);
+  }
+
+  public void putSmartDashboardData(){
+    SmartDashboard.putBoolean("Field Oriented", fieldOriented);
   }
 }
