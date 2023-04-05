@@ -8,7 +8,6 @@ package frc.robot;
 import java.util.HashMap;
 
 import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
@@ -27,7 +26,6 @@ import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
-import frc.robot.Utils.Enums.ClawState;
 import frc.robot.Utils.Enums.CycleState;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
@@ -37,7 +35,6 @@ import frc.robot.commands.ArmCMDS.ResetArm;
 import frc.robot.commands.ArmCMDS.NodeCMDS.HighNode;
 import frc.robot.commands.ArmCMDS.NodeCMDS.MidNode;
 import frc.robot.commands.AutoCMDS.AutoLevel;
-import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetClawState;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleClaw;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.ToggleWrist;
 import frc.robot.commands.CollectorCMDS.CollectorGrab;

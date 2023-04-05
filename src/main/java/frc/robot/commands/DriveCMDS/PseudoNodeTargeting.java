@@ -33,7 +33,7 @@ public class PseudoNodeTargeting extends SequentialCommandGroup {
 
         addCommands(
             new TurnTarget(m_drive),
-            Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
+            Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband(Limelight.x, 0.0)), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false, false)
             , m_drive).alongWith(Commands.waitUntil(() -> kStrafingPID.atSetpoint()).andThen(Commands.run(() -> opController.getHID().setRumble(RumbleType.kBothRumble, 0.5)))));
 
             //Commands.run(() -> m_drive.drive(translate.calculate(MathUtil.applyDeadband(driveController.getLeftY(), 0.3)), kStrafingPID.calculate(MathUtil.applyDeadband((Limelight.x), .01), kturningPID.calculate(m_drive.getHeadingDegrees(), 0), false)
