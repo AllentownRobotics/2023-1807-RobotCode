@@ -101,11 +101,14 @@ public class RobotContainer {
     
     drive.resetEncoders();
     
-    chooser.setDefaultOption("Mid", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0)));
-    chooser.addOption("Wall", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
-    chooser.addOption("Loadzone", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
-    chooser.addOption("2 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Test Copy", 2.5, 2.5)));
-    chooser.addOption("Ruh-Roh Dont pick me", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Test", 2.5, 2.5)));
+    chooser.setDefaultOption("Mid Basic", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeEngage", 2.0, 2.0)));
+    chooser.addOption("Wall Basic", autoBuilder.fullAuto(PathPlanner.loadPathGroup("WallHighConeEngage", 3.0, 3.0)));
+    chooser.addOption("Loadzone Basic", autoBuilder.fullAuto(PathPlanner.loadPathGroup("LoadzoneHighConeEngage", 3.0, 3.0)));
+    chooser.addOption("Loadzone 2 Piece Low", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Loadzone2PieceLow", 2.5, 2.5)));
+    chooser.addOption("Loadzone 2 Piece High Low", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Loadzone2PieceHighLow", 2.5, 2.5)));
+    chooser.addOption("Mid 1.5 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeGrabEngage", 2.0, 2.0)));
+
+    chooser.addOption("Loadzone 2.5 Piece Test", autoBuilder.fullAuto(PathPlanner.loadPathGroup("2.5 Piece Test", 2.5, 2.5)));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -224,6 +227,7 @@ public class RobotContainer {
     commandsMap.put("collectIn", new CollectorIn());
     commandsMap.put("collectGrab", Commands.runOnce(() -> collector.setAutoGrabUsage(true)).andThen(Commands.waitUntil(() -> autoGrabTrigger.getAsBoolean()).andThen(new CollectorGrab())));
     commandsMap.put("spit", new CollectorSpit(() -> 2.0 / 3.0).withTimeout(1.0));
+    commandsMap.put("flipGyro", Commands.runOnce(() -> drive.flipGyro()));
   }
 
   /**

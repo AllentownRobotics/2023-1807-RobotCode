@@ -52,6 +52,8 @@ public class DriveTrain extends SubsystemBase {
   private double m_currentTranslationDir = 0.0;
   private double m_currentTranslationMag = 0.0;
 
+  private double lastTilt = 0.0;
+
   private SlewRateLimiter m_magLimiter = new SlewRateLimiter(DriveConstants.kMagnitudeSlewRate);
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
@@ -89,6 +91,8 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
+    double tilt = getTilt();
+
     // Update the odometry in the periodic block
     m_odometry.update(
         m_gyro.getRotation2d(),
@@ -102,6 +106,10 @@ public class DriveTrain extends SubsystemBase {
     SmartDashboard.putNumber("turn rate", getTurnRate());
     SmartDashboard.putNumber("moduleSpeed", m_frontLeft.getWheelVelocity());
     SmartDashboard.putNumber("desired", m_frontLeft.getDesiredState().speedMetersPerSecond);
+
+    SmartDashboard.putNumber("Tilt deg/sec", Math.abs(tilt - lastTilt) / 0.02);
+
+    lastTilt = tilt;
   }
 
   /**
@@ -363,5 +371,9 @@ public class DriveTrain extends SubsystemBase {
    */
   public double getTilt(){
       return (Math.sqrt((Math.pow(m_gyro.getRoll(), 2)) + Math.pow(m_gyro.getPitch(), 2)));
+  }
+
+  public void flipGyro(){
+    m_gyro.addYaw(180.0);
   }
 }
