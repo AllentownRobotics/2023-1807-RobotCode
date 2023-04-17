@@ -58,7 +58,7 @@ public class Arm extends SubsystemBase {
     pidController.setI(ArmConstants.PID_kI, 0);
     pidController.setD(ArmConstants.PID_kD, 0);
     pidController.setFF(ArmConstants.PID_kFF, 0);
-    pidController.setOutputRange(-0.75, 0.75, 0);
+    pidController.setOutputRange(-0.7, 0.7, 0);
 
     leftMotor.setIdleMode(IdleMode.kBrake);
     rightMotor.setIdleMode(IdleMode.kBrake);

@@ -82,6 +82,7 @@ public class RobotContainer {
   Trigger autoGrabTrigger = new Trigger(() -> collector.isAutoGrabEnabled() && collector.pieceInRange());
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.1);
   Trigger collectionRollersControl = new Trigger(() -> Math.abs(opController.getRightY()) >= 0.1);
+  Trigger visionPoseTrigger = new Trigger(Limelight::goodForEstimator);
 
   //Commands HashMap
   HashMap<String, Command> commandsMap = new HashMap<>();
@@ -107,8 +108,8 @@ public class RobotContainer {
     chooser.addOption("Loadzone 2 Piece Low", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Loadzone2PieceLow", 2.5, 2.5)));
     chooser.addOption("Loadzone 2 Piece High Low", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Loadzone2PieceHighLow", 2.5, 2.5)));
     chooser.addOption("Mid 1.5 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("MidHighConeGrabEngage", 2.0, 2.0)));
-
-    chooser.addOption("Loadzone 2.5 Piece Test", autoBuilder.fullAuto(PathPlanner.loadPathGroup("2.5 Piece Test", 2.5, 2.5)));
+    chooser.addOption("Loadzone 2.5 Piece (Unreliable)", autoBuilder.fullAuto(PathPlanner.loadPathGroup("2.5 Piece Test", 2.5, 2.5)));
+    chooser.addOption("Wall 2.5 Piece", autoBuilder.fullAuto(PathPlanner.loadPathGroup("Wall2Piece", 2.5, 2.5)));
 
     SmartDashboard.putData("Auto Chooser", chooser);
 
@@ -120,6 +121,10 @@ public class RobotContainer {
       Commands.runOnce(() -> claw.setManualWristControlAllowed(false)));
 
     autoGrabTrigger.onTrue(new CollectorGrab());
+
+    visionPoseTrigger.whileTrue(Commands.repeatingSequence(
+      Commands.runOnce(() -> drive.updateEstimatorWithVision(limelight.botPoseFieldSpace())),
+      Commands.waitSeconds(5.0)));
   }
 
   /**
@@ -235,7 +240,7 @@ public class RobotContainer {
    */
   private SwerveAutoBuilder generateAutoBuilder(){
     return new SwerveAutoBuilder(
-      drive::getPose, 
+      drive::getEstimatedPose, 
       drive::resetOdometry, 
       DriveConstants.DRIVE_KINEMATICS,
       new PIDConstants(AutoContsants.PX_CONTROLLER, 0, 0),

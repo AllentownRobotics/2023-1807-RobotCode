@@ -8,7 +8,7 @@ import static frc.robot.Utils.Constants.LightsConstants.*;
 
 /**
  * Interface which serves as a lambda wrapper for all light animations.
- * To create custom animations create an arrow function which takes in a CANdle object. 
+ * <p>To create custom animations create an arrow function which takes in a CANdle object. 
  * To use, simply call {@link LightAnimation#run(CANdle)}
  */
 public interface LightAnimation {

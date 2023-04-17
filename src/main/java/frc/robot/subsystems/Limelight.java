@@ -12,9 +12,12 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Utils.Constants.GlobalConstants;
 
 public class Limelight extends SubsystemBase {
   public static NetworkTable table;
@@ -22,6 +25,8 @@ public class Limelight extends SubsystemBase {
   public static double x;
   public static double y;
   public static double ta;
+  public static double tl;
+  public static double cl;
   public static double[] targetRelPos;
   public static double[] RoboRelPos;
 
@@ -40,6 +45,8 @@ public class Limelight extends SubsystemBase {
 
   static Limelight instance = null;
 
+  private Field2d visionOutput = new Field2d();
+
   /**
    * Creates a new Limelight. 
    * NOTE: This method should not be manually called. Instead,
@@ -49,8 +56,9 @@ public class Limelight extends SubsystemBase {
     table = NetworkTableInstance.getDefault().getTable("limelight");
     currentPipeline = April2DPipeline;
 
-    table.getEntry("pipeline").setDouble(April2DPipeline);
-    currentPipeline = April2DPipeline;
+    table.getEntry("pipeline").setDouble(April3DPipeline);
+    currentPipeline = April3DPipeline;
+    SmartDashboard.putData("VisionPose", visionOutput);
   }
 
   /**
@@ -90,7 +98,7 @@ public class Limelight extends SubsystemBase {
         });
   }
 
-  public CommandBase  setApril2DPipe() {
+  public CommandBase setApril2DPipe() {
     // Inline construction of command goes here.
     // Subsystem::RunOnce implicitly requires `this` subsystem.
     return runOnce(
@@ -192,7 +200,17 @@ public class Limelight extends SubsystemBase {
     if (table.getEntry("pipeline").getDouble(0.0) == 0) {
       return true;
     } else {return false;}
+  }
 
+  public Pose2d botPoseFieldSpace(){
+    double rotOffset = 180.0;
+    double id = table.getEntry("tid").getDouble(0.0);
+    double[] coords = table.getEntry("botpose").getDoubleArray(new double[6]);
+    if (id >= 1.0 && id <= 4.0){
+      rotOffset = 0.0;
+    }
+
+    return new Pose2d(coords[0] + GlobalConstants.FIELD_LENGTH_METERS / 2.0, coords[1] + GlobalConstants.FIELD_WIDTH_METERS / 2.0, Rotation2d.fromDegrees(coords[4] + rotOffset));
   }
 
   /**
@@ -202,10 +220,22 @@ public class Limelight extends SubsystemBase {
   public Pose2d robotPoseTargetSpace(){
     double[] values = april3DCordsBotPoseTargetSpace();
     try{
-      return new Pose2d(new Translation2d(values[0], values[2]), new Rotation2d(values[4]));
+      return new Pose2d(new Translation2d(values[0], values[2]), new Rotation2d(values[5]));
     }
     catch (Exception e){
       return new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
+    }
+  }
+
+  public static boolean goodForEstimator(){
+    try{
+      double[] secondaryCoords = table.getEntry("targetpose_robotspace").getDoubleArray(new double[6]);
+
+      SmartDashboard.putNumber("distanceFromTarg", Math.hypot(secondaryCoords[0], secondaryCoords[1]));
+      return (table.getEntry("getpipe").getDouble(0.0) == 9.0) && Math.hypot(secondaryCoords[0], secondaryCoords[1]) <= 1.5 && tv;
+    }
+    catch(Exception e){
+      return false;
     }
   }
 
@@ -259,13 +289,18 @@ public class Limelight extends SubsystemBase {
       x = table.getEntry("tx").getDouble(0.0);
       y = table.getEntry("ty").getDouble(0.0);
       ta = table.getEntry("ta").getDouble(0.0);
-
+      tl = table.getEntry("tl").getDouble(0.0);
+      cl = table.getEntry("cl").getDouble(0.0);
 
       if (table.getEntry("tv").getDouble(0.0) == 1) {
         tv = true;
       } else {tv = false;}
 
     } catch (Exception e) {}
+
+    visionOutput.setRobotPose(botPoseFieldSpace());
+
+    SmartDashboard.putBoolean("Good for estimator", goodForEstimator());
   }
 
 }

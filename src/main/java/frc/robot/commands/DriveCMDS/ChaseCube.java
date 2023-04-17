@@ -54,7 +54,7 @@ public class ChaseCube extends CommandBase {
       opController.getHID().setRumble(RumbleType.kBothRumble, 0.5);
       
       double omega = kturningPID.calculate(Limelight.x);
-      double speed = kturningPID.atSetpoint() ? 3.0 : 1.5;
+      double speed = kturningPID.atSetpoint() ? 1.0 : 0.5;
       
       drive.drive(speed, 0.0, omega, false, true);
     }

@@ -6,6 +6,8 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,7 +16,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Utils.SwerveUtils;
 import frc.robot.Utils.Constants.DriveConstants;
@@ -52,11 +57,12 @@ public class DriveTrain extends SubsystemBase {
   private double m_currentTranslationDir = 0.0;
   private double m_currentTranslationMag = 0.0;
 
-  private double lastTilt = 0.0;
-
   private SlewRateLimiter m_magLimiter = new SlewRateLimiter(DriveConstants.kMagnitudeSlewRate);
   private SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationalSlewRate);
   private double m_prevTime = WPIUtilJNI.now() * 1e-6;
+
+  private int rejectedPoses = 0;
+  private int acceptedPoses = 0;
 
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
@@ -69,14 +75,26 @@ public class DriveTrain extends SubsystemBase {
           m_rearRight.getPosition()
       });
 
+  SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
+    DriveConstants.DRIVE_KINEMATICS,
+    getHeading(),
+    getModulePositions(),
+    new Pose2d(), 
+    VecBuilder.fill(0.1, 0.1, Units.degreesToRadians(5.0)),
+    VecBuilder.fill(0.75, 0.75, Units.degreesToRadians(20.0)));
+
   private static DriveTrain instance = null;
+
+  Field2d pose = new Field2d();
 
   /**
    * Creates a new DriveTrain. 
    * NOTE: This method should not be manually called. Instead,
    * use the singleton instance by calling the static method {@link DriveTrain#getInstance()} 
    */
-  public DriveTrain() {}
+  public DriveTrain() {
+    SmartDashboard.putData("Pose", pose);
+  }
 
   /**
    * Gets the singleton instance of the drivetrain. If no instance exists one is automatically created.
@@ -91,8 +109,6 @@ public class DriveTrain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double tilt = getTilt();
-
     // Update the odometry in the periodic block
     m_odometry.update(
         m_gyro.getRotation2d(),
@@ -103,13 +119,23 @@ public class DriveTrain extends SubsystemBase {
             m_rearRight.getPosition()
         });
 
+    poseEstimator.update(getHeading(), getModulePositions());
+
     SmartDashboard.putNumber("turn rate", getTurnRate());
     SmartDashboard.putNumber("moduleSpeed", m_frontLeft.getWheelVelocity());
     SmartDashboard.putNumber("desired", m_frontLeft.getDesiredState().speedMetersPerSecond);
+    SmartDashboard.putNumber("rejected poses", rejectedPoses);
+    SmartDashboard.putNumber("accepted", acceptedPoses);
+    pose.setRobotPose(getEstimatedPose());
+  }
 
-    SmartDashboard.putNumber("Tilt deg/sec", Math.abs(tilt - lastTilt) / 0.02);
-
-    lastTilt = tilt;
+  public void updateEstimatorWithVision(Pose2d visionPose){
+    if (visionPose.getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 1.5){
+      rejectedPoses++;
+      return;
+    }
+    acceptedPoses++;
+    poseEstimator.addVisionMeasurement(visionPose, Timer.getFPGATimestamp() - (Limelight.tl / 1000.0) - (Limelight.cl / 1000.0));
   }
 
   /**
@@ -119,6 +145,10 @@ public class DriveTrain extends SubsystemBase {
    */
   public Pose2d getPose() {
     return m_odometry.getPoseMeters();
+  }
+
+  public Pose2d getEstimatedPose(){
+    return poseEstimator.getEstimatedPosition();
   }
 
   /**
@@ -136,6 +166,8 @@ public class DriveTrain extends SubsystemBase {
             m_rearRight.getPosition()
         },
         pose);
+    
+    poseEstimator.resetPosition(getHeading(), getModulePositions(), pose);
   }
 
   /**

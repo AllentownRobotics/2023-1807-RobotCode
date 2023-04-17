@@ -36,12 +36,15 @@ public final class Constants {
 
     //Gyro ID
     public static final int PIGEON_ID = 9;
+
+    public static final double FIELD_LENGTH_METERS = Units.inchesToMeters(650.598);
+    public static final double FIELD_WIDTH_METERS = Units.inchesToMeters(315.848);
   }
 
   //DriveTrain
   public static final class DriveConstants{
     //Drive parameters 
-    public static final double MAX_SPEED_MPS = 4.65;
+    public static final double MAX_SPEED_MPS = 4.25;
     public static final double MAX_ANGLE_SPEED = 2 * Math.PI; //Radians per sec
 
     public static final double kDirectionSlewRate = 1.2 * 3.5; // radians per second
@@ -106,7 +109,7 @@ public final class Constants {
    */
   public static final class ModuleConstants{
     /*pinion gear teeth */    
-    public static final int DRIVE_MOTOR_TEETH = 14;  
+    public static final int DRIVE_MOTOR_TEETH = 13;  
     public static final boolean TURN_ENCODER_INVERTED = true;
 
     //Calculations for drive motor conversion factors and feed forwards
@@ -181,7 +184,7 @@ public final class Constants {
 
     public static final double ANGLE_CHECKTOLERANCE_DEGREES = 6.0;
 
-    public static final double PID_kP = 0.001 * 1.4;
+    public static final double PID_kP = 0.002;
     public static final double PID_kI = 0.0;
     public static final double PID_kD = 0.0;
     public static final double PID_kFF = 0.0;
