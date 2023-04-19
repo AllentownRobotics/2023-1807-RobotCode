@@ -74,6 +74,10 @@ public class Lights extends SubsystemBase {
     return this;
   }
 
+  public void setLEDs(int r, int g, int b){
+    candle.setLEDs(r, g, b);
+  }
+
   /**
    * Calculates the brightness for the lights to scale to during the leveling in endgame
    * using a modified sigmoid function

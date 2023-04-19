@@ -4,18 +4,19 @@
 
 package frc.robot.commands.CollectorCMDS;
 
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.subsystems.Collector;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class CollectorGrab extends SequentialCommandGroup {
+public class CollectorGrab extends ParallelCommandGroup {
   Collector collector;
   /** Creates a new CollectorGrab. */
   public CollectorGrab() {
     collector = Collector.getInstance();
     addCommands(new CollectorIn(),
-      new CollectorSpit(() -> -1.0).withTimeout(0.085));
+      Commands.waitSeconds(0.2).andThen(new CollectorSpit(() -> -1.0).withTimeout(0.085)));
   }
 }

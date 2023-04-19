@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.PIDConstants;
 import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,12 +22,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Utils.LightAnimation;
 import frc.robot.Utils.Constants.ArmConstants;
 import frc.robot.Utils.Constants.AutoContsants;
 import frc.robot.Utils.Constants.ControllerConstants;
 import frc.robot.Utils.Constants.DriveConstants;
+import frc.robot.Utils.Constants.LightsConstants;
 import frc.robot.Utils.Enums.CycleState;
+import frc.robot.Utils.Enums.GamePiece;
 import frc.robot.commands.CompressCMD;
 import frc.robot.commands.ArmCMDS.ArmSubStationInTake;
 import frc.robot.commands.ArmCMDS.AutoPlace;
@@ -44,7 +46,8 @@ import frc.robot.commands.CollectorCMDS.CollectorSpit;
 import frc.robot.commands.DriveCMDS.ChaseCube;
 import frc.robot.commands.DriveCMDS.DriveCMD;
 import frc.robot.commands.DriveCMDS.PseudoNodeTargeting;
-import frc.robot.commands.LightCMDS.SetAnimation;
+import frc.robot.commands.LightCMDS.BlinkColor;
+import frc.robot.commands.LightCMDS.FlashColor;
 import frc.robot.commands.SpindexerCMDS.RunAtSpeed;
 
 import frc.robot.subsystems.Arm;
@@ -63,7 +66,9 @@ import frc.robot.subsystems.Spindexer;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  //Subsystems 
+  public static GamePiece desiredGamePiece = GamePiece.Cone;
+
+  //Subsystems
   public DriveTrain drive = DriveTrain.getInstance();
   public Claw claw = Claw.getInstance();
   public Arm arm = Arm.getInstance();
@@ -83,6 +88,7 @@ public class RobotContainer {
   Trigger armManualControl = new Trigger(() -> Math.abs(opController.getLeftY()) >= 0.1);
   Trigger collectionRollersControl = new Trigger(() -> Math.abs(opController.getRightY()) >= 0.1);
   Trigger visionPoseTrigger = new Trigger(Limelight::goodForEstimator);
+  Trigger driverStationTrigger = new Trigger(DriverStation::isDSAttached);
 
   //Commands HashMap
   HashMap<String, Command> commandsMap = new HashMap<>();
@@ -125,6 +131,9 @@ public class RobotContainer {
     visionPoseTrigger.whileTrue(Commands.repeatingSequence(
       Commands.runOnce(() -> drive.updateEstimatorWithVision(limelight.botPoseFieldSpace())),
       Commands.waitSeconds(5.0)));
+
+    driverStationTrigger.whileFalse(new BlinkColor(new int[]{186, 52, 0}, 1.5, 1.5).ignoringDisable(true)).onTrue(
+    new BlinkColor(new int[]{0, 186, 0}, 0.1, 0.1).withTimeout(1.5).andThen(Commands.runOnce(() -> light.setLEDs(Lights.allianceColor[0], Lights.allianceColor[1], Lights.allianceColor[2]))).ignoringDisable(true));
   }
 
   /**
@@ -174,7 +183,7 @@ public class RobotContainer {
     
     // INTAKE POSITION
     opController.rightBumper().onTrue(new ArmSubStationInTake(this)).onFalse(new ResetArm().andThen(
-      () -> light.transitionToNewCycleState(CycleState.Transporting)));
+      Commands.runOnce(() -> {int[] color = desiredGamePiece.equals(GamePiece.Cone) ? LightsConstants.COLOR_CONE : LightsConstants.COLOR_CUBE; light.setLEDs(color[0], color[1], color[2]);})));
 
     // CLAW TOGGLE
     opController.x().onTrue(new ToggleClaw(claw));
@@ -190,14 +199,16 @@ public class RobotContainer {
                        new RunAtSpeed(spindexer, (() -> -1.0 * opController.getLeftTriggerAxis())));
 
     // CONE REQUEST
-    opController.start().onTrue(new SetAnimation(LightAnimation.coneRequest).andThen(
-      limelight.LightOn()).andThen(
-      limelight.setLimePipe()));
+    opController.start().onTrue(Commands.runOnce(() -> desiredGamePiece = GamePiece.Cone).andThen(
+      new BlinkColor(LightsConstants.COLOR_CONE, 0.5, 0.2).alongWith(
+      limelight.LightOn().andThen(
+      limelight.setLimePipe()))));
 
     // CUBE REQUEST
-    opController.back().onTrue(new SetAnimation(LightAnimation.cubeRequest).andThen(
-      limelight.LightOff()).andThen(
-      limelight.setApril2DPipe()));
+    opController.back().onTrue(Commands.runOnce(() -> desiredGamePiece = GamePiece.Cube).andThen(
+      new BlinkColor(LightsConstants.COLOR_CUBE, 0.5, 0.2).alongWith(
+      limelight.LightOff().andThen(
+      limelight.setApril2DPipe()))));
 
     opController.leftBumper().onTrue(new CollectorOut()).onFalse(new CollectorIn());
     

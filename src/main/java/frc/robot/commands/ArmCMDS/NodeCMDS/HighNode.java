@@ -5,11 +5,17 @@
 package frc.robot.commands.ArmCMDS.NodeCMDS;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.RobotContainer;
+import frc.robot.Utils.LightAnimation;
 import frc.robot.Utils.Constants.ArmConstants;
+import frc.robot.Utils.Constants.LightsConstants;
+import frc.robot.Utils.Enums.GamePiece;
 import frc.robot.Utils.Enums.WristState;
 import frc.robot.commands.ArmCMDS.WaitForPlace;
 import frc.robot.commands.ArmCMDS.LowLevelCMDS.SetArmAngle;
 import frc.robot.commands.ClawCMDS.LowLevelCMDS.SetWristState;
+import frc.robot.commands.LightCMDS.BlinkColor;
+import frc.robot.commands.LightCMDS.SetAnimation;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Claw;
 
@@ -26,6 +32,10 @@ public class HighNode extends SequentialCommandGroup {
    */
   public HighNode(Arm arm, Claw claw) {
     addCommands(new SetWristState(WristState.WristOut),
-                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH)));
+                new WaitForPlace(arm, new SetArmAngle(arm, ArmConstants.ANGLE_CONE_HIGH)).deadlineWith(
+                  new BlinkColor(
+                    () -> (RobotContainer.desiredGamePiece.equals(GamePiece.Cone) ? LightsConstants.COLOR_CONE : LightsConstants.COLOR_CUBE), 
+                    0.1, 0.1)),
+                new SetAnimation(LightAnimation.nullAnim));
   }
 }
